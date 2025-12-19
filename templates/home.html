@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project_name }} - Django Learning Project</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">Version {{ version }}</div>
+                <h1 class="hero-title">
+                    <span class="gradient-text">{{ project_name }}</span>
+                </h1>
+                <p class="hero-subtitle">Django Learning Project</p>
+                <p class="hero-description">
+                    A comprehensive hands-on project for mastering Django framework,<br>
+                    from MVT architecture to full-stack development
+                </p>
+                <div class="hero-buttons">
+                    <a href="/blog/" class="btn btn-primary">Explore Blog</a>
+                    <a href="/admin/" class="btn btn-secondary">Admin Panel</a>
+                    <a href="https://github.com/swiftruru/RuDjango" target="_blank" class="btn btn-outline">
+                        <span>GitHub</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animated Background -->
+        <div class="hero-bg">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.apps }}</div>
+                    <div class="stat-label">Application</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.templates }}</div>
+                    <div class="stat-label">Templates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.views }}</div>
+                    <div class="stat-label">Views</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.urls }}</div>
+                    <div class="stat-label">URL Configs</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apps Section -->
+    <section class="apps">
+        <div class="container">
+            <h2 class="section-title">Available Applications</h2>
+            <div class="apps-grid">
+                {% for app in apps %}
+                <div class="app-card">
+                    <div class="app-icon">{{ app.icon }}</div>
+                    <h3 class="app-name">{{ app.name }}</h3>
+                    <p class="app-description">{{ app.description }}</p>
+                    <ul class="app-features">
+                        {% for feature in app.features %}
+                        <li>✓ {{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ app.url }}" class="app-link">
+                        Launch App →
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack">
+        <div class="container">
+            <h2 class="section-title">Technology Stack</h2>
+            <div class="tech-grid">
+                {% for tech in tech_stack %}
+                <div class="tech-card">
+                    <div class="tech-icon">{{ tech.icon }}</div>
+                    <div class="tech-info">
+                        <h3 class="tech-name">{{ tech.name }}</h3>
+                        <span class="tech-version">{{ tech.version }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning Journey Section -->
+    <section class="journey">
+        <div class="container">
+            <h2 class="section-title">Learning Journey</h2>
+            <div class="journey-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">1</div>
+                    <div class="timeline-content">
+                        <h3>Project Setup</h3>
+                        <p>Initialize Django project structure and configuration</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">2</div>
+                    <div class="timeline-content">
+                        <h3>App Development</h3>
+                        <p>Build modular applications with MVT architecture</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">3</div>
+                    <div class="timeline-content">
+                        <h3>Template System</h3>
+                        <p>Master template inheritance and dynamic rendering</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">4</div>
+                    <div class="timeline-content">
+                        <h3>Static Management</h3>
+                        <p>Organize and serve static files efficiently</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>{{ project_name }}</h3>
+                    <p>Django Learning Project</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/swiftruru/RuDjango" target="_blank">GitHub</a>
+                    <a href="https://docs.djangoproject.com/" target="_blank">Django Docs</a>
+                    <a href="/blog/">Blog</a>
+                    <a href="/admin/">Admin</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 {{ project_name }}. Made with ❤️ and Django</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

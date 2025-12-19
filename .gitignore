@@ -1,0 +1,46 @@
+# Django 專案 .gitignore
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+__pycache__/
+*.pyc
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+
+# 虛擬環境
+venv/
+env/
+ENV/
+RuDjango-env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 測試
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# 環境變數
+.env
+.env.local
+
+# Static 收集後的文件
+/static_root/
+/collected_static/

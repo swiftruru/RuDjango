@@ -1,0 +1,68 @@
+/* ===== 關於頁面專屬樣式 ===== */
+
+/* 特色功能區域 */
+.features {
+    padding: 100px 0;
+    background-color: #fff;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+.feature-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: grayscale(0.3);
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #718096;
+    line-height: 1.8;
+}
+
+/* 關於頁面響應式設計 */
+@media (max-width: 768px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .features {
+        padding: 60px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-card {
+        padding: 2rem;
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+    }
+}

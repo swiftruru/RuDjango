@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RuDjango{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">RuDjango</div>
+                <ul class="nav-menu">
+                    <li><a href="home" class="nav-link active">首頁</a></li>
+                    <li><a href="about" class="nav-link">關於</a></li>
+                    <li><a href="#" class="nav-link">部落格</a></li>
+                    <li><a href="#" class="nav-link">聯絡</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 RuDjango. All rights reserved.</p>
+                <div class="footer-info">
+                    <span>版本 {{ version }}</span>
+                    <span>|</span>
+                    <span>發布日期: {{ date }}</span>
+                    <span>|</span>
+                    <span>最後更新: {{ last_update }}</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

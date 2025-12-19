@@ -1,0 +1,42 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}RuDjango - 關於我們{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="hero-header">
+            <h1 class="hero-title">關於 RuDjango</h1>
+            <p class="hero-subtitle">一個現代化的 Django 專案</p>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">專案資訊</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>學習導向</h3>
+                <p>這是一個用於學習 Django 框架的示範專案</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>最佳實踐</h3>
+                <p>採用 Django 推薦的最佳實踐與架構模式</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>持續進化</h3>
+                <p>不斷優化與更新，追求更好的代碼品質</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

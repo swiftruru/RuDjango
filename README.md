@@ -1,4 +1,4 @@
-# 🚀 RuDjango - Django 學習實戰專案
+# 🚀 RuDjango - Django Learning Project
 
 <div align="center">
 
@@ -6,161 +6,161 @@
 ![Python](https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-一個用於學習和實踐 Django 框架的現代化 Web 應用程式
+A modern web application for learning and practicing Django framework
 
-[功能特色](#-功能特色) • [快速開始](#-快速開始) • [專案結構](#-專案結構) • [學習筆記](#-學習筆記)
+[Features](#-features) • [Quick Start](#-quick-start) • [Project Structure](#-project-structure) • [Learning Notes](#-learning-notes)
 
 </div>
 
 ---
 
-## 📖 專案簡介
+## 📖 About
 
-RuDjango 是一個基於 Django 6.0 開發的練習專案，旨在深入學習 Django 框架的核心概念與最佳實踐。透過實作完整的 Web 應用，掌握從專案架構、路由配置、模板系統到靜態文件管理的各個環節。
+RuDjango is a practice project built with Django 6.0, aimed at deep learning of Django framework's core concepts and best practices. Through implementing a complete web application, this project covers everything from project architecture, routing configuration, template system to static file management.
 
-## ✨ 功能特色
+## ✨ Features
 
-### 🎯 已實現功能
-- ✅ **模組化應用設計** - 使用 Django App 架構，實現功能分離
-- ✅ **動態模板系統** - 整合 Django Template Language，實現頁面繼承與複用
-- ✅ **靜態資源管理** - 規範化的 CSS/JS/Images 組織架構
-- ✅ **響應式介面** - 現代化的 UI 設計，支援多種裝置
-- ✅ **URL 路由配置** - 階層式 URL 管理，清晰的路由結構
-- ✅ **團隊展示系統** - 動態渲染團隊成員資訊
+### 🎯 Implemented Features
+- ✅ **Modular App Design** - Utilizing Django App architecture for feature separation
+- ✅ **Dynamic Template System** - Integrating Django Template Language with template inheritance
+- ✅ **Static Resource Management** - Standardized CSS/JS/Images organization
+- ✅ **Responsive Interface** - Modern UI design supporting multiple devices
+- ✅ **URL Routing Configuration** - Hierarchical URL management with clear routing structure
+- ✅ **Team Showcase System** - Dynamic rendering of team member information
 
-### 🎨 頁面展示
-- **首頁（Home）** - 展示團隊成員與專案特色
-- **關於（About）** - 介紹專案資訊與技術特點
-- **管理後台** - Django Admin 系統整合
+### 🎨 Pages
+- **Home** - Showcasing team members and project features
+- **About** - Project information and technical highlights
+- **Admin Panel** - Django Admin system integration
 
-## 🚀 快速開始
+## 🚀 Quick Start
 
-### 環境需求
+### Requirements
 
 - Python 3.13+
 - Django 6.0+
-- pip 套件管理工具
+- pip package manager
 
-### 安裝步驟
+### Installation Steps
 
-1. **克隆專案**
+1. **Clone the repository**
 ```bash
-git clone https://github.com/你的使用者名稱/RuDjango.git
+git clone https://github.com/swiftruru/RuDjango.git
 cd RuDjango
 ```
 
-2. **建立虛擬環境**
+2. **Create virtual environment**
 ```bash
 python -m venv RuDjango-env
 source RuDjango-env/bin/activate  # macOS/Linux
-# 或
+# or
 RuDjango-env\Scripts\activate     # Windows
 ```
 
-3. **安裝依賴套件**
+3. **Install dependencies**
 ```bash
 pip install django
 ```
 
-4. **資料庫遷移**
+4. **Run migrations**
 ```bash
 python manage.py migrate
 ```
 
-5. **建立超級使用者（可選）**
+5. **Create superuser (optional)**
 ```bash
 python manage.py createsuperuser
 ```
 
-6. **啟動開發伺服器**
+6. **Start development server**
 ```bash
 python manage.py runserver
 ```
 
-7. **瀏覽專案**
-- 首頁: http://127.0.0.1:8000/
-- Blog 首頁: http://127.0.0.1:8000/blog/
-- 關於頁面: http://127.0.0.1:8000/blog/about
-- 管理後台: http://127.0.0.1:8000/admin/
+7. **Browse the application**
+- Home: http://127.0.0.1:8000/
+- Blog Home: http://127.0.0.1:8000/blog/
+- About Page: http://127.0.0.1:8000/blog/about
+- Admin Panel: http://127.0.0.1:8000/admin/
 
-## 📁 專案結構
+## 📁 Project Structure
 
 ```
 RuDjangoProject/
 │
-├── 📂 RuDjangoProject/          # 專案配置目錄
-│   ├── settings.py              # 全局設定檔
-│   ├── urls.py                  # 主路由配置
-│   ├── wsgi.py                  # WSGI 部署接口
-│   └── asgi.py                  # ASGI 部署接口
+├── 📂 RuDjangoProject/          # Project configuration
+│   ├── settings.py              # Global settings
+│   ├── urls.py                  # Main URL configuration
+│   ├── wsgi.py                  # WSGI deployment interface
+│   └── asgi.py                  # ASGI deployment interface
 │
-├── 📂 blog/                     # Blog 應用
-│   ├── 📂 static/blog/          # 應用層級靜態文件
-│   │   ├── css/                 # 樣式表
-│   │   │   ├── home.css        # 首頁樣式
-│   │   │   └── about.css       # 關於頁面樣式
-│   │   ├── images/              # 圖片資源
-│   │   └── js/                  # JavaScript 文件
+├── 📂 blog/                     # Blog application
+│   ├── 📂 static/blog/          # App-level static files
+│   │   ├── css/                 # Stylesheets
+│   │   │   ├── home.css        # Home page styles
+│   │   │   └── about.css       # About page styles
+│   │   ├── images/              # Image assets
+│   │   └── js/                  # JavaScript files
 │   │
-│   ├── 📂 templates/blog/       # 應用層級模板
-│   │   ├── base.html           # 基礎模板
-│   │   ├── home.html           # 首頁模板
-│   │   └── about.html          # 關於頁面模板
+│   ├── 📂 templates/blog/       # App-level templates
+│   │   ├── base.html           # Base template
+│   │   ├── home.html           # Home page template
+│   │   └── about.html          # About page template
 │   │
-│   ├── views.py                # 視圖邏輯
-│   ├── urls.py                 # 應用路由
-│   ├── models.py               # 資料模型
-│   └── admin.py                # 後台管理配置
+│   ├── views.py                # View logic
+│   ├── urls.py                 # App routing
+│   ├── models.py               # Data models
+│   └── admin.py                # Admin configuration
 │
-├── 📂 static/                   # 專案層級靜態文件
+├── 📂 static/                   # Project-level static files
 │   └── css/
-│       └── base.css            # 全站基礎樣式
+│       └── base.css            # Global base styles
 │
-├── 📂 templates/                # 專案層級模板（保留舊模板）
+├── 📂 templates/                # Project-level templates
 │
-├── manage.py                   # Django 管理腳本
-├── db.sqlite3                  # SQLite 資料庫
-├── README.md                   # 專案說明文件
-└── .gitignore                  # Git 忽略文件配置
+├── manage.py                   # Django management script
+├── db.sqlite3                  # SQLite database
+├── README.md                   # Project documentation
+└── .gitignore                  # Git ignore configuration
 ```
 
-## 📚 學習筆記
+## 📚 Learning Notes
 
-### Django 核心概念實踐
+### Django Core Concepts in Practice
 
-#### 1. **專案架構設計**
-- **專案層級（RuDjangoProject）**: 負責全局配置、URL 分發、共用資源
-- **應用層級（blog）**: 負責具體功能實現，獨立且可重用
+#### 1. **Project Architecture Design**
+- **Project Level (RuDjangoProject)**: Handles global configuration, URL distribution, shared resources
+- **App Level (blog)**: Implements specific features, independent and reusable
 
-#### 2. **URL 路由配置**
+#### 2. **URL Routing Configuration**
 ```python
-# 專案層級 - 分發流量
-path('', views.home, name='home')          # 根路徑
-path('blog/', include('blog.urls'))         # 應用路由
+# Project level - Traffic distribution
+path('', views.home, name='home')          # Root path
+path('blog/', include('blog.urls'))         # App routing
 
-# 應用層級 - 具體路由
-path('', views.home, name='blog_home')      # blog 首頁
-path('about', views.about, name='about')    # 關於頁面
+# App level - Specific routes
+path('', views.home, name='blog_home')      # Blog home
+path('about', views.about, name='about')    # About page
 ```
 
-#### 3. **模板繼承系統**
+#### 3. **Template Inheritance System**
 ```django
-{# 基礎模板 base.html #}
+{# Base template base.html #}
 {% block content %}{% endblock %}
 
-{# 子模板 home.html #}
+{# Child template home.html #}
 {% extends 'blog/base.html' %}
 {% block content %}
-  <!-- 頁面內容 -->
+  <!-- Page content -->
 {% endblock %}
 ```
 
-#### 4. **靜態文件管理**
-- **配置方式**: `STATIC_URL` + `STATICFILES_DIRS`
-- **最佳實踐**: 應用專屬靜態文件放在 `app/static/app/` 目錄下
-- **使用方式**: `{% static 'blog/css/home.css' %}`
+#### 4. **Static File Management**
+- **Configuration**: `STATIC_URL` + `STATICFILES_DIRS`
+- **Best Practice**: App-specific static files in `app/static/app/` directory
+- **Usage**: `{% static 'blog/css/home.css' %}`
 
-#### 5. **Views 與 Context**
+#### 5. **Views and Context**
 ```python
 def home(request):
     context = {
@@ -170,74 +170,74 @@ def home(request):
     return render(request, 'blog/home.html', context)
 ```
 
-### 遇到的問題與解決方案
+### Issues Encountered and Solutions
 
-| 問題 | 原因 | 解決方案 |
-|------|------|---------|
-| Page not found (404) | 根路徑未配置 | 在主 urls.py 添加 `path('', views.home)` |
-| 靜態文件失聯 | 路徑配置錯誤 | 使用 `{% static 'blog/css/...' %}` 格式 |
-| TemplateDoesNotExist | 模板路徑不正確 | 模板移至 app 後，使用 `'blog/template.html'` |
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Page not found (404) | Root path not configured | Add `path('', views.home)` in main urls.py |
+| Static files not loading | Incorrect path configuration | Use `{% static 'blog/css/...' %}` format |
+| TemplateDoesNotExist | Template path incorrect | After moving to app, use `'blog/template.html'` |
 
-## 🎓 學習重點
+## 🎓 Key Learnings
 
-### Django 最佳實踐
-✅ **模組化設計** - 功能獨立的 App 結構  
-✅ **DRY 原則** - 模板繼承避免重複代碼  
-✅ **命名規範** - 清晰的 URL name 和模板路徑  
-✅ **靜態資源分離** - 頁面專屬 CSS 獨立管理  
-✅ **MVT 架構** - Model-View-Template 分層清晰  
+### Django Best Practices
+✅ **Modular Design** - Independent App structure  
+✅ **DRY Principle** - Template inheritance to avoid code repetition  
+✅ **Naming Conventions** - Clear URL names and template paths  
+✅ **Static Resource Separation** - Page-specific CSS independently managed  
+✅ **MVT Architecture** - Clear Model-View-Template separation  
 
-### 技術棧
-- **後端框架**: Django 6.0
-- **模板引擎**: Django Template Language
-- **前端樣式**: CSS3（響應式設計）
-- **資料庫**: SQLite3
-- **版本控制**: Git
+### Tech Stack
+- **Backend Framework**: Django 6.0
+- **Template Engine**: Django Template Language
+- **Frontend Styling**: CSS3 (Responsive Design)
+- **Database**: SQLite3
+- **Version Control**: Git
 
-## 🔧 開發功能
+## 🔧 Development Roadmap
 
-### 待實現功能
-- [ ] 資料庫模型設計與 ORM 操作
-- [ ] 表單處理與驗證
-- [ ] 用戶認證系統
-- [ ] RESTful API 開發
-- [ ] 測試撰寫
-- [ ] 部署配置
+### Upcoming Features
+- [ ] Database model design and ORM operations
+- [ ] Form handling and validation
+- [ ] User authentication system
+- [ ] RESTful API development
+- [ ] Test writing
+- [ ] Deployment configuration
 
-## 📝 版本紀錄
+## 📝 Version History
 
 ### v1.0.0 (2025-12-19)
-- ✨ 初始化 Django 專案結構
-- ✨ 建立 blog 應用
-- ✨ 實現首頁與關於頁面
-- ✨ 配置靜態文件系統
-- ✨ 整合模板繼承架構
-- 🎨 實現響應式 UI 設計
-- 📝 完善專案文檔
+- ✨ Initialize Django project structure
+- ✨ Create blog application
+- ✨ Implement home and about pages
+- ✨ Configure static file system
+- ✨ Integrate template inheritance architecture
+- 🎨 Implement responsive UI design
+- 📝 Complete project documentation
 
-## 👨‍💻 作者
+## 👨‍💻 Author
 
-**Ru** - Django 學習者
+**Ru** - Django Learner
 
-- 專案目標：深入掌握 Django 全棧開發
-- 學習重點：MVT 架構、ORM、RESTful API
-- 練習方向：從基礎到進階，逐步建構完整專案
+- Project Goal: Master Django full-stack development
+- Learning Focus: MVT architecture, ORM, RESTful API
+- Practice Direction: From basics to advanced, building complete projects step by step
 
-## 📄 授權
+## 📄 License
 
-本專案採用 MIT 授權條款 - 詳見 [LICENSE](LICENSE) 文件
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
-## 🙏 致謝
+## 🙏 Acknowledgments
 
-- Django 官方文檔
-- Python 社群
-- 所有為開源做出貢獻的開發者
+- Django Official Documentation
+- Python Community
+- All contributors to open source
 
 ---
 
 <div align="center">
 
-**⭐ 如果這個專案對你有幫助，歡迎給個 Star！**
+**⭐ If this project helps you, please give it a Star!**
 
 Made with ❤️ and Django
 

@@ -1,0 +1,239 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ member.name }} - 會員中心{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/member.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<section class="profile-header">
+    <div class="container">
+        <div class="header-content">
+            <div class="avatar-section">
+                <div class="avatar-large">
+                    <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img">
+                </div>
+                <div class="level-badge {{ member.level|lower }}">
+                    {% if member.level == 'Gold' %}🥇{% endif %}
+                    {{ member.level }}
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ member.name }}</h1>
+                <p class="profile-username">@{{ member.username }}</p>
+                <p class="profile-bio">{{ member.bio }}</p>
+
+                <div class="profile-meta">
+                    <span class="meta-item">
+                        <span class="icon">🏫</span>
+                        {{ member.school }}
+                    </span>
+                    <span class="meta-item">
+                        <span class="icon">📚</span>
+                        {{ member.grade }}
+                    </span>
+                    <span class="meta-item">
+                        <span class="icon">📍</span>
+                        {{ member.location }}
+                    </span>
+                    <span class="meta-item">
+                        <span class="icon">📅</span>
+                        加入於 {{ member.joined_date }}
+                    </span>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn btn-primary">編輯個人資料</button>
+                    <button class="btn btn-secondary">設定</button>
+                    <button class="btn btn-outline">分享</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="level-progress">
+            <div class="progress-info">
+                <span>等級進度</span>
+                <span class="progress-text">{{ member.points }} / {{ member.next_level_points }} XP</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {% widthratio member.points member.next_level_points 100 %}%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Grid -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.posts }}</div>
+                    <div class="stat-label">發表文章</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.comments }}</div>
+                    <div class="stat-label">評論數</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.likes_received }}</div>
+                    <div class="stat-label">獲得讚數</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.followers }}</div>
+                    <div class="stat-label">追蹤者</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌟</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.following }}</div>
+                    <div class="stat-label">追蹤中</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💼</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ member.stats.projects }}</div>
+                    <div class="stat-label">專案數</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="main-content">
+    <div class="container">
+        <div class="content-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">最近活動</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-list">
+                            {% for activity in member.recent_activities %}
+                            <div class="activity-item">
+                                <div class="activity-icon">{{ activity.icon }}</div>
+                                <div class="activity-content">
+                                    <p class="activity-title">{{ activity.title }}</p>
+                                    <span class="activity-time">{{ activity.date }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn-text">查看更多活動 →</button>
+                    </div>
+                </div>
+
+                <!-- Learning Progress -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">學習進度</h2>
+                    </div>
+                    <div class="card-body">
+                        {% for course in member.learning_progress %}
+                        <div class="course-item">
+                            <div class="course-info">
+                                <span class="course-name">{{ course.course }}</span>
+                                <span class="course-percent">{{ course.progress }}%</span>
+                            </div>
+                            <div class="course-bar">
+                                <div class="course-fill"
+                                    style="width: {{ course.progress }}%; background: {{ course.color }};"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <button class="btn-text">查看所有課程 →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Skills -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">技能標籤</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="skills-grid">
+                            {% for skill in member.skills %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        <button class="btn-text">編輯技能 →</button>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">成就徽章</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="achievements-grid">
+                            {% for achievement in member.achievements %}
+                            <div class="achievement-item">
+                                <div class="achievement-icon">{{ achievement.icon }}</div>
+                                <div class="achievement-info">
+                                    <p class="achievement-name">{{ achievement.name }}</p>
+                                    <p class="achievement-desc">{{ achievement.description }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn-text">查看所有成就 →</button>
+                    </div>
+                </div>
+
+                <!-- Quick Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">個人資訊</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-list">
+                            <div class="info-item">
+                                <span class="info-label">電子信箱</span>
+                                <span class="info-value">{{ member.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">生日</span>
+                                <span class="info-value">{{ member.birthday }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">積分</span>
+                                <span class="info-value">{{ member.points }} XP</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">會員等級</span>
+                                <span class="info-value">{{ member.level }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

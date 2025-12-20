@@ -6,238 +6,51 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/home.css' %}">
-<style>
-    /* 文章詳細頁專屬樣式 */
-    .article-detail-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 3rem 1rem;
-    }
-
-    .article-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        margin-bottom: 3rem;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-
-    .article-header h1 {
-        font-size: 2.5rem;
-        margin: 0 0 1rem 0;
-        line-height: 1.3;
-    }
-
-    .article-meta {
-        display: flex;
-        gap: 2rem;
-        align-items: center;
-        font-size: 1rem;
-        opacity: 0.95;
-    }
-
-    .article-meta span {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .article-content-wrapper {
-        background: white;
-        padding: 3rem 2.5rem;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-    }
-
-    .article-content {
-        font-size: 1.1rem;
-        line-height: 1.9;
-        color: #333;
-    }
-
-    /* Markdown 樣式 */
-    .article-content h1,
-    .article-content h2,
-    .article-content h3,
-    .article-content h4,
-    .article-content h5,
-    .article-content h6 {
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-        color: #2d3748;
-    }
-
-    .article-content h1 {
-        font-size: 2rem;
-    }
-
-    .article-content h2 {
-        font-size: 1.75rem;
-        border-bottom: 2px solid #e2e8f0;
-        padding-bottom: 0.5rem;
-    }
-
-    .article-content h3 {
-        font-size: 1.5rem;
-    }
-
-    .article-content h4 {
-        font-size: 1.25rem;
-    }
-
-    .article-content p {
-        margin-bottom: 1rem;
-    }
-
-    .article-content ul,
-    .article-content ol {
-        margin-left: 2rem;
-        margin-bottom: 1rem;
-    }
-
-    .article-content li {
-        margin-bottom: 0.5rem;
-    }
-
-    .article-content code {
-        background: #f7fafc;
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
-        font-size: 0.95em;
-        color: #e53e3e;
-    }
-
-    .article-content pre {
-        background: #2d3748;
-        color: #e2e8f0;
-        padding: 1.5rem;
-        border-radius: 8px;
-        overflow-x: auto;
-        margin-bottom: 1rem;
-    }
-
-    .article-content pre code {
-        background: none;
-        padding: 0;
-        color: inherit;
-    }
-
-    .article-content blockquote {
-        border-left: 4px solid #667eea;
-        padding-left: 1.5rem;
-        margin: 1.5rem 0;
-        color: #4a5568;
-        font-style: italic;
-    }
-
-    .article-content a {
-        color: #667eea;
-        text-decoration: underline;
-    }
-
-    .article-content a:hover {
-        color: #764ba2;
-    }
-
-    .article-content img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-
-    .article-content table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-    }
-
-    .article-content table th,
-    .article-content table td {
-        border: 1px solid #e2e8f0;
-        padding: 0.75rem;
-        text-align: left;
-    }
-
-    .article-content table th {
-        background: #f7fafc;
-        font-weight: 600;
-    }
-
-    .article-content hr {
-        border: none;
-        border-top: 2px solid #e2e8f0;
-        margin: 2rem 0;
-    }
-
-    .article-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 2rem;
-        background: #f8f9fa;
-        border-radius: 15px;
-        margin-bottom: 2rem;
-    }
-
-    .back-button {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        text-decoration: none;
-        border-radius: 25px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    }
-
-    .back-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .update-info {
-        color: #666;
-        font-size: 0.95rem;
-    }
-
-    @media (max-width: 768px) {
-        .article-header h1 {
-            font-size: 2rem;
-        }
-
-        .article-meta {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        .article-content-wrapper {
-            padding: 2rem 1.5rem;
-        }
-
-        .article-footer {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{% static 'blog/css/detail.css' %}">
 {% endblock %}
 
 {% block content %}
+{% if messages %}
+<div class="message-container">
+    {% for message in messages %}
+    <div
+        class="message-item {% if message.tags == 'success' %}message-success{% elif message.tags == 'error' %}message-error{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="article-detail-container">
+    <!-- 返回按鈕與換頁導航 -->
+    <div class="top-navigation-container">
+        <a href="{% url 'blog_home' %}" class="back-button">← 返回列表</a>
+        <div class="pagination-nav">
+            {% if previous_article %}
+            <a href="{% url 'article_detail' previous_article.id %}" class="nav-button prev-button"
+                title="{{ previous_article.title }}">
+                ← 上一篇
+            </a>
+            {% else %}
+            <span class="nav-button nav-disabled">← 上一篇</span>
+            {% endif %}
+            {% if next_article %}
+            <a href="{% url 'article_detail' next_article.id %}" class="nav-button next-button"
+                title="{{ next_article.title }}">
+                下一篇 →
+            </a>
+            {% else %}
+            <span class="nav-button nav-disabled">下一篇 →</span>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- 文章標題區 -->
     <div class="article-header">
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
             {% if article.author %}
-            <span>✍️ 作者：{{ article.author.username }}</span>
+            <span>✍️ 作者：{{ article.author|author_display }}</span>
             {% endif %}
             <span>📅 發布於 {{ article.created_at|date:"Y年m月d日 H:i" }}</span>
             {% if article.created_at != article.updated_at %}
@@ -253,27 +66,41 @@
 
     <!-- 文章底部 -->
     <div class="article-footer">
-        <a href="{% url 'blog_home' %}" class="back-button">← 返回文章列表</a>
-        {% if article.author == request.user %}
-        <div style="display: flex; gap: 0.75rem;">
-            <a href="{% url 'article_edit' article.id %}"
-                style="padding: 0.75rem 1.5rem; background: #48bb78; color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(72, 187, 120, 0.4)'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(72, 187, 120, 0.3)'">
-                ✏️ 編輯文章
+        <!-- 換頁導航 -->
+        <div class="pagination-nav-bottom">
+            {% if previous_article %}
+            <a href="{% url 'article_detail' previous_article.id %}" class="nav-button prev-button"
+                title="{{ previous_article.title }}">
+                ← 上一篇
             </a>
-            <a href="{% url 'article_delete' article.id %}"
-                style="padding: 0.75rem 1.5rem; background: #f56565; color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);"
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 101, 101, 0.4)'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 101, 101, 0.3)'">
-                🗑️ 刪除文章
+            {% else %}
+            <span class="nav-button nav-disabled">← 上一篇</span>
+            {% endif %}
+            {% if next_article %}
+            <a href="{% url 'article_detail' next_article.id %}" class="nav-button next-button"
+                title="{{ next_article.title }}">
+                下一篇 →
             </a>
+            {% else %}
+            <span class="nav-button nav-disabled">下一篇 →</span>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="update-info">
-            文章 ID: {{ article.id }}
+
+        <div class="footer-actions-container">
+            <a href="{% url 'blog_home' %}" class="back-button">← 返回列表</a>
+            {% if article.author == request.user %}
+            <div class="author-actions">
+                <a href="{% url 'article_edit' article.id %}" class="action-button edit-button">
+                    <span class="button-icon">✏️</span>
+                    <span class="button-text">編輯</span>
+                </a>
+                <a href="{% url 'article_delete' article.id %}" class="action-button delete-button">
+                    <span class="button-icon">🗑️</span>
+                    <span class="button-text">刪除</span>
+                </a>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

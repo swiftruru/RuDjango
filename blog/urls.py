@@ -16,6 +16,9 @@ article_patterns = [
 # 會員相關路由
 member_patterns = [
     path('member', views.member, name='member'),
+    path('login/', views.user_login, name='user_login'),
+    path('register/', views.user_register, name='user_register'),
+    path('logout/', views.user_logout, name='user_logout'),
 ]
 
 # 靜態頁面路由

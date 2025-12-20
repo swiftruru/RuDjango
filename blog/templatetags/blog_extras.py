@@ -50,7 +50,43 @@ def markdown_format(text):
         'codehilite', # 代碼高亮
         'fenced_code', # 圍欄式代碼塊
         'nl2br',      # 換行轉 <br>
-    ])
+    ], extension_configs={
+        'codehilite': {
+            'guess_lang': True,  # 自動猜測語言
+            'css_class': 'codehilite',  # CSS 類名
+            'linenums': False,  # 不顯示行號
+        }
+    })
     
     html = md.convert(str(text))
     return mark_safe(html)
+
+
+@register.filter(name='author_display')
+def author_display(user):
+    """
+    顯示作者名稱，格式為「暱稱（帳號）」
+    如果沒有暱稱則只顯示帳號
+    
+    使用方式：
+    {{ article.author|author_display }}
+    """
+    if not user:
+        return ''
+    
+    if user.first_name:
+        return f'{user.first_name}（{user.username}）'
+    return user.username
+
+
+@register.simple_tag
+def selected_if_equal(value1, value2):
+    """
+    如果兩個值相等則返回 'selected'
+    
+    使用方式：
+    <option value="all" {% selected_if_equal search_type 'all' %}>全部</option>
+    """
+    if str(value1) == str(value2):
+        return 'selected'
+    return ''

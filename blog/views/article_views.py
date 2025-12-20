@@ -15,22 +15,41 @@ def home(request):
     """
     文章列表頁
     顯示所有文章，按建立時間排序（最新在前）
-    支援搜尋功能，可透過 ?q=關鍵字 搜尋文章標題或內容
-    每頁顯示 10 篇文章
+    支援進階搜尋功能：
+    - q: 搜尋關鍵字（標題或內容）
+    - search_type: 搜尋類型（all/content/author）
+    每頁顯示 6 篇文章
     """
-    # 取得搜尋關鍵字
+    # 取得搜尋參數
     search_query = request.GET.get('q', '')
+    search_type = request.GET.get('search_type', 'all')
     
     articles = Article.objects.all().order_by("-created_at")
 
     if search_query:
-        articles = articles.filter(
-            Q(title__icontains=search_query) |
-            Q(content__icontains=search_query)
-        ).distinct()
+        if search_type == 'author':
+            # 搜尋作者（username 或 first_name）
+            articles = articles.filter(
+                Q(author__username__icontains=search_query) |
+                Q(author__first_name__icontains=search_query)
+            ).distinct()
+        elif search_type == 'content':
+            # 只搜尋標題和內容
+            articles = articles.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query)
+            ).distinct()
+        else:
+            # 搜尋全部（標題、內容、作者）
+            articles = articles.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query) |
+                Q(author__username__icontains=search_query) |
+                Q(author__first_name__icontains=search_query)
+            ).distinct()
     
-    # 分頁功能：每頁顯示 10 篇文章
-    paginator = Paginator(articles, 10)
+    # 分頁功能：每頁顯示 6 篇文章
+    paginator = Paginator(articles, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -38,6 +57,7 @@ def home(request):
         'articles': page_obj,  # 改為分頁物件
         'page_obj': page_obj,
         'search_query': search_query,  # 傳遞搜尋關鍵字到模板
+        'search_type': search_type,  # 傳遞搜尋類型到模板
     }
     return render(request, 'blog/articles/list.html', context)
 
@@ -54,11 +74,21 @@ def article_detail(request, id):
     """
     文章詳細頁
     顯示單篇文章的完整內容
+    包含上一篇和下一篇文章的導航
     """
     # 取得指定 id 的文章，若不存在則返回 404
     article = get_object_or_404(Article, id=id)
+    
+    # 取得上一篇文章（id 更小的最大值）
+    previous_article = Article.objects.filter(id__lt=id).order_by('-id').first()
+    
+    # 取得下一篇文章（id 更大的最小值）
+    next_article = Article.objects.filter(id__gt=id).order_by('id').first()
+    
     context = {
         'article': article,
+        'previous_article': previous_article,
+        'next_article': next_article,
     }
     return render(request, 'blog/articles/detail.html', context)
 

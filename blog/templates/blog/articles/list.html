@@ -16,11 +16,59 @@
         font-weight: 600;
         box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
     }
+
+    /* 訊息提示樣式 */
+    .messages {
+        max-width: 1200px;
+        margin: 1rem auto;
+        padding: 0 1rem;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid #38a169;
+    }
+
+    .alert-error {
+        background: #fed7d7;
+        color: #742a2a;
+        border-left: 4px solid #e53e3e;
+    }
 </style>
 {% endblock %}
 
 <!-- #region Content -->
 {% block content %}
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <section class="hero">
     <div class="container">
         <div class="hero-header">
@@ -49,8 +97,16 @@
                     📚 我的文章
                 </a>
             </div>
-            <form method="get" action="{% url 'blog_home' %}" style="display: flex; gap: 0.5rem;">
-                <input type="text" name="q" value="{{ search_query }}" placeholder="搜尋文章標題或內容..."
+            <form method="get" action="{% url 'blog_home' %}"
+                style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <select name="search_type"
+                    style="padding: 0.75rem 1rem; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1rem; background: white; cursor: pointer; transition: all 0.3s ease; font-weight: 500; color: #667eea;"
+                    onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e9ecef'">
+                    <option value="all" {% selected_if_equal search_type 'all' %}>🔍 全部</option>
+                    <option value="content" {% selected_if_equal search_type 'content' %}>📝 標題/內容</option>
+                    <option value="author" {% selected_if_equal search_type 'author' %}>👤 作者</option>
+                </select>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="輸入搜尋關鍵字..."
                     style="padding: 0.75rem 1.25rem; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1rem; min-width: 300px; transition: all 0.3s ease;"
                     onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e9ecef'">
                 <button type="submit"
@@ -71,10 +127,63 @@
         {% if search_query %}
         <div
             style="margin-bottom: 1.5rem; padding: 1rem 1.5rem; background: #f0f3ff; border-radius: 12px; color: #667eea; font-weight: 500;">
+            {% if search_type == 'author' %}
+            搜尋作者「{{ search_query }}」，找到 {{ articles.count }} 篇文章
+            {% elif search_type == 'content' %}
+            搜尋標題/內容「{{ search_query }}」，找到 {{ articles.count }} 篇文章
+            {% else %}
             搜尋「{{ search_query }}」，找到 {{ articles.count }} 篇文章
+            {% endif %}
         </div>
         {% endif %}
         {% if articles %}
+        <!-- 分頁導航（頂部） -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination"
+            style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                class="page-link"
+                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                « 首頁
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                class="page-link"
+                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                ‹ 上一頁
+            </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span
+                style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 45px; text-align: center;">
+                {{ num }}
+            </span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                class="page-link"
+                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease; min-width: 45px; text-align: center;">
+                {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link"
+                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    下一頁 ›
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link"
+                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    末頁 »
+                </a>
+                {% endif %}
+        </div>
+        {% endif %}
+
         <div class="articles-grid">
             {% for article in articles %}
             <article class="article-card">
@@ -91,9 +200,16 @@
                     <p>{{ article.content|markdown|truncatewords_html:30|highlight:search_query }}</p>
                 </div>
                 <div class="article-footer">
-                    <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
-                    <a href="{% url 'article_detail' article.id %}"
-                        style="color: #667eea; text-decoration: none; font-weight: 600;">閱讀更多 →</a>
+                    <div class="article-footer-info">
+                        <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+                        {% if article.author %}
+                        <span style="color: #718096; font-size: 0.9rem;">✍️ {{ article.author|author_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="article-footer-link">
+                        <a href="{% url 'article_detail' article.id %}"
+                            style="color: #667eea; text-decoration: none; font-weight: 600;">閱讀更多 →</a>
+                    </div>
                 </div>
             </article>
             {% endfor %}
@@ -115,34 +231,45 @@
         <div class="pagination"
             style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 3rem; flex-wrap: wrap;">
             {% if page_obj.has_previous %}
-            <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link"
+            <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                class="page-link"
                 style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
                 « 首頁
             </a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}"
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
                 class="page-link"
                 style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
                 ‹ 上一頁
             </a>
             {% endif %}
 
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
             <span
-                style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600;">
-                第 {{ page_obj.number }} 頁 / 共 {{ page_obj.paginator.num_pages }} 頁
+                style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 45px; text-align: center;">
+                {{ num }}
             </span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                class="page-link"
+                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease; min-width: 45px; text-align: center;">
+                {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
 
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
-                下一頁 ›
-            </a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
-                末頁 »
-            </a>
-            {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link"
+                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    下一頁 ›
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link"
+                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    末頁 »
+                </a>
+                {% endif %}
         </div>
         <style>
             .page-link:hover {

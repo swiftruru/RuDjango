@@ -2,7 +2,10 @@
 會員相關的視圖函數
 處理會員中心、個人資料、會員列表等功能
 """
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+from django.contrib import messages
+from ..forms import CustomUserCreationForm, CustomAuthenticationForm
 
 
 def member(request):
@@ -104,3 +107,61 @@ def member(request):
 # def member_list(request):
 #     """會員列表"""
 #     pass
+
+
+def user_login(request):
+    """
+    使用者登入
+    """
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                # 使用暱稱（first_name）顯示，如果沒有則顯示帳號名
+                display_name = user.first_name if user.first_name else username
+                messages.success(request, f'✅ 歡迎回來，{display_name}！')
+                # 重定向到 next 參數指定的頁面，或預設到部落格首頁
+                next_url = request.GET.get('next', '/blog/')
+                return redirect(next_url)
+    else:
+        form = CustomAuthenticationForm()
+    
+    context = {
+        'form': form,
+        'action': '登入',
+    }
+    return render(request, 'blog/members/login.html', context)
+
+
+def user_register(request):
+    """
+    使用者註冊
+    """
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'✅ 帳號 {username} 註冊成功！請登入。')
+            return redirect('user_login')
+    else:
+        form = CustomUserCreationForm()
+    
+    context = {
+        'form': form,
+        'action': '註冊',
+    }
+    return render(request, 'blog/members/register.html', context)
+
+
+def user_logout(request):
+    """
+    使用者登出
+    """
+    logout(request)
+    messages.success(request, '✅ 您已成功登出')
+    return redirect('blog_home')

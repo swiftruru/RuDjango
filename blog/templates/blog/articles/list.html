@@ -1,0 +1,101 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}RuDjango - 首頁{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/home.css' %}">
+<style>
+    /* 螢光筆高亮效果 */
+    mark.highlight {
+        background-color: #ffeb3b;
+        color: #000;
+        padding: 0.15rem 0.3rem;
+        border-radius: 3px;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
+    }
+</style>
+{% endblock %}
+
+<!-- #region Content -->
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="hero-header">
+            <h1 class="hero-title">歡迎來到 RuDjango 部落格</h1>
+            <p class="hero-subtitle">分享學習心得與技術筆記</p>
+        </div>
+    </div>
+</section>
+
+<section class="articles-section">
+    <div class="container">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <h2 class="section-title" style="margin: 0;">最新文章</h2>
+            <form method="get" action="{% url 'blog_home' %}" style="display: flex; gap: 0.5rem;">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="搜尋文章標題或內容..."
+                    style="padding: 0.75rem 1.25rem; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1rem; min-width: 300px; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e9ecef'">
+                <button type="submit"
+                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                    🔍 搜尋
+                </button>
+                {% if search_query %}
+                <a href="{% url 'blog_home' %}"
+                    style="padding: 0.75rem 1.5rem; background: #f8f9fa; color: #666; border: none; border-radius: 25px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center;"
+                    onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+                    ✕ 清除
+                </a>
+                {% endif %}
+            </form>
+        </div>
+        {% if search_query %}
+        <div
+            style="margin-bottom: 1.5rem; padding: 1rem 1.5rem; background: #f0f3ff; border-radius: 12px; color: #667eea; font-weight: 500;">
+            搜尋「{{ search_query }}」，找到 {{ articles.count }} 篇文章
+        </div>
+        {% endif %}
+        {% if articles %}
+        <div class="articles-grid">
+            {% for article in articles %}
+            <article class="article-card">
+                <div class="article-header">
+                    <h3 class="article-title">
+                        <a href="{% url 'article_detail' article.id %}" style="color: inherit; text-decoration: none;">
+                            {{ article.title|highlight:search_query }}
+                        </a>
+                    </h3>
+                    <time class="article-date">{{ article.created_at|date:"Y年m月d日" }}</time>
+                </div>
+                <div class="article-content">
+                    <p>{{ article.content|truncatewords:30|highlight:search_query }}</p>
+                </div>
+                <div class="article-footer">
+                    <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+                    <a href="{% url 'article_detail' article.id %}"
+                        style="color: #667eea; text-decoration: none; font-weight: 600;">閱讀更多 →</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-articles">
+            {% if search_query %}
+            <p>😔 找不到與「{{ search_query }}」相關的文章</p>
+            <a href="{% url 'blog_home' %}"
+                style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">返回所有文章</a>
+            {% else %}
+            <p>📝 目前還沒有文章，請到後台新增第一篇文章！</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
+<!-- #endregion Content -->

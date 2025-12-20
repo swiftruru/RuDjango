@@ -1,42 +1,15 @@
-from django.http import HttpResponse
+"""
+會員相關的視圖函數
+處理會員中心、個人資料、會員列表等功能
+"""
 from django.shortcuts import render
 
-# Create your views here.
-def hello(request):
-    return HttpResponse('hello, world')
-
-def hello2(request):
-    return HttpResponse('hello, world2')
-
-def about(request):
-    return render(request, 'blog/about.html')
-
-def home(request):
-    person1 = {
-        'name': '大頭綠',
-        'age': 17,
-        'slogan': ['唯天唯大', '如日方中', '英姿煥發']
-    }
-    person2 = {
-        'name': '大頭藍',
-        'age': 18,
-        'slogan': ['志在四方', '勇往直前', '心懷天下']
-    }
-    person3 = {
-        'name': '大頭紅',
-        'age': 19,
-        'slogan': ['才華洋溢', '氣宇軒昂', '光芒萬丈']
-    }
-    context = {
-        'people':[person1, person2, person3],
-        'version': 1.0,
-        'date': '2025-12-19',
-        'last_update': '2025-12-19'
-    }
-    return render(request, 'blog/home.html', context)
 
 def member(request):
-    """會員中心頁面 - 個人資料與活動儀表板"""
+    """
+    會員中心頁面 - 個人資料與活動儀表板
+    顯示當前會員的個人資料、統計數據、最近活動等資訊
+    """
     # 模擬當前登入的會員資料 - 大頭綠
     current_member = {
         'name': '大頭綠',
@@ -116,4 +89,18 @@ def member(request):
         'date': '2025-12-19',
         'last_update': '2025-12-19'
     }
-    return render(request, 'blog/member.html', context)
+    return render(request, 'blog/members/profile.html', context)
+
+
+# 未來可以在這裡新增：
+# def member_profile(request, username):
+#     """查看會員資料"""
+#     pass
+#
+# def member_edit(request):
+#     """編輯個人資料"""
+#     pass
+#
+# def member_list(request):
+#     """會員列表"""
+#     pass

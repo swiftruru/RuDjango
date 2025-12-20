@@ -1,0 +1,116 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}刪除文章 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .delete-container h1 {
+        color: #e53e3e;
+        margin-bottom: 1.5rem;
+    }
+
+    .article-info {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        border-left: 4px solid #e53e3e;
+    }
+
+    .article-info h2 {
+        color: #2d3748;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+    }
+
+    .article-info p {
+        color: #718096;
+        margin: 0;
+    }
+
+    .warning-text {
+        color: #e53e3e;
+        font-weight: 600;
+        margin: 1.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .delete-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-danger {
+        background: #e53e3e;
+        color: white;
+        box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+    }
+
+    .btn-danger:hover {
+        background: #c53030;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-icon">🗑️</div>
+    <h1>確認刪除文章</h1>
+
+    <div class="article-info">
+        <h2>{{ article.title }}</h2>
+        <p>發表於 {{ article.created_at|date:"Y年m月d日 H:i" }}</p>
+    </div>
+
+    <p class="warning-text">⚠️ 此操作無法復原，確定要刪除這篇文章嗎？</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="delete-actions">
+            <button type="submit" class="btn btn-danger">確定刪除</button>
+            <a href="{% url 'article_detail' article.id %}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

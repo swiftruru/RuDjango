@@ -7,6 +7,10 @@ article_patterns = [
     path('', views.home, name='blog_home'),
     path('home', views.home),
     path('article/<int:id>/', views.article_detail, name='article_detail'),
+    path('article/create/', views.article_create, name='article_create'),
+    path('article/<int:id>/edit/', views.article_edit, name='article_edit'),
+    path('article/<int:id>/delete/', views.article_delete, name='article_delete'),
+    path('my-articles/', views.my_articles, name='my_articles'),
 ]
 
 # 會員相關路由

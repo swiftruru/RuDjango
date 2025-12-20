@@ -1,5 +1,6 @@
 {% extends 'blog/base.html' %}
 {% load static %}
+{% load blog_extras %}
 
 {% block title %}{{ article.title }} - RuDjango{% endblock %}
 
@@ -54,8 +55,123 @@
         font-size: 1.1rem;
         line-height: 1.9;
         color: #333;
-        white-space: pre-wrap;
-        word-wrap: break-word;
+    }
+
+    /* Markdown 樣式 */
+    .article-content h1,
+    .article-content h2,
+    .article-content h3,
+    .article-content h4,
+    .article-content h5,
+    .article-content h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .article-content h1 {
+        font-size: 2rem;
+    }
+
+    .article-content h2 {
+        font-size: 1.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+    }
+
+    .article-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .article-content h4 {
+        font-size: 1.25rem;
+    }
+
+    .article-content p {
+        margin-bottom: 1rem;
+    }
+
+    .article-content ul,
+    .article-content ol {
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .article-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .article-content code {
+        background: #f7fafc;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95em;
+        color: #e53e3e;
+    }
+
+    .article-content pre {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+
+    .article-content pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+    }
+
+    .article-content blockquote {
+        border-left: 4px solid #667eea;
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+        color: #4a5568;
+        font-style: italic;
+    }
+
+    .article-content a {
+        color: #667eea;
+        text-decoration: underline;
+    }
+
+    .article-content a:hover {
+        color: #764ba2;
+    }
+
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .article-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    .article-content table th,
+    .article-content table td {
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        text-align: left;
+    }
+
+    .article-content table th {
+        background: #f7fafc;
+        font-weight: 600;
+    }
+
+    .article-content hr {
+        border: none;
+        border-top: 2px solid #e2e8f0;
+        margin: 2rem 0;
     }
 
     .article-footer {
@@ -120,6 +236,9 @@
     <div class="article-header">
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
+            {% if article.author %}
+            <span>✍️ 作者：{{ article.author.username }}</span>
+            {% endif %}
             <span>📅 發布於 {{ article.created_at|date:"Y年m月d日 H:i" }}</span>
             {% if article.created_at != article.updated_at %}
             <span>✏️ 更新於 {{ article.updated_at|date:"Y年m月d日 H:i" }}</span>
@@ -129,15 +248,32 @@
 
     <!-- 文章內容 -->
     <div class="article-content-wrapper">
-        <div class="article-content">{{ article.content }}</div>
+        <div class="article-content">{{ article.content|markdown }}</div>
     </div>
 
     <!-- 文章底部 -->
     <div class="article-footer">
         <a href="{% url 'blog_home' %}" class="back-button">← 返回文章列表</a>
+        {% if article.author == request.user %}
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{% url 'article_edit' article.id %}"
+                style="padding: 0.75rem 1.5rem; background: #48bb78; color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(72, 187, 120, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(72, 187, 120, 0.3)'">
+                ✏️ 編輯文章
+            </a>
+            <a href="{% url 'article_delete' article.id %}"
+                style="padding: 0.75rem 1.5rem; background: #f56565; color: white; text-decoration: none; border-radius: 25px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 101, 101, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 101, 101, 0.3)'">
+                🗑️ 刪除文章
+            </a>
+        </div>
+        {% else %}
         <div class="update-info">
             文章 ID: {{ article.id }}
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

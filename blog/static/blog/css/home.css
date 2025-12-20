@@ -9,10 +9,16 @@
 
 .articles-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
     margin-top: 3rem;
     padding-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .articles-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .article-card {
@@ -65,6 +71,21 @@
 
 .article-content p {
     margin: 0;
+}
+
+/* 只針對文章卡片中的內文預覽做限制 */
+.article-card .article-content {
+    min-height: 120px;
+    max-height: 120px;
+    overflow: hidden;
+}
+
+.article-card .article-content p {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .article-footer {

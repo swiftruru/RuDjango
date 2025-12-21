@@ -169,4 +169,71 @@ document.addEventListener('DOMContentLoaded', function () {
             closeShareMenu();
         }, 1500);
     }
+
+    // ===== 頭像預覽功能 =====
+    initAvatarPreview();
 });
+
+/**
+ * 初始化頭像預覽功能
+ */
+function initAvatarPreview() {
+    const avatarContainer = document.getElementById('avatar-container');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const avatarModal = document.getElementById('avatar-modal');
+    const avatarModalOverlay = avatarModal ? avatarModal.querySelector('.avatar-modal-overlay') : null;
+    const closeAvatarModalBtn = document.getElementById('close-avatar-modal');
+
+    if (!avatarContainer || !avatarModal) return;
+
+    // 點擊頭像打開預覽
+    avatarContainer.addEventListener('click', function() {
+        openAvatarModal();
+    });
+
+    // 點擊關閉按鈕
+    if (closeAvatarModalBtn) {
+        closeAvatarModalBtn.addEventListener('click', function() {
+            closeAvatarModal();
+        });
+    }
+
+    // 點擊背景關閉
+    if (avatarModalOverlay) {
+        avatarModalOverlay.addEventListener('click', function() {
+            closeAvatarModal();
+        });
+    }
+
+    // ESC 鍵關閉
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && avatarModal.style.display !== 'none') {
+            closeAvatarModal();
+        }
+    });
+
+    /**
+     * 打開頭像預覽模態框
+     */
+    function openAvatarModal() {
+        avatarModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // 防止背景滾動
+
+        // 添加動畫效果
+        setTimeout(() => {
+            avatarModal.style.opacity = '1';
+        }, 10);
+    }
+
+    /**
+     * 關閉頭像預覽模態框
+     */
+    function closeAvatarModal() {
+        avatarModal.style.opacity = '0';
+
+        setTimeout(() => {
+            avatarModal.style.display = 'none';
+            document.body.style.overflow = ''; // 恢復滾動
+        }, 300);
+    }
+}

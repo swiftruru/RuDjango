@@ -40,3 +40,12 @@ def award_points_for_article(sender, instance, created, **kwargs):
             icon='📝',
             related_object_id=instance.id
         )
+
+        # 檢查並解鎖文章相關成就
+        from .utils.achievement_checker import check_article_achievements
+        newly_unlocked = check_article_achievements(instance.author)
+
+        # 可以在這裡添加成就解鎖通知
+        if newly_unlocked:
+            for achievement in newly_unlocked:
+                print(f'🎉 {instance.author.username} 解鎖了成就: {achievement.icon} {achievement.name}')

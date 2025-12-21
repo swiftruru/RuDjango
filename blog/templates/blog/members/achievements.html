@@ -1,0 +1,127 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ member.name }} 的成就徽章{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/achievements.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <a href="{% url 'member_profile' username=member.username %}" class="back-link">
+                ← 返回個人資料
+            </a>
+            <h1 class="page-title">成就徽章</h1>
+            <p class="page-subtitle">{{ member.name }} 的成就收藏</p>
+        </div>
+
+        <!-- Progress Stats -->
+        <div class="progress-stats">
+            <div class="stat-item">
+                <span class="stat-label">總成就數</span>
+                <span class="stat-value">{{ total_achievements }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">已解鎖</span>
+                <span class="stat-value unlock-count">{{ unlocked_count }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">完成度</span>
+                <span class="stat-value">{{ unlock_percentage }}%</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="overall-progress">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ unlock_percentage }}%;"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Achievements Grid -->
+<section class="achievements-section">
+    <div class="container">
+        {% for category_name, achievements in categories.items %}
+        <div class="category-section">
+            <h2 class="category-title">{{ category_name }}</h2>
+            <div class="achievements-grid">
+                {% for data in achievements %}
+                <div class="achievement-card {% if data.is_unlocked %}unlocked{% else %}locked{% endif %}"
+                     data-achievement-id="{{ data.achievement.id }}">
+                    <div class="achievement-icon">
+                        {{ data.achievement.icon }}
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-name">{{ data.achievement.name }}</h3>
+                        <p class="achievement-desc">{{ data.achievement.description }}</p>
+
+                        {% if data.is_unlocked %}
+                        <div class="achievement-footer unlocked">
+                            <span class="achievement-status">
+                                <span class="status-icon">✓</span>
+                                已解鎖
+                            </span>
+                            <span class="achievement-date">
+                                {{ data.unlocked_at|date:"Y-m-d" }}
+                            </span>
+                        </div>
+                        <div class="achievement-points">
+                            +{{ data.achievement.points }} XP
+                        </div>
+                        {% else %}
+                        <div class="achievement-footer locked">
+                            <span class="achievement-status">
+                                <span class="status-icon">🔒</span>
+                                未解鎖
+                            </span>
+                        </div>
+                        <div class="achievement-points locked-points">
+                            +{{ data.achievement.points }} XP
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if data.is_unlocked %}
+                    <div class="unlock-effect"></div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">🏆</div>
+            <p class="empty-text">目前還沒有任何成就</p>
+            <p class="empty-hint">管理員可以在後台新增成就</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Achievement Details Modal (Optional) -->
+<div id="achievement-modal" class="modal" style="display: none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <button class="modal-close">✕</button>
+        <div class="modal-body">
+            <div class="modal-icon"></div>
+            <h2 class="modal-title"></h2>
+            <p class="modal-description"></p>
+            <div class="modal-meta">
+                <span class="modal-category"></span>
+                <span class="modal-points"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'blog/js/members/achievements.js' %}"></script>
+{% endblock %}
+{% endblock %}

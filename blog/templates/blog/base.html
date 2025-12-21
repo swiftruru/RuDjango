@@ -20,7 +20,7 @@
                     <li><a href="/blog/about" class="nav-link">關於</a></li>
                     <li><a href="{% url 'blog_home' %}" class="nav-link">部落格</a></li>
                     {% if user.is_authenticated %}
-                    <li><a href="/blog/member" class="nav-link">會員中心</a></li>
+                    <li><a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心</a></li>
                     <li><a href="{% url 'user_logout' %}" class="nav-link">登出 ({{ user_display_name }})</a></li>
                     {% else %}
                     <li><a href="{% url 'user_login' %}" class="nav-link">登入</a></li>
@@ -41,11 +41,11 @@
             <div class="footer-content">
                 <p>&copy; 2025 RuDjango. All rights reserved.</p>
                 <div class="footer-info">
-                    <span>版本 {{ version }}</span>
+                    <span>版本 {{ system_version.version }}</span>
                     <span>|</span>
-                    <span>發布日期: {{ date }}</span>
+                    <span>發布日期: {{ system_version.release_date }}</span>
                     <span>|</span>
-                    <span>最後更新: {{ last_update }}</span>
+                    <span>最後更新: {{ system_version.last_update }}</span>
                 </div>
             </div>
         </div>

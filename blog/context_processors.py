@@ -2,6 +2,7 @@
 自訂 Context Processor
 在所有模板中提供額外的 context 變數
 """
+from .version import get_version_info
 
 
 def user_display_name(request):
@@ -16,4 +17,11 @@ def user_display_name(request):
     
     return {
         'user_display_name': display_name
+    }
+
+
+def version_context(request):
+    """將系統版本資訊加入所有模板的 context"""
+    return {
+        'system_version': get_version_info()
     }

@@ -1,3 +1,6 @@
+"""
+專案首頁相關視圖
+"""
 from django.shortcuts import render
 
 

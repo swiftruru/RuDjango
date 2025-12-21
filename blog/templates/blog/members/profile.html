@@ -4,10 +4,20 @@
 {% block title %}{{ member.name }} - 會員中心{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'blog/css/member.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/members/profile.css' %}">
 {% endblock %}
 
 {% block content %}
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <!-- Profile Header -->
 <section class="profile-header">
     <div class="container">
@@ -47,9 +57,39 @@
                 </div>
 
                 <div class="profile-actions">
-                    <button class="btn btn-primary">編輯個人資料</button>
-                    <button class="btn btn-secondary">設定</button>
-                    <button class="btn btn-outline">分享</button>
+                    {% if is_own_profile %}
+                    <a href="{% url 'member_edit' %}" class="btn btn-primary">編輯個人資料</a>
+                    {% else %}
+                    <button class="btn btn-primary">追蹤</button>
+                    <button class="btn btn-secondary">發送訊息</button>
+                    {% endif %}
+                    <button class="btn btn-outline" id="share-btn">分享</button>
+                </div>
+
+                <!-- 分享選單 -->
+                <div id="share-menu" class="share-menu" style="display: none;">
+                    <div class="share-menu-content">
+                        <h3>分享個人資料</h3>
+                        <div class="share-buttons">
+                            <button class="share-button facebook" data-platform="facebook">
+                                <span class="share-icon">f</span>
+                                Facebook
+                            </button>
+                            <button class="share-button twitter" data-platform="twitter">
+                                <span class="share-icon">𝕏</span>
+                                Twitter
+                            </button>
+                            <button class="share-button line" data-platform="line">
+                                <span class="share-icon">L</span>
+                                LINE
+                            </button>
+                            <button class="share-button copy-link" data-platform="copy">
+                                <span class="share-icon">🔗</span>
+                                複製連結
+                            </button>
+                        </div>
+                        <button class="share-close" id="share-close">✕</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,7 +164,8 @@
         <div class="content-grid">
             <!-- Left Column -->
             <div class="left-column">
-                <!-- Recent Activities -->
+                {% if is_own_profile %}
+                <!-- Recent Activities (只有本人能看到) -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">最近活動</h2>
@@ -139,13 +180,17 @@
                                     <span class="activity-time">{{ activity.date }}</span>
                                 </div>
                             </div>
+                            {% empty %}
+                            <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">尚無活動記錄</p>
                             {% endfor %}
                         </div>
+                        {% if member.recent_activities %}
                         <button class="btn-text">查看更多活動 →</button>
+                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Learning Progress -->
+                <!-- Learning Progress (只有本人能看到) -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">學習進度</h2>
@@ -162,8 +207,40 @@
                                     style="width: {{ course.progress }}%; background: {{ course.color }};"></div>
                             </div>
                         </div>
+                        {% empty %}
+                        <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">尚無學習進度</p>
                         {% endfor %}
+                        {% if member.learning_progress %}
                         <button class="btn-text">查看所有課程 →</button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 最近發表的文章（所有人都能看到） -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">最近發表</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if member.recent_articles %}
+                        <div class="articles-list">
+                            {% for article in member.recent_articles %}
+                            <div class="article-item">
+                                <a href="{% url 'article_detail' id=article.id %}" class="article-link">
+                                    <h3 class="article-title">{{ article.title }}</h3>
+                                    <p class="article-excerpt">{{ article.content|truncatewords:20 }}</p>
+                                    <div class="article-meta">
+                                        <span class="article-date">{{ article.created_at|date:"Y-m-d" }}</span>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a href="{% url 'blog_home' %}?author={{ member.username }}" class="btn-text">查看所有文章 →</a>
+                        {% else %}
+                        <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">尚未發表任何文章</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -179,9 +256,13 @@
                         <div class="skills-grid">
                             {% for skill in member.skills %}
                             <span class="skill-tag">{{ skill }}</span>
+                            {% empty %}
+                            <p style="color: #6b7280; font-size: 0.875rem;">尚未新增技能標籤</p>
                             {% endfor %}
                         </div>
-                        <button class="btn-text">編輯技能 →</button>
+                        {% if is_own_profile %}
+                        <a href="{% url 'edit_skills' %}" class="btn-text">編輯技能 →</a>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -213,14 +294,18 @@
                     </div>
                     <div class="card-body">
                         <div class="info-list">
+                            {% if is_own_profile and member.email %}
                             <div class="info-item">
                                 <span class="info-label">電子信箱</span>
                                 <span class="info-value">{{ member.email }}</span>
                             </div>
+                            {% endif %}
+                            {% if is_own_profile and member.birthday %}
                             <div class="info-item">
                                 <span class="info-label">生日</span>
                                 <span class="info-value">{{ member.birthday }}</span>
                             </div>
+                            {% endif %}
                             <div class="info-item">
                                 <span class="info-label">積分</span>
                                 <span class="info-value">{{ member.points }} XP</span>
@@ -236,4 +321,145 @@
         </div>
     </div>
 </section>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const shareBtn = document.getElementById('share-btn');
+        const shareMenu = document.getElementById('share-menu');
+        const shareClose = document.getElementById('share-close');
+        const shareButtons = document.querySelectorAll('.share-button');
+
+        // 當前頁面的 URL 和標題
+        const currentUrl = window.location.origin + '{% url "member_profile" username=member.username %}';
+        const pageTitle = '{{ member.name }} 的個人資料 - RuDjango';
+        const pageDescription = '{{ member.bio|default:"查看我的個人資料"|truncatewords:20 }}';
+
+        // 開啟分享選單
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function () {
+                shareMenu.style.display = 'flex';
+            });
+        }
+
+        // 關閉分享選單
+        function closeShareMenu() {
+            shareMenu.style.display = 'none';
+        }
+
+        if (shareClose) {
+            shareClose.addEventListener('click', closeShareMenu);
+        }
+
+        // 點擊背景關閉
+        shareMenu.addEventListener('click', function (e) {
+            if (e.target === shareMenu) {
+                closeShareMenu();
+            }
+        });
+
+        // ESC 鍵關閉
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && shareMenu.style.display === 'flex') {
+                closeShareMenu();
+            }
+        });
+
+        // 處理分享按鈕
+        shareButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const platform = this.dataset.platform;
+
+                switch (platform) {
+                    case 'facebook':
+                        shareFacebook();
+                        break;
+                    case 'twitter':
+                        shareTwitter();
+                        break;
+                    case 'line':
+                        shareLine();
+                        break;
+                    case 'copy':
+                        copyLink();
+                        break;
+                }
+            });
+        });
+
+        // Facebook 分享
+        function shareFacebook() {
+            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
+            window.open(fbUrl, '_blank', 'width=600,height=400');
+            closeShareMenu();
+        }
+
+        // Twitter 分享
+        function shareTwitter() {
+            const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(pageTitle)}`;
+            window.open(twitterUrl, '_blank', 'width=600,height=400');
+            closeShareMenu();
+        }
+
+        // LINE 分享
+        function shareLine() {
+            const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`;
+            window.open(lineUrl, '_blank', 'width=600,height=400');
+            closeShareMenu();
+        }
+
+        // 複製連結
+        function copyLink() {
+            // 使用現代的 Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(currentUrl).then(function () {
+                    showCopySuccess();
+                }).catch(function (err) {
+                    // 降級方案
+                    fallbackCopyLink();
+                });
+            } else {
+                // 降級方案
+                fallbackCopyLink();
+            }
+        }
+
+        // 降級的複製方案
+        function fallbackCopyLink() {
+            const textArea = document.createElement('textarea');
+            textArea.value = currentUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                alert('複製失敗，請手動複製：' + currentUrl);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // 顯示複製成功提示
+        function showCopySuccess() {
+            const copyButton = document.querySelector('.share-button.copy-link');
+            const originalText = copyButton.innerHTML;
+
+            copyButton.innerHTML = '<span class="share-icon" style="background: #10b981;">✓</span>已複製！';
+            copyButton.style.borderColor = '#10b981';
+            copyButton.style.color = '#10b981';
+
+            setTimeout(function () {
+                copyButton.innerHTML = originalText;
+                copyButton.style.borderColor = '';
+                copyButton.style.color = '';
+                closeShareMenu();
+            }, 1500);
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

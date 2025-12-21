@@ -5,56 +5,7 @@
 {% block title %}RuDjango - 首頁{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'blog/css/home.css' %}">
-<style>
-    /* 螢光筆高亮效果 */
-    mark.highlight {
-        background-color: #ffeb3b;
-        color: #000;
-        padding: 0.15rem 0.3rem;
-        border-radius: 3px;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(255, 235, 59, 0.3);
-    }
-
-    /* 訊息提示樣式 */
-    .messages {
-        max-width: 1200px;
-        margin: 1rem auto;
-        padding: 0 1rem;
-    }
-
-    .alert {
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .alert-success {
-        background: #c6f6d5;
-        color: #22543d;
-        border-left: 4px solid #38a169;
-    }
-
-    .alert-error {
-        background: #fed7d7;
-        color: #742a2a;
-        border-left: 4px solid #e53e3e;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
 {% endblock %}
 
 <!-- #region Content -->

@@ -2,7 +2,7 @@
 文章相關的 Forms
 """
 from django import forms
-from ..models import Article
+from ..models import Article, Comment
 
 
 class ArticleForm(forms.ModelForm):
@@ -32,4 +32,27 @@ class ArticleForm(forms.ModelForm):
         help_texts = {
             'title': '標題最多 100 個字元',
             'content': '支援 Markdown 語法（# 標題、**粗體**、*斜體*、[連結](URL)、```程式碼區塊```）',
+        }
+
+
+class CommentForm(forms.ModelForm):
+    """
+    留言表單
+    用於新增和回覆留言
+    """
+    class Meta:
+        model = Comment
+        fields = ['content']
+        labels = {
+            'content': '留言內容',
+        }
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': '請輸入您的留言...',
+                'rows': 4
+            }),
+        }
+        help_texts = {
+            'content': '分享您的想法和意見',
         }

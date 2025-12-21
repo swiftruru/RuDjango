@@ -1,0 +1,163 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}學習進度 - {{ member.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/learning_progress.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- 頁面標題 -->
+<div class="learning-header">
+    <div class="container">
+        <a href="{% url 'member_profile' username=member.username %}" class="back-link">← 返回個人資料</a>
+        <h1 class="page-title">📚 學習進度</h1>
+        <p class="page-subtitle">{{ member.name }} 的閱讀統計與學習歷程</p>
+    </div>
+</div>
+
+<!-- 統計卡片 -->
+<section class="stats-overview">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📖</div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_articles_read }}</div>
+                    <div class="stat-label">已閱讀文章</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ total_read_count }}</div>
+                    <div class="stat-label">總閱讀次數</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ reading_hours }}h {{ reading_minutes }}m</div>
+                    <div class="stat-label">總閱讀時長</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✍️</div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ author_progress|length }}</div>
+                    <div class="stat-label">閱讀作者數</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 主要內容 -->
+<section class="main-content">
+    <div class="container">
+        <div class="content-grid">
+            <!-- 左側：作者進度 -->
+            <div class="left-column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 各作者閱讀進度</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if author_progress %}
+                        <div class="author-progress-list">
+                            {% for progress in author_progress %}
+                            <div class="author-progress-item">
+                                <div class="author-info">
+                                    <div class="author-name">{{ progress.author }}</div>
+                                    <div class="author-stats">{{ progress.read }} / {{ progress.total }} 篇</div>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ progress.progress }}%; background: {{ progress.color }};"></div>
+                                    </div>
+                                    <div class="progress-percent">{{ progress.progress }}%</div>
+                                </div>
+                                {% if progress.progress == 100 %}
+                                <div class="completion-badge">✓ 已完成</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty-message">尚未開始閱讀任何文章</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：最近閱讀 -->
+            <div class="right-column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🕒 最近閱讀</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_reads %}
+                        <div class="recent-reads-list">
+                            {% for read in recent_reads %}
+                            <div class="read-item">
+                                <a href="{% url 'article_detail' id=read.article.id %}" class="read-link">
+                                    <div class="read-header">
+                                        <h3 class="read-title">{{ read.article.title }}</h3>
+                                        <div class="read-badge">
+                                            {% if read.read_count > 1 %}
+                                            <span class="badge-count">閱讀 {{ read.read_count }} 次</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="read-meta">
+                                        <span class="read-author">✍️ {{ read.article.author.first_name|default:read.article.author.username }}</span>
+                                        <span class="read-time">📅 {{ read.last_read_at|date:"Y-m-d H:i" }}</span>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty-message">尚無閱讀記錄</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 學習建議 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">💡 學習建議</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <div class="tip-icon">🎯</div>
+                                <div class="tip-content">
+                                    <p class="tip-title">設定目標</p>
+                                    <p class="tip-desc">每週閱讀 3-5 篇文章，養成良好學習習慣</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-icon">📝</div>
+                                <div class="tip-content">
+                                    <p class="tip-title">做筆記</p>
+                                    <p class="tip-desc">記錄重點內容，加深理解與記憶</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <div class="tip-icon">🔄</div>
+                                <div class="tip-content">
+                                    <p class="tip-title">複習</p>
+                                    <p class="tip-desc">定期回顧已讀文章，鞏固知識</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

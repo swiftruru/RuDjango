@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Article, UserProfile, Skill, Achievement, UserAchievement,
+    Article, ArticleReadHistory, Comment, UserProfile, Skill, Achievement, UserAchievement,
     LearningCourse, UserCourseProgress, Activity, Follow
 )
 
@@ -12,6 +12,38 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ['created_at', 'author']
     search_fields = ['title', 'content']
     date_hierarchy = 'created_at'
+
+
+# 文章閱讀記錄管理
+@admin.register(ArticleReadHistory)
+class ArticleReadHistoryAdmin(admin.ModelAdmin):
+    list_display = ['user', 'article', 'read_count', 'first_read_at', 'last_read_at', 'reading_time_display']
+    list_filter = ['first_read_at', 'last_read_at']
+    search_fields = ['user__username', 'article__title']
+    date_hierarchy = 'last_read_at'
+    readonly_fields = ['first_read_at', 'last_read_at']
+
+    def reading_time_display(self, obj):
+        """顯示閱讀時長（分鐘）"""
+        minutes = obj.reading_time_seconds // 60
+        seconds = obj.reading_time_seconds % 60
+        return f"{minutes}分{seconds}秒"
+    reading_time_display.short_description = '閱讀時長'
+
+
+# 留言管理
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['author', 'article', 'content_preview', 'parent', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['author__username', 'article__title', 'content']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at', 'updated_at']
+
+    def content_preview(self, obj):
+        """顯示留言內容預覽"""
+        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+    content_preview.short_description = '留言內容'
 
 
 # 使用者資料管理

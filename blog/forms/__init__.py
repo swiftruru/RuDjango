@@ -4,7 +4,7 @@ Blog app 的 Forms 模組
 """
 
 # 文章相關 forms
-from .article import ArticleForm
+from .article import ArticleForm, CommentForm
 
 # 會員相關 forms
 from .member import (
@@ -16,6 +16,7 @@ from .member import (
 __all__ = [
     # 文章相關
     'ArticleForm',
+    'CommentForm',
     # 會員相關
     'CustomAuthenticationForm',
     'CustomUserCreationForm',

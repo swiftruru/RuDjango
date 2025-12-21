@@ -7,12 +7,12 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.utils import timezone
 from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
-from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow
+from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow, ArticleReadHistory, Article, Comment
 
 
 @login_required
@@ -39,11 +39,10 @@ def member_profile(request, username):
     # 計算統計數據
     stats = {
         'posts': target_user.articles.count(),
-        'comments': 0,
-        'likes_received': 0,
+        'comments': target_user.comments.count(),  # 計算實際留言數
+        'likes_received': 0,  # 待實作
         'followers': target_user.followers.count(),
         'following': target_user.following.count(),
-        'projects': 0,
     }
 
     # 取得最近活動（只有本人能看到）
@@ -58,9 +57,40 @@ def member_profile(request, username):
     user_achievements = UserAchievement.objects.filter(user=target_user).select_related('achievement').order_by('-unlocked_at')[:4]
 
     # 取得學習進度（只有本人能看到）
+    # 基於閱讀記錄統計，按作者分類
     learning_progress = []
     if is_own_profile:
-        learning_progress = UserCourseProgress.objects.filter(user=target_user).select_related('course').order_by('-last_activity')[:3]
+        # 獲取用戶的所有閱讀記錄
+        read_articles = ArticleReadHistory.objects.filter(user=target_user).select_related('article', 'article__author')
+
+        # 統計各作者的文章總數和已閱讀數
+        author_stats = {}
+        for record in read_articles:
+            author = record.article.author
+            if author:
+                author_name = author.first_name or author.username
+                if author_name not in author_stats:
+                    # 計算該作者的總文章數
+                    total_articles = Article.objects.filter(author=author).count()
+                    author_stats[author_name] = {
+                        'read': 0,
+                        'total': total_articles,
+                        'author': author_name,
+                    }
+                author_stats[author_name]['read'] += 1
+
+        # 轉換為列表格式並計算進度百分比
+        for author_name, author_stat in author_stats.items():
+            if author_stat['total'] > 0:
+                progress = int((author_stat['read'] / author_stat['total']) * 100)
+                learning_progress.append({
+                    'course': f"{author_name} 的文章",
+                    'progress': progress,
+                    'color': '#667eea' if progress < 100 else '#48bb78',
+                })
+
+        # 按進度排序，取前3個
+        learning_progress = sorted(learning_progress, key=lambda x: x['progress'], reverse=True)[:3]
 
     # 取得最近發表的文章（公開，所有人都能看到）
     recent_articles = target_user.articles.order_by('-created_at')[:5]
@@ -320,3 +350,92 @@ def member_achievements(request, username):
     }
 
     return render(request, 'blog/members/achievements.html', context)
+
+
+def learning_progress(request, username):
+    """查看會員的學習進度詳細頁面"""
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 只有本人能查看自己的學習進度
+    if not is_own_profile:
+        messages.error(request, '❌ 您無法查看其他人的學習進度')
+        return redirect('member_profile', username=username)
+
+    # 獲取所有閱讀記錄
+    read_histories = ArticleReadHistory.objects.filter(user=target_user).select_related('article', 'article__author').order_by('-last_read_at')
+
+    # 統計總體數據
+    total_articles_read = read_histories.count()
+    total_read_count = read_histories.aggregate(Sum('read_count'))['read_count__sum'] or 0
+    total_reading_time = read_histories.aggregate(Sum('reading_time_seconds'))['reading_time_seconds__sum'] or 0
+
+    # 計算總閱讀時長（轉換為小時和分鐘）
+    reading_hours = total_reading_time // 3600
+    reading_minutes = (total_reading_time % 3600) // 60
+
+    # 按作者統計進度
+    author_progress = []
+    author_stats = {}
+    # 使用 set 來追蹤已經計數過的文章，避免重複計算
+    counted_articles = {}
+
+    for record in read_histories:
+        author = record.article.author
+        if author:
+            author_name = author.first_name or author.username
+            if author_name not in author_stats:
+                # 計算該作者的總文章數
+                total_articles = Article.objects.filter(author=author).count()
+                author_stats[author_name] = {
+                    'read': 0,
+                    'total': total_articles,
+                    'author': author_name,
+                    'author_username': author.username,
+                }
+                counted_articles[author_name] = set()
+
+            # 只計算未計數過的文章
+            if record.article.id not in counted_articles[author_name]:
+                author_stats[author_name]['read'] += 1
+                counted_articles[author_name].add(record.article.id)
+
+    # 轉換為列表並計算百分比
+    for author_name, stats in author_stats.items():
+        if stats['total'] > 0:
+            progress = int((stats['read'] / stats['total']) * 100)
+            author_progress.append({
+                'author': author_name,
+                'author_username': stats['author_username'],
+                'read': stats['read'],
+                'total': stats['total'],
+                'progress': progress,
+                'color': '#48bb78' if progress == 100 else '#667eea',
+            })
+
+    # 按進度排序
+    author_progress = sorted(author_progress, key=lambda x: x['progress'], reverse=True)
+
+    # 最近閱讀的文章（顯示最新10篇）
+    recent_reads = read_histories[:10]
+
+    # 準備會員資料
+    member_data = {
+        'name': target_user.first_name or target_user.username,
+        'username': target_user.username,
+    }
+
+    context = {
+        'member': member_data,
+        'is_own_profile': is_own_profile,
+        'total_articles_read': total_articles_read,
+        'total_read_count': total_read_count,
+        'reading_hours': reading_hours,
+        'reading_minutes': reading_minutes,
+        'author_progress': author_progress,
+        'recent_reads': recent_reads,
+    }
+
+    return render(request, 'blog/members/learning_progress.html', context)

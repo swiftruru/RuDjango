@@ -28,7 +28,8 @@
                     {% if member.avatar %}
                     <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
                     {% else %}
-                    <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
+                    <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img"
+                        id="profile-avatar">
                     {% endif %}
                     <div class="avatar-overlay">
                         <span class="zoom-icon">🔍</span>
@@ -145,43 +146,36 @@
             <div class="stat-card">
                 <div class="stat-icon">📝</div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.posts }}</div>
+                    <div class="stat-number">{{ member.stats.posts|default:"0" }}</div>
                     <div class="stat-label">發表文章</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">💬</div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.comments }}</div>
+                    <div class="stat-number">{{ member.stats.comments|default:"0" }}</div>
                     <div class="stat-label">評論數</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">❤️</div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.likes_received }}</div>
+                    <div class="stat-number">{{ member.stats.likes_received|default:"0" }}</div>
                     <div class="stat-label">獲得讚數</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👥</div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.followers }}</div>
+                    <div class="stat-number">{{ member.stats.followers|default:"0" }}</div>
                     <div class="stat-label">追蹤者</div>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🌟</div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.following }}</div>
+                    <div class="stat-number">{{ member.stats.following|default:"0" }}</div>
                     <div class="stat-label">追蹤中</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💼</div>
-                <div class="stat-content">
-                    <div class="stat-number">{{ member.stats.projects }}</div>
-                    <div class="stat-label">專案數</div>
                 </div>
             </div>
         </div>
@@ -241,7 +235,7 @@
                         <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">尚無學習進度</p>
                         {% endfor %}
                         {% if member.learning_progress %}
-                        <button class="btn-text">查看所有課程 →</button>
+                        <a href="{% url 'learning_progress' username=member.username %}" class="btn-text">查看所有課程 →</a>
                         {% endif %}
                     </div>
                 </div>

@@ -10,13 +10,30 @@
 
 {% block content %}
 <div class="my-articles-header">
-    <div>
-        <h1>📚 我的文章</h1>
-        <div class="stats">
-            <span>共 {{ articles.count }} 篇文章</span>
+    <h1>📚 我的文章</h1>
+    <div class="stats">
+        <span>共 {{ articles.count }} 篇文章</span>
+    </div>
+</div>
+
+<!-- 快速導航區 -->
+<div class="quick-nav-section">
+    <div class="container">
+        <div class="nav-buttons">
+            <a href="{% url 'blog_home' %}" class="nav-btn">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">返回首頁</span>
+            </a>
+            <a href="{% url 'member' %}" class="nav-btn">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">會員中心</span>
+            </a>
+            <a href="{% url 'article_create' %}" class="nav-btn nav-btn-primary">
+                <span class="nav-icon">✏️</span>
+                <span class="nav-text">發表新文章</span>
+            </a>
         </div>
     </div>
-    <a href="{% url 'article_create' %}" class="btn-create">✏️ 發表新文章</a>
 </div>
 
 <section class="articles-section">

@@ -1,27 +1,22 @@
 /* 我的文章頁面專屬樣式 */
 .my-articles-header {
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 2rem auto 0;
     padding: 2rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 16px;
     color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+    text-align: center;
 }
 
 .my-articles-header h1 {
-    margin: 0;
+    margin: 0 0 0.5rem 0;
     font-size: 2rem;
 }
 
 .my-articles-header .stats {
-    display: flex;
-    gap: 2rem;
     font-size: 1.1rem;
+    opacity: 0.95;
 }
 
 .btn-create {
@@ -98,4 +93,80 @@
     font-size: 1.25rem;
     color: #4a5568;
     margin-bottom: 1.5rem;
+}
+
+/* 快速導航區 */
+.quick-nav-section {
+    max-width: 1200px;
+    margin: 1.5rem auto 0.5rem;
+    padding: 0 1rem;
+}
+
+.nav-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1f2937;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.nav-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.nav-btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.nav-icon {
+    font-size: 1.25rem;
+}
+
+.nav-text {
+    font-size: 1rem;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .my-articles-header {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .my-articles-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .nav-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-nav-section {
+        margin: 1rem auto;
+    }
 }

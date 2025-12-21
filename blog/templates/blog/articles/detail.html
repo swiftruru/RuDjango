@@ -47,6 +47,11 @@
 
     <!-- 文章標題區 -->
     <div class="article-header">
+        <!-- 分享按鈕 -->
+        <button class="share-article-icon-btn" id="share-article-btn" title="分享文章">
+            🔗
+        </button>
+
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
             {% if article.author %}
@@ -60,7 +65,11 @@
     </div>
 
     <!-- 文章內容 -->
-    <div class="article-content-wrapper">
+    <div class="article-content-wrapper"
+         data-article-id="{{ article.id }}"
+         data-article-url="{% url 'article_detail' article.id %}"
+         data-article-title="{{ article.title }}"
+         data-article-excerpt="{{ article.content|striptags|truncatewords:20 }}">
         <div class="article-content">{{ article.content|markdown }}</div>
     </div>
 
@@ -102,5 +111,107 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- 留言區 -->
+    <div class="comments-section">
+        <h2 class="comments-title">💬 留言 ({{ comments.count }})</h2>
+
+        <!-- 發表留言表單 -->
+        {% if user.is_authenticated %}
+        <div class="comment-form-container">
+            <form method="post" class="comment-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ comment_form.content }}
+                </div>
+                <button type="submit" class="submit-comment-btn">發表留言</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="login-prompt">
+            <p>請先<a href="{% url 'user_login' %}?next={{ request.path }}">登入</a>後再發表留言</p>
+        </div>
+        {% endif %}
+
+        <!-- 留言列表 -->
+        <div class="comments-list">
+            {% if comments %}
+            {% for comment in comments %}
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-author">
+                        <span class="author-icon">👤</span>
+                        <span class="author-name">{{ comment.author.first_name|default:comment.author.username }}</span>
+                    </div>
+                    <div class="comment-actions">
+                        <span class="comment-time">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+                        {% if comment.author == request.user %}
+                        <a href="{% url 'comment_delete' comment.id %}?next={{ request.path }}" class="comment-delete-btn" onclick="return confirm('確定要刪除這則留言嗎？')">🗑️ 刪除</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="comment-content">{{ comment.content|linebreaksbr }}</div>
+
+                <!-- 回覆留言 -->
+                {% if comment.replies.all %}
+                <div class="replies-list">
+                    {% for reply in comment.replies.all %}
+                    <div class="reply-item">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <span class="author-icon">👤</span>
+                                <span class="author-name">{{ reply.author.first_name|default:reply.author.username }}</span>
+                            </div>
+                            <div class="comment-actions">
+                                <span class="comment-time">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+                                {% if reply.author == request.user %}
+                                <a href="{% url 'comment_delete' reply.id %}?next={{ request.path }}" class="comment-delete-btn" onclick="return confirm('確定要刪除這則留言嗎？')">🗑️ 刪除</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="comment-content">{{ reply.content|linebreaksbr }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="no-comments">
+                <p>目前還沒有留言，快來搶沙發吧！</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 分享選單 -->
+    <div id="share-article-menu" class="share-menu" style="display: none;">
+        <div class="share-menu-content">
+            <h3>分享文章</h3>
+            <div class="share-buttons">
+                <button class="share-button facebook" data-platform="facebook">
+                    <span class="share-icon">f</span>
+                    Facebook
+                </button>
+                <button class="share-button twitter" data-platform="twitter">
+                    <span class="share-icon">𝕏</span>
+                    Twitter
+                </button>
+                <button class="share-button line" data-platform="line">
+                    <span class="share-icon">L</span>
+                    LINE
+                </button>
+                <button class="share-button copy-link" data-platform="copy">
+                    <span class="share-icon">🔗</span>
+                    複製連結
+                </button>
+            </div>
+            <button class="share-close" id="share-article-close">✕</button>
+        </div>
+    </div>
 </div>
+
+{% block extra_js %}
+<script src="{% static 'blog/js/articles/share.js' %}"></script>
+{% endblock %}
 {% endblock %}

@@ -3,12 +3,12 @@
 處理文章的列表、詳細頁、新增、編輯、刪除等功能
 """
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, F
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from ..models import Article
-from ..forms import ArticleForm
+from ..models import Article, ArticleReadHistory, Comment
+from ..forms import ArticleForm, CommentForm
 
 
 def home(request):
@@ -75,20 +75,64 @@ def article_detail(request, id):
     文章詳細頁
     顯示單篇文章的完整內容
     包含上一篇和下一篇文章的導航
+    並記錄已登入用戶的閱讀歷史
+    處理留言功能
     """
     # 取得指定 id 的文章，若不存在則返回 404
     article = get_object_or_404(Article, id=id)
-    
+
+    # 處理留言提交
+    if request.method == 'POST' and request.user.is_authenticated:
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.article = article
+            comment.author = request.user
+            # 處理回覆留言
+            parent_id = request.POST.get('parent_id')
+            if parent_id:
+                comment.parent = Comment.objects.get(id=parent_id)
+            comment.save()
+            messages.success(request, '✅ 留言發表成功！')
+            return redirect('article_detail', id=id)
+    else:
+        comment_form = CommentForm()
+
+    # 如果用戶已登入，記錄閱讀歷史
+    if request.user.is_authenticated:
+        # 檢查是否已存在閱讀記錄
+        try:
+            read_history = ArticleReadHistory.objects.get(
+                user=request.user,
+                article=article
+            )
+            # 已存在，增加閱讀次數
+            read_history.read_count = F('read_count') + 1
+            read_history.save()
+            read_history.refresh_from_db()
+        except ArticleReadHistory.DoesNotExist:
+            # 不存在，創建新記錄
+            read_history = ArticleReadHistory.objects.create(
+                user=request.user,
+                article=article,
+                read_count=1
+            )
+
     # 取得上一篇文章（id 更小的最大值）
     previous_article = Article.objects.filter(id__lt=id).order_by('-id').first()
-    
+
     # 取得下一篇文章（id 更大的最小值）
     next_article = Article.objects.filter(id__gt=id).order_by('id').first()
-    
+
+    # 取得所有主留言（沒有父留言的留言）
+    comments = article.comments.filter(parent=None).order_by('-created_at')
+
     context = {
         'article': article,
         'previous_article': previous_article,
         'next_article': next_article,
+        'comment_form': comment_form,
+        'comments': comments,
     }
     return render(request, 'blog/articles/detail.html', context)
 
@@ -179,11 +223,33 @@ def my_articles(request):
     顯示當前登入使用者發表的所有文章
     """
     articles = Article.objects.filter(author=request.user).order_by('-created_at')
-    
+
     context = {
         'articles': articles,
     }
     return render(request, 'blog/articles/my_articles.html', context)
 
-#     """刪除文章"""
-#     pass
+
+@login_required
+def comment_delete(request, comment_id):
+    """
+    刪除留言
+    只有留言作者本人才能刪除
+    """
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    # 檢查是否為留言作者本人
+    if comment.author != request.user:
+        messages.error(request, '❌ 您沒有權限刪除此留言！')
+        return redirect(request.GET.get('next', 'blog_home'))
+
+    # 取得文章 ID 以便刪除後返回
+    article_id = comment.article.id
+    comment.delete()
+    messages.success(request, '✅ 留言已刪除')
+
+    # 返回到來源頁面或文章詳細頁
+    next_url = request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('article_detail', id=article_id)

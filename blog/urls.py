@@ -11,6 +11,7 @@ article_patterns = [
     path('article/<int:id>/edit/', views.article_edit, name='article_edit'),
     path('article/<int:id>/delete/', views.article_delete, name='article_delete'),
     path('my-articles/', views.my_articles, name='my_articles'),
+    path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
 ]
 
 # 會員相關路由
@@ -21,6 +22,7 @@ member_patterns = [
     path('member/<str:username>/', views.member_profile, name='member_profile'),
     path('member/<str:username>/activities/', views.member_activities, name='member_activities'),
     path('member/<str:username>/achievements/', views.member_achievements, name='member_achievements'),
+    path('member/<str:username>/learning/', views.learning_progress, name='learning_progress'),
     path('login/', views.user_login, name='user_login'),
     path('register/', views.user_register, name='user_register'),
     path('logout/', views.user_logout, name='user_logout'),

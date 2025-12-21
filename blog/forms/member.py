@@ -146,7 +146,7 @@ class UserProfileForm(forms.ModelForm):
             'birthday': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date'
-            }),
+            }, format='%Y-%m-%d'),
             'website': forms.URLInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'https://yourwebsite.com'

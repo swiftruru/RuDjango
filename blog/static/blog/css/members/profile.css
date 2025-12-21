@@ -141,6 +141,62 @@
     font-size: 1.2rem;
 }
 
+/* Social Links */
+.social-links {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.social-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.social-link .link-icon {
+    font-size: 1.3rem;
+}
+
+.social-link .link-text {
+    color: inherit;
+}
+
+.website-link {
+    background: rgba(255, 255, 255, 0.95);
+    color: #667eea;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.website-link:hover {
+    background: #fff;
+    color: #5568d3;
+}
+
+.github-link {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.github-link:hover {
+    background: #fff;
+    color: #000;
+}
+
 .profile-actions {
     display: flex;
     gap: 1rem;
@@ -333,6 +389,17 @@
     margin-bottom: 0.25rem;
 }
 
+.activity-link {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.activity-link:hover {
+    color: #5568d3;
+    text-decoration: underline;
+}
+
 .activity-time {
     font-size: 0.8rem;
     color: #a0aec0;
@@ -463,6 +530,7 @@
 
 /* Button Text */
 .btn-text {
+    display: inline-block;
     background: none;
     border: none;
     color: #667eea;
@@ -470,7 +538,9 @@
     font-weight: 600;
     cursor: pointer;
     padding: 0;
+    margin-top: 1rem;
     transition: color 0.3s ease;
+    text-decoration: none;
 }
 
 .btn-text:hover {

@@ -4,193 +4,7 @@
 {% block title %}編輯個人資料{% endblock %}
 
 {% block extra_css %}
-<style>
-    .edit-profile-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
-
-    .edit-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        padding: 2rem;
-    }
-
-    .edit-card h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: #1f2937;
-    }
-
-    .edit-card p {
-        color: #6b7280;
-        margin-bottom: 2rem;
-    }
-
-    .form-section {
-        margin-bottom: 2rem;
-    }
-
-    .form-section h2 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.2s;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    textarea.form-control {
-        resize: vertical;
-        min-height: 100px;
-    }
-
-    .form-help {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-top: 0.25rem;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .btn {
-        padding: 0.75rem 2rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-primary {
-        background: #3b82f6;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #2563eb;
-    }
-
-    .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-secondary:hover {
-        background: #d1d5db;
-    }
-
-    .errorlist {
-        list-style: none;
-        padding: 0;
-        margin: 0.5rem 0;
-    }
-
-    .errorlist li {
-        color: #dc2626;
-        font-size: 0.875rem;
-    }
-
-    /* 技能標籤樣式 */
-    .skills-display {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        min-height: 60px;
-        padding: 0.75rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #f9fafb;
-    }
-
-    .skill-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #3b82f6;
-        color: white;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .skill-tag:hover {
-        background: #2563eb;
-        transform: translateY(-1px);
-    }
-
-    .skill-tag .remove {
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .quick-skill-btn {
-        padding: 0.5rem 1rem;
-        background: white;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .quick-skill-btn:hover {
-        background: #f3f4f6;
-        border-color: #3b82f6;
-        color: #3b82f6;
-    }
-
-    .quick-skill-btn.selected {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-    }
-
-    #skills-input {
-        display: none;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'blog/css/members/edit_profile.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -210,7 +24,7 @@
                     <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
                     {{ form.first_name }}
                     {% if form.first_name.errors %}
-                        {{ form.first_name.errors }}
+                    {{ form.first_name.errors }}
                     {% endif %}
                 </div>
 
@@ -218,7 +32,7 @@
                     <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
                     {{ form.email }}
                     {% if form.email.errors %}
-                        {{ form.email.errors }}
+                    {{ form.email.errors }}
                     {% endif %}
                 </div>
 
@@ -226,18 +40,26 @@
                     <label for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
                     {{ form.bio }}
                     {% if form.bio.errors %}
-                        {{ form.bio.errors }}
+                    {{ form.bio.errors }}
                     {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
-                    {{ form.avatar }}
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="{{ form.avatar.id_for_label }}" name="{{ form.avatar.name }}"
+                            class="file-input" accept="image/*">
+                        <label for="{{ form.avatar.id_for_label }}" class="file-upload-label">
+                            <span class="file-upload-icon">📷</span>
+                            <span class="file-upload-text">選擇頭像圖片</span>
+                        </label>
+                        <span class="file-upload-name">尚未選擇檔案</span>
+                    </div>
                     {% if form.avatar.errors %}
-                        {{ form.avatar.errors }}
+                    {{ form.avatar.errors }}
                     {% endif %}
                     {% if profile.avatar %}
-                        <p class="form-help">目前頭像：<a href="{{ profile.avatar.url }}" target="_blank">查看</a></p>
+                    <p class="form-help">目前頭像：<a href="{{ profile.avatar.url }}" target="_blank">查看</a></p>
                     {% endif %}
                 </div>
             </div>
@@ -250,7 +72,7 @@
                     <label for="{{ form.school.id_for_label }}">{{ form.school.label }}</label>
                     {{ form.school }}
                     {% if form.school.errors %}
-                        {{ form.school.errors }}
+                    {{ form.school.errors }}
                     {% endif %}
                 </div>
 
@@ -258,7 +80,7 @@
                     <label for="{{ form.grade.id_for_label }}">{{ form.grade.label }}</label>
                     {{ form.grade }}
                     {% if form.grade.errors %}
-                        {{ form.grade.errors }}
+                    {{ form.grade.errors }}
                     {% endif %}
                 </div>
 
@@ -266,7 +88,7 @@
                     <label for="{{ form.birthday.id_for_label }}">{{ form.birthday.label }}</label>
                     {{ form.birthday }}
                     {% if form.birthday.errors %}
-                        {{ form.birthday.errors }}
+                    {{ form.birthday.errors }}
                     {% endif %}
                 </div>
             </div>
@@ -279,7 +101,7 @@
                     <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
                     {{ form.location }}
                     {% if form.location.errors %}
-                        {{ form.location.errors }}
+                    {{ form.location.errors }}
                     {% endif %}
                 </div>
 
@@ -287,7 +109,7 @@
                     <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
                     {{ form.website }}
                     {% if form.website.errors %}
-                        {{ form.website.errors }}
+                    {{ form.website.errors }}
                     {% endif %}
                 </div>
 
@@ -295,7 +117,7 @@
                     <label for="{{ form.github.id_for_label }}">{{ form.github.label }}</label>
                     {{ form.github }}
                     {% if form.github.errors %}
-                        {{ form.github.errors }}
+                    {{ form.github.errors }}
                     {% endif %}
                     <p class="form-help">只需輸入使用者名稱，不需要完整網址</p>
                 </div>
@@ -310,9 +132,9 @@
                     <p class="form-help">輸入技能後按 Enter、逗號或分號新增，點擊標籤可刪除</p>
 
                     <!-- 常見技能快速選擇 -->
-                    <div class="quick-skills" style="margin-bottom: 1rem;">
-                        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">快速選擇：</p>
-                        <div class="quick-skills-grid" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="quick-skills">
+                        <p>快速選擇：</p>
+                        <div class="quick-skills-grid">
                             <button type="button" class="quick-skill-btn" data-skill="Python">Python</button>
                             <button type="button" class="quick-skill-btn" data-skill="Django">Django</button>
                             <button type="button" class="quick-skill-btn" data-skill="JavaScript">JavaScript</button>
@@ -329,7 +151,7 @@
                     </div>
 
                     <!-- 技能標籤顯示區 -->
-                    <div id="skills-display" class="skills-display" style="margin-bottom: 1rem;">
+                    <div id="skills-display" class="skills-display">
                         <!-- 技能標籤將在這裡動態顯示 -->
                     </div>
 
@@ -340,7 +162,7 @@
                     <input type="hidden" name="skills" id="skills-hidden" value="{{ form.skills.value|default:'' }}">
 
                     {% if form.skills.errors %}
-                        {{ form.skills.errors }}
+                    {{ form.skills.errors }}
                     {% endif %}
                 </div>
             </div>
@@ -355,133 +177,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const skillInput = document.getElementById('skill-input');
-    const skillsDisplay = document.getElementById('skills-display');
-    const skillsHidden = document.getElementById('skills-hidden');
-    const quickSkillButtons = document.querySelectorAll('.quick-skill-btn');
-    const form = document.querySelector('form');
-
-    // 存儲當前技能的集合
-    let currentSkills = new Set();
-
-    // 從表單初始值載入技能
-    function loadInitialSkills() {
-        const initialValue = skillsHidden.value;
-        if (initialValue) {
-            const skills = initialValue.split(',').map(s => s.trim()).filter(s => s);
-            skills.forEach(skill => addSkill(skill));
-        }
-    }
-
-    // 添加技能標籤
-    function addSkill(skillName) {
-        skillName = skillName.trim();
-        if (!skillName || currentSkills.has(skillName)) {
-            return;
-        }
-
-        if (skillName.length > 50) {
-            alert('技能名稱不能超過 50 個字元');
-            return;
-        }
-
-        currentSkills.add(skillName);
-        updateDisplay();
-        updateHiddenField();
-        updateQuickButtons();
-    }
-
-    // 刪除技能標籤
-    function removeSkill(skillName) {
-        currentSkills.delete(skillName);
-        updateDisplay();
-        updateHiddenField();
-        updateQuickButtons();
-    }
-
-    // 更新顯示
-    function updateDisplay() {
-        skillsDisplay.innerHTML = '';
-        currentSkills.forEach(skill => {
-            const tag = document.createElement('span');
-            tag.className = 'skill-tag';
-            tag.innerHTML = `${skill} <span class="remove">×</span>`;
-            tag.addEventListener('click', () => removeSkill(skill));
-            skillsDisplay.appendChild(tag);
-        });
-    }
-
-    // 更新隱藏字段
-    function updateHiddenField() {
-        const skillsValue = Array.from(currentSkills).join(',');
-        skillsHidden.value = skillsValue;
-    }
-
-    // 更新快速選擇按鈕狀態
-    function updateQuickButtons() {
-        quickSkillButtons.forEach(btn => {
-            const skillName = btn.dataset.skill;
-            if (currentSkills.has(skillName)) {
-                btn.classList.add('selected');
-            } else {
-                btn.classList.remove('selected');
-            }
-        });
-    }
-
-    // 快速選擇按鈕事件
-    quickSkillButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const skillName = btn.dataset.skill;
-            if (currentSkills.has(skillName)) {
-                removeSkill(skillName);
-            } else {
-                addSkill(skillName);
-            }
-        });
-    });
-
-    // 自訂輸入框事件（顯示輸入框）
-    skillsDisplay.addEventListener('click', function(e) {
-        if (e.target === skillsDisplay) {
-            skillInput.style.display = 'block';
-            skillInput.focus();
-        }
-    });
-
-    // 輸入框處理
-    skillInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
-            e.preventDefault();
-            const value = this.value.trim();
-            if (value) {
-                addSkill(value);
-                this.value = '';
-            }
-        } else if (e.key === 'Escape') {
-            this.style.display = 'none';
-            this.value = '';
-        }
-    });
-
-    skillInput.addEventListener('blur', function() {
-        const value = this.value.trim();
-        if (value) {
-            addSkill(value);
-        }
-        this.value = '';
-        this.style.display = 'none';
-    });
-
-    // 表單提交前確保隱藏字段有值
-    form.addEventListener('submit', function() {
-        updateHiddenField();
-    });
-
-    // 載入初始技能
-    loadInitialSkills();
-});
-</script>
+<script src="{% static 'blog/js/members/edit_profile.js' %}"></script>
 {% endblock %}

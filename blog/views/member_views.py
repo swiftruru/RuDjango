@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
 from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow
 
@@ -78,6 +79,8 @@ def member_profile(request, username):
         'level': profile.level,
         'points': profile.points,
         'next_level_points': profile.get_next_level_points(),
+        'website': profile.website,
+        'github': profile.github,
         'stats': stats,
         'recent_activities': recent_activities,
         'skills': user_skills,
@@ -212,3 +215,45 @@ def edit_skills(request):
         'current_skills': current_skills,
     }
     return render(request, 'blog/members/edit_skills.html', context)
+
+
+def member_activities(request, username):
+    """查看會員的所有活動記錄"""
+    target_user = get_object_or_404(User, username=username)
+    
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+    
+    # 只有本人能查看自己的活動記錄
+    if not is_own_profile:
+        messages.error(request, '❌ 您無法查看其他人的活動記錄')
+        return redirect('member_profile', username=username)
+    
+    # 取得所有活動記錄
+    activities_list = Activity.objects.filter(user=target_user).order_by('-created_at')
+    
+    # 分頁設定
+    paginator = Paginator(activities_list, 20)  # 每頁顯示 20 筆
+    page = request.GET.get('page', 1)
+    
+    try:
+        activities = paginator.page(page)
+    except PageNotAnInteger:
+        activities = paginator.page(1)
+    except EmptyPage:
+        activities = paginator.page(paginator.num_pages)
+    
+    # 準備會員資料
+    member_data = {
+        'name': target_user.first_name or target_user.username,
+        'username': target_user.username,
+    }
+    
+    context = {
+        'member': member_data,
+        'activities': activities,
+        'is_paginated': paginator.num_pages > 1,
+        'page_obj': activities,
+    }
+    
+    return render(request, 'blog/members/activities.html', context)

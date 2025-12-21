@@ -19,6 +19,7 @@ member_patterns = [
     path('member/edit/', views.member_edit, name='member_edit'),
     path('member/skills/edit/', views.edit_skills, name='edit_skills'),
     path('member/<str:username>/', views.member_profile, name='member_profile'),
+    path('member/<str:username>/activities/', views.member_activities, name='member_activities'),
     path('login/', views.user_login, name='user_login'),
     path('register/', views.user_register, name='user_register'),
     path('logout/', views.user_logout, name='user_logout'),

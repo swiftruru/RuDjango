@@ -4,195 +4,7 @@
 {% block title %}編輯技能標籤{% endblock %}
 
 {% block extra_css %}
-<style>
-    .edit-skills-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
-
-    .edit-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        padding: 2rem;
-    }
-
-    .edit-card h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: #1f2937;
-    }
-
-    .edit-card p {
-        color: #6b7280;
-        margin-bottom: 2rem;
-    }
-
-    .form-section {
-        margin-bottom: 2rem;
-    }
-
-    .form-section h2 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.2s;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .form-help {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin-top: 0.25rem;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .btn {
-        padding: 0.75rem 2rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-primary {
-        background: #3b82f6;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #2563eb;
-    }
-
-    .btn-secondary {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-secondary:hover {
-        background: #d1d5db;
-    }
-
-    /* 技能標籤樣式 */
-    .skills-display {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        min-height: 60px;
-        padding: 0.75rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #f9fafb;
-    }
-
-    .skill-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #3b82f6;
-        color: white;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .skill-tag:hover {
-        background: #2563eb;
-        transform: translateY(-1px);
-    }
-
-    .skill-tag .remove {
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .quick-skill-btn {
-        padding: 0.5rem 1rem;
-        background: white;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .quick-skill-btn:hover {
-        background: #f3f4f6;
-        border-color: #3b82f6;
-        color: #3b82f6;
-    }
-
-    .quick-skill-btn.selected {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-    }
-
-    #skill-input {
-        display: none;
-    }
-
-    .messages-container {
-        max-width: 800px;
-        margin: 1rem auto;
-        padding: 0 1rem;
-    }
-
-    .alert {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-    }
-
-    .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #6ee7b7;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'blog/css/members/edit_skills.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -223,9 +35,9 @@
                     <p class="form-help">輸入技能後按 Enter、逗號或分號新增，點擊標籤可刪除</p>
 
                     <!-- 常見技能快速選擇 -->
-                    <div class="quick-skills" style="margin-bottom: 1rem;">
-                        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">快速選擇：</p>
-                        <div class="quick-skills-grid" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="quick-skills">
+                        <p>快速選擇：</p>
+                        <div class="quick-skills-grid">
                             <button type="button" class="quick-skill-btn" data-skill="Python">Python</button>
                             <button type="button" class="quick-skill-btn" data-skill="Django">Django</button>
                             <button type="button" class="quick-skill-btn" data-skill="JavaScript">JavaScript</button>
@@ -246,7 +58,7 @@
                     </div>
 
                     <!-- 技能標籤顯示區 -->
-                    <div id="skills-display" class="skills-display" style="margin-bottom: 1rem;">
+                    <div id="skills-display" class="skills-display">
                         <!-- 技能標籤將在這裡動態顯示 -->
                     </div>
 
@@ -254,7 +66,8 @@
                     <input type="text" id="skill-input" class="form-control" placeholder="輸入自訂技能...">
 
                     <!-- 隱藏的表單字段用於提交 -->
-                    <input type="hidden" name="skills" id="skills-hidden" value="{% for skill in current_skills %}{{ skill.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                    <input type="hidden" name="skills" id="skills-hidden"
+                        value="{% for skill in current_skills %}{{ skill.name }}{% if not forloop.last %},{% endif %}{% endfor %}">
                 </div>
             </div>
 
@@ -268,133 +81,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const skillInput = document.getElementById('skill-input');
-    const skillsDisplay = document.getElementById('skills-display');
-    const skillsHidden = document.getElementById('skills-hidden');
-    const quickSkillButtons = document.querySelectorAll('.quick-skill-btn');
-    const form = document.querySelector('form');
-
-    // 存儲當前技能的集合
-    let currentSkills = new Set();
-
-    // 從表單初始值載入技能
-    function loadInitialSkills() {
-        const initialValue = skillsHidden.value;
-        if (initialValue) {
-            const skills = initialValue.split(',').map(s => s.trim()).filter(s => s);
-            skills.forEach(skill => addSkill(skill));
-        }
-    }
-
-    // 添加技能標籤
-    function addSkill(skillName) {
-        skillName = skillName.trim();
-        if (!skillName || currentSkills.has(skillName)) {
-            return;
-        }
-
-        if (skillName.length > 50) {
-            alert('技能名稱不能超過 50 個字元');
-            return;
-        }
-
-        currentSkills.add(skillName);
-        updateDisplay();
-        updateHiddenField();
-        updateQuickButtons();
-    }
-
-    // 刪除技能標籤
-    function removeSkill(skillName) {
-        currentSkills.delete(skillName);
-        updateDisplay();
-        updateHiddenField();
-        updateQuickButtons();
-    }
-
-    // 更新顯示
-    function updateDisplay() {
-        skillsDisplay.innerHTML = '';
-        currentSkills.forEach(skill => {
-            const tag = document.createElement('span');
-            tag.className = 'skill-tag';
-            tag.innerHTML = `${skill} <span class="remove">×</span>`;
-            tag.addEventListener('click', () => removeSkill(skill));
-            skillsDisplay.appendChild(tag);
-        });
-    }
-
-    // 更新隱藏字段
-    function updateHiddenField() {
-        const skillsValue = Array.from(currentSkills).join(',');
-        skillsHidden.value = skillsValue;
-    }
-
-    // 更新快速選擇按鈕狀態
-    function updateQuickButtons() {
-        quickSkillButtons.forEach(btn => {
-            const skillName = btn.dataset.skill;
-            if (currentSkills.has(skillName)) {
-                btn.classList.add('selected');
-            } else {
-                btn.classList.remove('selected');
-            }
-        });
-    }
-
-    // 快速選擇按鈕事件
-    quickSkillButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const skillName = btn.dataset.skill;
-            if (currentSkills.has(skillName)) {
-                removeSkill(skillName);
-            } else {
-                addSkill(skillName);
-            }
-        });
-    });
-
-    // 自訂輸入框事件（顯示輸入框）
-    skillsDisplay.addEventListener('click', function(e) {
-        if (e.target === skillsDisplay) {
-            skillInput.style.display = 'block';
-            skillInput.focus();
-        }
-    });
-
-    // 輸入框處理
-    skillInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
-            e.preventDefault();
-            const value = this.value.trim();
-            if (value) {
-                addSkill(value);
-                this.value = '';
-            }
-        } else if (e.key === 'Escape') {
-            this.style.display = 'none';
-            this.value = '';
-        }
-    });
-
-    skillInput.addEventListener('blur', function() {
-        const value = this.value.trim();
-        if (value) {
-            addSkill(value);
-        }
-        this.value = '';
-        this.style.display = 'none';
-    });
-
-    // 表單提交前確保隱藏字段有值
-    form.addEventListener('submit', function() {
-        updateHiddenField();
-    });
-
-    // 載入初始技能
-    loadInitialSkills();
-});
-</script>
+<script src="{% static 'blog/js/members/edit_skills.js' %}"></script>
 {% endblock %}

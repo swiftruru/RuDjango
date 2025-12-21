@@ -1,0 +1,117 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}近期活動 - {{ member.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/activities.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <a href="{% url 'member_profile' username=member.username %}" class="back-link">
+                <span class="back-icon">←</span>
+                返回個人頁面
+            </a>
+            <h1 class="page-title">近期活動</h1>
+            <p class="page-subtitle">查看 {{ member.name }} 的所有動態記錄</p>
+        </div>
+    </div>
+</section>
+
+<!-- Activities Content -->
+<section class="activities-content">
+    <div class="container">
+        <div class="activities-wrapper">
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    <span class="tab-icon">📋</span>
+                    全部活動
+                </button>
+                <button class="filter-tab" data-filter="post">
+                    <span class="tab-icon">📝</span>
+                    發表文章
+                </button>
+                <button class="filter-tab" data-filter="comment">
+                    <span class="tab-icon">💬</span>
+                    評論
+                </button>
+                <button class="filter-tab" data-filter="achievement">
+                    <span class="tab-icon">🏆</span>
+                    成就
+                </button>
+                <button class="filter-tab" data-filter="course">
+                    <span class="tab-icon">📚</span>
+                    學習
+                </button>
+                <button class="filter-tab" data-filter="level_up">
+                    <span class="tab-icon">⬆️</span>
+                    升級
+                </button>
+            </div>
+
+            <!-- Activities List -->
+            <div class="activities-list">
+                {% for activity in activities %}
+                <div class="activity-card" data-type="{{ activity.activity_type }}">
+                    <div class="activity-date">
+                        <div class="date-day">{{ activity.created_at|date:"d" }}</div>
+                        <div class="date-month">{{ activity.created_at|date:"M" }}</div>
+                    </div>
+                    <div class="activity-icon-wrapper">
+                        <div class="activity-icon">{{ activity.icon }}</div>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-header">
+                            <h3 class="activity-title">{{ activity.title }}</h3>
+                            <span class="activity-type-badge {{ activity.activity_type }}">
+                                {{ activity.get_activity_type_display }}
+                            </span>
+                        </div>
+                        {% if activity.description %}
+                        <p class="activity-description">{{ activity.description }}</p>
+                        {% endif %}
+                        <div class="activity-meta">
+                            <span class="activity-time">{{ activity.created_at|date:"Y年m月d日 H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h3 class="empty-title">尚無活動記錄</h3>
+                    <p class="empty-text">開始使用平台，你的活動記錄將會顯示在這裡</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="pagination-btn">« 首頁</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">上一頁</a>
+                {% endif %}
+
+                <span class="pagination-info">
+                    第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">下一頁</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-btn">末頁 »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'blog/js/members/activities.js' %}"></script>
+{% endblock %}

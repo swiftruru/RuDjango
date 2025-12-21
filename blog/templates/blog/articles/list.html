@@ -31,53 +31,35 @@
 
 <section class="articles-section">
     <div class="container">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <h2 class="section-title" style="margin: 0;">最新文章</h2>
-                <a href="{% url 'article_create' %}"
-                    style="padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 20px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3); display: inline-flex; align-items: center; gap: 0.5rem;"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(102, 126, 234, 0.3)'">
+        <div class="article-actions-bar">
+            <div class="article-actions-left">
+                <h2 class="section-title">最新文章</h2>
+                <a href="{% url 'article_create' %}" class="btn-create-article">
                     ✏️ 發表文章
                 </a>
-                <a href="{% url 'my_articles' %}"
-                    style="padding: 0.5rem 1.25rem; background: #48bb78; color: white; text-decoration: none; border-radius: 20px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(72, 187, 120, 0.3); display: inline-flex; align-items: center; gap: 0.5rem;"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(72, 187, 120, 0.4)'"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(72, 187, 120, 0.3)'">
+                <a href="{% url 'my_articles' %}" class="btn-my-articles">
                     📚 我的文章
                 </a>
             </div>
-            <form method="get" action="{% url 'blog_home' %}"
-                style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                <select name="search_type"
-                    style="padding: 0.75rem 1rem; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1rem; background: white; cursor: pointer; transition: all 0.3s ease; font-weight: 500; color: #667eea;"
-                    onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e9ecef'">
+            <form method="get" action="{% url 'blog_home' %}" class="search-form">
+                <select name="search_type" class="search-select">
                     <option value="all" {% selected_if_equal search_type 'all' %}>🔍 全部</option>
                     <option value="content" {% selected_if_equal search_type 'content' %}>📝 標題/內容</option>
                     <option value="author" {% selected_if_equal search_type 'author' %}>👤 作者</option>
                 </select>
-                <input type="text" name="q" value="{{ search_query }}" placeholder="輸入搜尋關鍵字..."
-                    style="padding: 0.75rem 1.25rem; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1rem; min-width: 300px; transition: all 0.3s ease;"
-                    onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e9ecef'">
-                <button type="submit"
-                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="輸入搜尋關鍵字..." class="search-input">
+                <button type="submit" class="search-button">
                     🔍 搜尋
                 </button>
                 {% if search_query %}
-                <a href="{% url 'blog_home' %}"
-                    style="padding: 0.75rem 1.5rem; background: #f8f9fa; color: #666; border: none; border-radius: 25px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center;"
-                    onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+                <a href="{% url 'blog_home' %}" class="search-clear">
                     ✕ 清除
                 </a>
                 {% endif %}
             </form>
         </div>
         {% if search_query %}
-        <div
-            style="margin-bottom: 1.5rem; padding: 1rem 1.5rem; background: #f0f3ff; border-radius: 12px; color: #667eea; font-weight: 500;">
+        <div class="search-result-info">
             {% if search_type == 'author' %}
             搜尋作者「{{ search_query }}」，找到 {{ articles.count }} 篇文章
             {% elif search_type == 'content' %}
@@ -90,31 +72,26 @@
         {% if articles %}
         <!-- 分頁導航（頂部） -->
         {% if page_obj.has_other_pages %}
-        <div class="pagination"
-            style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <div class="pagination">
             {% if page_obj.has_previous %}
             <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                class="page-link">
                 « 首頁
             </a>
             <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                class="page-link">
                 ‹ 上一頁
             </a>
             {% endif %}
 
             {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-            <span
-                style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 45px; text-align: center;">
+            <span class="page-current">
                 {{ num }}
             </span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
                 href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease; min-width: 45px; text-align: center;">
+                class="page-link">
                 {{ num }}
                 </a>
                 {% endif %}
@@ -122,13 +99,11 @@
 
                 {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link"
-                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    class="page-link">
                     下一頁 ›
                 </a>
                 <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link"
-                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    class="page-link">
                     末頁 »
                 </a>
                 {% endif %}
@@ -140,8 +115,7 @@
             <article class="article-card">
                 <div class="article-header">
                     <h3 class="article-title">
-                        <a href="{% url 'article_detail' article.id %}" style="color: inherit; text-decoration: none;"
-                            title="{{ article.title }}">
+                        <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
                             {{ article.title|truncatechars:40|highlight:search_query }}
                         </a>
                     </h3>
@@ -154,12 +128,11 @@
                     <div class="article-footer-info">
                         <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
                         {% if article.author %}
-                        <span style="color: #718096; font-size: 0.9rem;">✍️ {{ article.author|author_display }}</span>
+                        <span class="author-name">✍️ {{ article.author|author_display }}</span>
                         {% endif %}
                     </div>
                     <div class="article-footer-link">
-                        <a href="{% url 'article_detail' article.id %}"
-                            style="color: #667eea; text-decoration: none; font-weight: 600;">閱讀更多 →</a>
+                        <a href="{% url 'article_detail' article.id %}">閱讀更多 →</a>
                     </div>
                 </div>
             </article>
@@ -169,8 +142,7 @@
         <div class="no-articles">
             {% if search_query %}
             <p>😔 找不到與「{{ search_query }}」相關的文章</p>
-            <a href="{% url 'blog_home' %}"
-                style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">返回所有文章</a>
+            <a href="{% url 'blog_home' %}" class="btn-back-to-articles">返回所有文章</a>
             {% else %}
             <p>📝 目前還沒有文章，請到後台新增第一篇文章！</p>
             {% endif %}
@@ -179,31 +151,26 @@
 
         <!-- 分頁導航 -->
         {% if page_obj.has_other_pages %}
-        <div class="pagination"
-            style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 3rem; flex-wrap: wrap;">
+        <div class="pagination bottom">
             {% if page_obj.has_previous %}
             <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                class="page-link">
                 « 首頁
             </a>
             <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                class="page-link">
                 ‹ 上一頁
             </a>
             {% endif %}
 
             {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-            <span
-                style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 45px; text-align: center;">
+            <span class="page-current">
                 {{ num }}
             </span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
                 href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link"
-                style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease; min-width: 45px; text-align: center;">
+                class="page-link">
                 {{ num }}
                 </a>
                 {% endif %}
@@ -211,25 +178,15 @@
 
                 {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link"
-                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    class="page-link">
                     下一頁 ›
                 </a>
                 <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link"
-                    style="padding: 0.75rem 1rem; background: white; color: #667eea; text-decoration: none; border-radius: 8px; border: 2px solid #667eea; font-weight: 600; transition: all 0.3s ease;">
+                    class="page-link">
                     末頁 »
                 </a>
                 {% endif %}
         </div>
-        <style>
-            .page-link:hover {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-                color: white !important;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            }
-        </style>
         {% endif %}
     </div>
 </section>

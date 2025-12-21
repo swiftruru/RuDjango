@@ -90,3 +90,35 @@ def selected_if_equal(value1, value2):
     if str(value1) == str(value2):
         return 'selected'
     return ''
+
+
+@register.simple_tag
+def activity_title_with_link(activity):
+    """
+    將活動標題中的文章名稱轉換為連結
+    例如：「發表了文章《Django 教學》」會變成「發表了文章<a>《Django 教學》</a>」
+    
+    使用方式：
+    {% activity_title_with_link activity %}
+    """
+    title = activity.title
+    
+    # 如果是發表文章類型且有相關物件ID
+    if activity.activity_type == 'post' and activity.related_object_id:
+        # 使用正則表達式找出《》內的文章名稱
+        pattern = r'(《.*?》)'
+        match = re.search(pattern, title)
+        
+        if match:
+            article_title = match.group(1)
+            # 將《》內的文字替換為連結
+            from django.urls import reverse
+            article_url = reverse('article_detail', kwargs={'id': activity.related_object_id})
+            linked_title = title.replace(
+                article_title,
+                f'<a href="{article_url}" class="activity-link">{article_title}</a>'
+            )
+            return mark_safe(linked_title)
+    
+    # 其他情況直接返回原標題
+    return title

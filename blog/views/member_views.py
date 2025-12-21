@@ -70,6 +70,7 @@ def member_profile(request, username):
         'name': target_user.first_name or target_user.username,
         'username': target_user.username,
         'email': target_user.email if is_own_profile else '',  # 只有本人能看到 email
+        'avatar': profile.avatar,  # 頭像圖片
         'school': profile.school,
         'grade': profile.grade,
         'bio': profile.bio,
@@ -220,40 +221,102 @@ def edit_skills(request):
 def member_activities(request, username):
     """查看會員的所有活動記錄"""
     target_user = get_object_or_404(User, username=username)
-    
+
     # 判斷是否為本人
     is_own_profile = request.user.is_authenticated and request.user == target_user
-    
+
     # 只有本人能查看自己的活動記錄
     if not is_own_profile:
         messages.error(request, '❌ 您無法查看其他人的活動記錄')
         return redirect('member_profile', username=username)
-    
+
     # 取得所有活動記錄
     activities_list = Activity.objects.filter(user=target_user).order_by('-created_at')
-    
+
     # 分頁設定
     paginator = Paginator(activities_list, 20)  # 每頁顯示 20 筆
     page = request.GET.get('page', 1)
-    
+
     try:
         activities = paginator.page(page)
     except PageNotAnInteger:
         activities = paginator.page(1)
     except EmptyPage:
         activities = paginator.page(paginator.num_pages)
-    
+
     # 準備會員資料
     member_data = {
         'name': target_user.first_name or target_user.username,
         'username': target_user.username,
     }
-    
+
     context = {
         'member': member_data,
         'activities': activities,
         'is_paginated': paginator.num_pages > 1,
         'page_obj': activities,
     }
-    
+
     return render(request, 'blog/members/activities.html', context)
+
+
+def member_achievements(request, username):
+    """查看會員的所有成就徽章"""
+    from ..models import Achievement
+
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 取得所有成就
+    all_achievements = Achievement.objects.all().order_by('category', 'name')
+
+    # 取得使用者已解鎖的成就
+    unlocked_achievement_ids = set(
+        UserAchievement.objects.filter(user=target_user).values_list('achievement_id', flat=True)
+    )
+
+    # 準備成就資料，標記是否已解鎖
+    achievements_data = []
+    for achievement in all_achievements:
+        user_achievement = UserAchievement.objects.filter(
+            user=target_user,
+            achievement=achievement
+        ).first()
+
+        achievements_data.append({
+            'achievement': achievement,
+            'is_unlocked': achievement.id in unlocked_achievement_ids,
+            'unlocked_at': user_achievement.unlocked_at if user_achievement else None,
+        })
+
+    # 按分類分組
+    categories = {}
+    for data in achievements_data:
+        category = data['achievement'].get_category_display()
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(data)
+
+    # 計算統計數據
+    total_achievements = len(all_achievements)
+    unlocked_count = len(unlocked_achievement_ids)
+    unlock_percentage = int((unlocked_count / total_achievements * 100)) if total_achievements > 0 else 0
+
+    # 準備會員資料
+    member_data = {
+        'name': target_user.first_name or target_user.username,
+        'username': target_user.username,
+    }
+
+    context = {
+        'member': member_data,
+        'is_own_profile': is_own_profile,
+        'categories': categories,
+        'total_achievements': total_achievements,
+        'unlocked_count': unlocked_count,
+        'unlock_percentage': unlock_percentage,
+    }
+
+    return render(request, 'blog/members/achievements.html', context)

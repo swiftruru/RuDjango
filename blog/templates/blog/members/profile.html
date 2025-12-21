@@ -24,8 +24,15 @@
     <div class="container">
         <div class="header-content">
             <div class="avatar-section">
-                <div class="avatar-large">
-                    <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img">
+                <div class="avatar-large" id="avatar-container">
+                    {% if member.avatar %}
+                    <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
+                    {% else %}
+                    <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
+                    {% endif %}
+                    <div class="avatar-overlay">
+                        <span class="zoom-icon">🔍</span>
+                    </div>
                 </div>
                 <div class="level-badge {{ member.level|lower }}">
                     {% if member.level == 'Gold' %}🥇{% endif %}
@@ -298,15 +305,17 @@
                         <div class="achievements-grid">
                             {% for achievement in member.achievements %}
                             <div class="achievement-item">
-                                <div class="achievement-icon">{{ achievement.icon }}</div>
+                                <div class="achievement-icon">{{ achievement.achievement.icon }}</div>
                                 <div class="achievement-info">
-                                    <p class="achievement-name">{{ achievement.name }}</p>
-                                    <p class="achievement-desc">{{ achievement.description }}</p>
+                                    <p class="achievement-name">{{ achievement.achievement.name }}</p>
+                                    <p class="achievement-desc">{{ achievement.achievement.description }}</p>
                                 </div>
                             </div>
+                            {% empty %}
+                            <p style="color: #6b7280; font-size: 0.875rem;">尚未解鎖任何成就</p>
                             {% endfor %}
                         </div>
-                        <button class="btn-text">查看所有成就 →</button>
+                        <a href="{% url 'member_achievements' username=member.username %}" class="btn-text">查看所有成就 →</a>
                     </div>
                 </div>
 
@@ -344,6 +353,23 @@
         </div>
     </div>
 </section>
+
+<!-- Avatar Preview Modal -->
+<div id="avatar-modal" class="avatar-modal" style="display: none;">
+    <div class="avatar-modal-overlay"></div>
+    <div class="avatar-modal-content">
+        <button class="avatar-modal-close" id="close-avatar-modal">✕</button>
+        {% if member.avatar %}
+        <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="avatar-modal-img">
+        {% else %}
+        <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-modal-img">
+        {% endif %}
+        <div class="avatar-modal-info">
+            <h3>{{ member.name }}</h3>
+            <p>@{{ member.username }}</p>
+        </div>
+    </div>
+</div>
 
 {% block extra_js %}
 <script src="{% static 'blog/js/members/profile.js' %}"></script>

@@ -1,8 +1,24 @@
 """
 會員相關的 Models
 """
+import os
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+
+def user_avatar_path(instance, filename):
+    """
+    自定義頭像上傳路徑和檔名
+    格式: avatars/uid_{user_id}_{username}.{ext}
+    """
+    # 取得檔案副檔名
+    ext = filename.split('.')[-1]
+    # 建立新檔名: uid_{user_id}_{username}.{ext}
+    new_filename = f'uid_{instance.user.id}_{instance.user.username}.{ext}'
+    # 返回完整路徑
+    return os.path.join('avatars', new_filename)
 
 
 class UserProfile(models.Model):
@@ -17,7 +33,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(max_length=500, blank=True, verbose_name='個人簡介')
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name='頭像')
+    avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True, verbose_name='頭像')
     school = models.CharField(max_length=100, blank=True, verbose_name='學校')
     grade = models.CharField(max_length=50, blank=True, verbose_name='年級')
     location = models.CharField(max_length=100, blank=True, verbose_name='地點')
@@ -229,3 +245,32 @@ class Follow(models.Model):
         verbose_name_plural = '追蹤關係'
         unique_together = ['follower', 'following']
         ordering = ['-created_at']
+
+
+# ===== 信號處理器 =====
+
+@receiver(pre_save, sender=UserProfile)
+def delete_old_avatar(sender, instance, **kwargs):
+    """
+    在保存新頭像之前，自動刪除舊頭像檔案
+    避免佔用 media 空間
+    """
+    if not instance.pk:
+        # 如果是新建的 profile，不需要刪除舊檔案
+        return
+
+    try:
+        # 取得資料庫中的舊 profile
+        old_profile = UserProfile.objects.get(pk=instance.pk)
+
+        # 如果舊 profile 有頭像，且新頭像與舊頭像不同
+        if old_profile.avatar and old_profile.avatar != instance.avatar:
+            # 刪除舊頭像檔案
+            if os.path.isfile(old_profile.avatar.path):
+                os.remove(old_profile.avatar.path)
+    except UserProfile.DoesNotExist:
+        # 如果找不到舊 profile，不做任何處理
+        pass
+    except Exception as e:
+        # 記錄錯誤但不中斷保存流程
+        print(f"刪除舊頭像時發生錯誤: {e}")

@@ -10,16 +10,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const quickSkillButtons = document.querySelectorAll('.quick-skill-btn');
     const form = document.querySelector('form');
 
-    // 文件上傳處理
+    // 文件上傳處理與即時預覽
     const fileInput = document.querySelector('.file-input');
     const fileUploadName = document.querySelector('.file-upload-name');
+    const avatarPreviewImg = document.getElementById('avatar-preview-img');
 
     if (fileInput && fileUploadName) {
         fileInput.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
-                const fileName = this.files[0].name;
+                const file = this.files[0];
+                const fileName = file.name;
+
+                // 更新檔案名稱顯示
                 fileUploadName.textContent = fileName;
                 fileUploadName.classList.add('has-file');
+
+                // 即時預覽頭像
+                if (avatarPreviewImg && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        avatarPreviewImg.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
             } else {
                 fileUploadName.textContent = '尚未選擇檔案';
                 fileUploadName.classList.remove('has-file');

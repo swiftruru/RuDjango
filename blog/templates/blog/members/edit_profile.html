@@ -46,20 +46,32 @@
 
                 <div class="form-group">
                     <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="{{ form.avatar.id_for_label }}" name="{{ form.avatar.name }}"
-                            class="file-input" accept="image/*">
-                        <label for="{{ form.avatar.id_for_label }}" class="file-upload-label">
-                            <span class="file-upload-icon">📷</span>
-                            <span class="file-upload-text">選擇頭像圖片</span>
-                        </label>
-                        <span class="file-upload-name">尚未選擇檔案</span>
+
+                    <!-- 頭像預覽區 -->
+                    <div class="avatar-preview-container">
+                        <div class="avatar-preview">
+                            {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="Current Avatar" id="avatar-preview-img">
+                            {% else %}
+                            <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="Default Avatar" id="avatar-preview-img">
+                            {% endif %}
+                        </div>
+                        <div class="avatar-upload-info">
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="{{ form.avatar.id_for_label }}" name="{{ form.avatar.name }}"
+                                    class="file-input" accept="image/*">
+                                <label for="{{ form.avatar.id_for_label }}" class="file-upload-label">
+                                    <span class="file-upload-icon">📷</span>
+                                    <span class="file-upload-text">選擇頭像圖片</span>
+                                </label>
+                                <span class="file-upload-name">尚未選擇檔案</span>
+                            </div>
+                            <p class="form-help">建議使用正方形圖片，大小不超過 5MB</p>
+                        </div>
                     </div>
+
                     {% if form.avatar.errors %}
                     {{ form.avatar.errors }}
-                    {% endif %}
-                    {% if profile.avatar %}
-                    <p class="form-help">目前頭像：<a href="{{ profile.avatar.url }}" target="_blank">查看</a></p>
                     {% endif %}
                 </div>
             </div>

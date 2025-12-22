@@ -19,6 +19,7 @@
                     <li><a href="/" class="nav-link active">首頁</a></li>
                     <li><a href="/blog/about" class="nav-link">關於</a></li>
                     <li><a href="{% url 'blog_home' %}" class="nav-link">部落格</a></li>
+                    <li><a href="{% url 'tags_list' %}" class="nav-link">🏷️ 標籤</a></li>
                     {% if user.is_authenticated %}
                     <li><a href="{% url 'inbox' %}" class="nav-link nav-messages">
                             <span class="message-icon">✉️</span>

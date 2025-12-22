@@ -82,6 +82,13 @@
             <span>✏️ 更新於 {{ article.updated_at|date:"Y年m月d日 H:i" }}</span>
             {% endif %}
         </div>
+        {% if article.tags.all %}
+        <div class="article-tags-detail">
+            {% for tag in article.tags.all %}
+            <a href="{% url 'tag_articles' tag.slug %}" class="tag-link">🏷️ {{ tag.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
     <!-- 文章內容 -->

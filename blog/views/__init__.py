@@ -13,7 +13,9 @@ from .article_views import (
     article_delete,
     article_like,
     my_articles,
-    comment_delete
+    comment_delete,
+    tags_list,
+    tag_articles
 )
 
 # 會員相關 views
@@ -54,6 +56,8 @@ __all__ = [
     'article_like',
     'my_articles',
     'comment_delete',
+    'tags_list',
+    'tag_articles',
     # 會員相關
     'member',
     'member_edit',

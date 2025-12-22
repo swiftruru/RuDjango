@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from ..models import Article, ArticleReadHistory, Comment, Like
+from ..models import Article, ArticleReadHistory, Comment, Like, Tag
 from ..forms import ArticleForm, CommentForm
 
 
@@ -323,3 +323,49 @@ def article_like(request, id):
         'like_count': like_count,
         'message': message
     })
+
+
+def tags_list(request):
+    """
+    標籤列表頁（標籤雲）
+    顯示所有標籤及其使用次數
+    """
+    tags = Tag.objects.all().order_by('name')
+
+    # 計算每個標籤的文章數量並附加到標籤物件
+    tags_with_count = []
+    for tag in tags:
+        tags_with_count.append({
+            'tag': tag,
+            'count': tag.articles.count()
+        })
+
+    # 按文章數量排序（從多到少）
+    tags_with_count.sort(key=lambda x: x['count'], reverse=True)
+
+    context = {
+        'tags': tags_with_count,
+        'total_tags': len(tags_with_count)
+    }
+    return render(request, 'blog/tags/list.html', context)
+
+
+def tag_articles(request, slug):
+    """
+    顯示某個標籤的所有文章
+    支援分頁
+    """
+    tag = get_object_or_404(Tag, slug=slug)
+    articles = tag.articles.all().order_by('-created_at')
+
+    # 分頁
+    paginator = Paginator(articles, 10)  # 每頁 10 篇文章
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'tag': tag,
+        'articles': page_obj,
+        'total_articles': articles.count()
+    }
+    return render(request, 'blog/tags/articles.html', context)

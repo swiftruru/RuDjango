@@ -43,10 +43,16 @@ message_patterns = [
     path('messages/mark-all-read/', views.mark_all_read, name='mark_all_read'),
 ]
 
+# 標籤相關路由
+tag_patterns = [
+    path('tags/', views.tags_list, name='tags_list'),
+    path('tags/<slug:slug>/', views.tag_articles, name='tag_articles'),
+]
+
 # 靜態頁面路由
 page_patterns = [
     path('about', views.about),
 ]
 
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + page_patterns

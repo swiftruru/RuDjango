@@ -1,0 +1,57 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}標籤列表 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/tags.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="tags-container">
+    <!-- 頁面標題 -->
+    <div class="tags-header">
+        <h1 class="tags-title">🏷️ 標籤雲</h1>
+        <p class="tags-subtitle">探索 {{ total_tags }} 個主題標籤</p>
+    </div>
+
+    <!-- 返回按鈕 -->
+    <div class="tags-navigation">
+        <a href="{% url 'blog_home' %}" class="btn-back">← 返回文章列表</a>
+    </div>
+
+    <!-- 標籤雲 -->
+    {% if tags %}
+    <div class="tags-cloud">
+        {% for item in tags %}
+        <a href="{% url 'tag_articles' item.tag.slug %}" class="tag-cloud-item"
+           data-count="{{ item.count }}"
+           style="font-size: {% if item.count > 10 %}2rem{% elif item.count > 5 %}1.5rem{% elif item.count > 2 %}1.25rem{% else %}1rem{% endif %};">
+            <span class="tag-name">{{ item.tag.name }}</span>
+            <span class="tag-count">({{ item.count }})</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- 標籤統計 -->
+    <div class="tags-stats">
+        <h2 class="stats-title">📊 熱門標籤</h2>
+        <div class="tags-list">
+            {% for item in tags|slice:":10" %}
+            <div class="tag-list-item">
+                <a href="{% url 'tag_articles' item.tag.slug %}" class="tag-list-link">
+                    <span class="tag-list-name">🏷️ {{ item.tag.name }}</span>
+                    <span class="tag-list-count">{{ item.count }} 篇文章</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-tags">
+        <p>📭 目前還沒有任何標籤</p>
+        <a href="{% url 'article_create' %}" class="btn-create">發表第一篇文章</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

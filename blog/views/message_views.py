@@ -135,10 +135,15 @@ def message_detail(request, message_id):
                 reply_recipient = message.sender
 
             # 建立回覆訊息
+            # 處理回覆標題：只在開頭沒有 "Re: " 時才添加，避免多次回覆產生多個 "Re: "
+            reply_subject = message.subject
+            if not reply_subject.startswith('Re: '):
+                reply_subject = f'Re: {reply_subject}'
+
             reply = Message.objects.create(
                 sender=request.user,
                 recipient=reply_recipient,
-                subject=f'Re: {message.subject}',
+                subject=reply_subject,
                 content=reply_form.cleaned_data['content'],
                 parent_message=message
             )

@@ -4,6 +4,34 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
+
+
+class Tag(models.Model):
+    """標籤模型"""
+    name = models.CharField(max_length=50, unique=True, verbose_name='標籤名稱')
+    slug = models.SlugField(max_length=50, unique=True, blank=True, verbose_name='網址名稱')
+    description = models.TextField(blank=True, verbose_name='標籤描述')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
+
+    def save(self, *args, **kwargs):
+        """自動生成 slug"""
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def article_count(self):
+        """返回使用此標籤的文章數量"""
+        return self.articles.count()
+
+    class Meta:
+        verbose_name = '標籤'
+        verbose_name_plural = '標籤'
+        ordering = ['name']
 
 
 class Article(models.Model):
@@ -17,6 +45,12 @@ class Article(models.Model):
         null=True,
         blank=True,
         verbose_name='作者'
+    )
+    tags = models.ManyToManyField(
+        Tag,
+        related_name='articles',
+        blank=True,
+        verbose_name='標籤'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')

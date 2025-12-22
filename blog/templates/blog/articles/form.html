@@ -45,6 +45,15 @@
                 {{ form.content.errors }}
             </div>
 
+            <div class="form-group">
+                <label for="id_tags-input">{{ form.tags_input.label }}</label>
+                {{ form.tags_input }}
+                {% if form.tags_input.help_text %}
+                <span class="help-text">{{ form.tags_input.help_text }}</span>
+                {% endif %}
+                {{ form.tags_input.errors }}
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     {% if article %}✏️ 更新文章{% else %}📝 發表文章{% endif %}

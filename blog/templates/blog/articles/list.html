@@ -135,6 +135,13 @@
                         <a href="{% url 'article_detail' article.id %}">閱讀更多 →</a>
                     </div>
                 </div>
+                {% if article.tags.all %}
+                <div class="article-tags">
+                    {% for tag in article.tags.all %}
+                    <a href="{% url 'tag_articles' tag.slug %}" class="tag">🏷️ {{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </article>
             {% endfor %}
         </div>

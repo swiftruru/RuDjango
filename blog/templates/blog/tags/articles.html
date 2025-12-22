@@ -1,0 +1,95 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}{{ tag.name }} - 標籤文章 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/tags.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="tag-articles-container">
+    <!-- 標籤標題 -->
+    <div class="tag-header">
+        <h1 class="tag-title">
+            <span class="tag-icon">🏷️</span>
+            {{ tag.name }}
+        </h1>
+        {% if tag.description %}
+        <p class="tag-description">{{ tag.description }}</p>
+        {% endif %}
+        <p class="tag-count">共 {{ total_articles }} 篇文章</p>
+    </div>
+
+    <!-- 導航按鈕 -->
+    <div class="tag-navigation">
+        <a href="{% url 'tags_list' %}" class="btn-back">← 返回標籤列表</a>
+        <a href="{% url 'blog_home' %}" class="btn-home">返回首頁</a>
+    </div>
+
+    <!-- 文章列表 -->
+    {% if articles %}
+    <div class="articles-grid">
+        {% for article in articles %}
+        <article class="article-card">
+            <div class="article-header">
+                <h3 class="article-title">
+                    <a href="{% url 'article_detail' article.id %}">
+                        {{ article.title|truncatechars:50 }}
+                    </a>
+                </h3>
+                <time class="article-date">{{ article.created_at|date:"Y年m月d日" }}</time>
+            </div>
+            <div class="article-content">
+                <p>{{ article.content|markdown|truncatewords_html:30 }}</p>
+            </div>
+            <div class="article-footer">
+                <div class="article-footer-info">
+                    <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+                    {% if article.author %}
+                    <span class="author-name">✍️ <a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
+                    {% endif %}
+                </div>
+                <div class="article-footer-link">
+                    <a href="{% url 'article_detail' article.id %}">閱讀更多 →</a>
+                </div>
+            </div>
+            {% if article.tags.all %}
+            <div class="article-tags">
+                {% for tag_item in article.tags.all %}
+                <a href="{% url 'tag_articles' tag_item.slug %}" class="tag {% if tag_item.id == tag.id %}tag-current{% endif %}">
+                    🏷️ {{ tag_item.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- 分頁 -->
+    {% if articles.has_other_pages %}
+    <div class="pagination">
+        {% if articles.has_previous %}
+        <a href="?page=1" class="page-link">« 首頁</a>
+        <a href="?page={{ articles.previous_page_number }}" class="page-link">‹ 上一頁</a>
+        {% endif %}
+
+        <span class="page-current">第 {{ articles.number }} / {{ articles.paginator.num_pages }} 頁</span>
+
+        {% if articles.has_next %}
+        <a href="?page={{ articles.next_page_number }}" class="page-link">下一頁 ›</a>
+        <a href="?page={{ articles.paginator.num_pages }}" class="page-link">末頁 »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="no-articles">
+        <p>📭 此標籤目前還沒有文章</p>
+        <a href="{% url 'article_create' %}" class="btn-create">發表文章</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

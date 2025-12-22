@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..models import Message
 from ..forms.member import MessageForm, MessageReplyForm
 
@@ -24,8 +25,19 @@ def inbox(request):
     # 計算未讀數量
     unread_count = received_messages.filter(is_read=False).count()
 
+    # 分頁處理，每頁顯示 20 則訊息
+    paginator = Paginator(received_messages, 20)
+    page = request.GET.get('page', 1)
+
+    try:
+        messages_list = paginator.page(page)
+    except PageNotAnInteger:
+        messages_list = paginator.page(1)
+    except EmptyPage:
+        messages_list = paginator.page(paginator.num_pages)
+
     context = {
-        'messages_list': received_messages,
+        'messages_list': messages_list,
         'unread_count': unread_count,
         'active_tab': 'inbox',
     }
@@ -43,8 +55,19 @@ def outbox(request):
         sender_deleted=False
     ).select_related('recipient').order_by('-created_at')
 
+    # 分頁處理，每頁顯示 20 則訊息
+    paginator = Paginator(sent_messages, 20)
+    page = request.GET.get('page', 1)
+
+    try:
+        messages_list = paginator.page(page)
+    except PageNotAnInteger:
+        messages_list = paginator.page(1)
+    except EmptyPage:
+        messages_list = paginator.page(paginator.num_pages)
+
     context = {
-        'messages_list': sent_messages,
+        'messages_list': messages_list,
         'active_tab': 'outbox',
     }
     return render(request, 'blog/messages/outbox.html', context)
@@ -159,6 +182,7 @@ def message_detail(request, message_id):
         'reply_form': reply_form,
         'is_sender': message.sender == request.user,
         'is_recipient': message.recipient == request.user,
+        'can_recall': message.can_recall(request.user),
     }
     return render(request, 'blog/messages/detail.html', context)
 
@@ -208,3 +232,132 @@ def mark_all_read(request):
 
     messages.success(request, '✅ 所有訊息已標記為已讀！')
     return redirect('inbox')
+
+
+@login_required
+def message_recall(request, message_id):
+    """
+    收回訊息
+    只有寄件者可以收回，且對方未讀的訊息才能收回
+    """
+    message = get_object_or_404(Message, id=message_id)
+
+    # 檢查是否可以收回
+    if not message.can_recall(request.user):
+        if message.sender != request.user:
+            messages.error(request, '❌ 只有寄件者可以收回訊息！')
+        elif message.is_recalled:
+            messages.error(request, '❌ 此訊息已經收回過了！')
+        elif message.is_read:
+            messages.error(request, '❌ 對方已讀的訊息無法收回！')
+        else:
+            messages.error(request, '❌ 無法收回此訊息！')
+        return redirect('outbox')
+
+    # 收回訊息
+    message.recall()
+    messages.success(request, '✅ 訊息已成功收回！')
+    return redirect('outbox')
+
+
+@login_required
+def bulk_mark_read(request):
+    """
+    批次標記為已讀
+    """
+    if request.method == 'POST':
+        message_ids = request.POST.getlist('message_ids')
+
+        if not message_ids:
+            messages.error(request, '❌ 請選擇要標記的訊息！')
+            return redirect('inbox')
+
+        # 更新訊息為已讀
+        updated_count = Message.objects.filter(
+            id__in=message_ids,
+            recipient=request.user,
+            recipient_deleted=False
+        ).update(is_read=True)
+
+        if updated_count > 0:
+            messages.success(request, f'✅ 已成功標記 {updated_count} 則訊息為已讀！')
+        else:
+            messages.warning(request, '⚠️ 沒有訊息被更新！')
+
+    return redirect('inbox')
+
+
+@login_required
+def bulk_delete(request):
+    """
+    批次刪除訊息（收件匣）
+    """
+    if request.method == 'POST':
+        message_ids = request.POST.getlist('message_ids')
+
+        if not message_ids:
+            messages.error(request, '❌ 請選擇要刪除的訊息！')
+            return redirect('inbox')
+
+        # 軟刪除：標記為已刪除
+        deleted_messages = Message.objects.filter(
+            id__in=message_ids,
+            recipient=request.user,
+            recipient_deleted=False
+        )
+
+        deleted_count = 0
+        for message in deleted_messages:
+            message.recipient_deleted = True
+            message.save()
+
+            # 如果雙方都刪除，則真正刪除訊息
+            if message.sender_deleted:
+                message.delete()
+
+            deleted_count += 1
+
+        if deleted_count > 0:
+            messages.success(request, f'✅ 已成功刪除 {deleted_count} 則訊息！')
+        else:
+            messages.warning(request, '⚠️ 沒有訊息被刪除！')
+
+    return redirect('inbox')
+
+
+@login_required
+def outbox_bulk_delete(request):
+    """
+    批次刪除訊息（寄件匣）
+    """
+    if request.method == 'POST':
+        message_ids = request.POST.getlist('message_ids')
+
+        if not message_ids:
+            messages.error(request, '❌ 請選擇要刪除的訊息！')
+            return redirect('outbox')
+
+        # 軟刪除：標記為已刪除
+        deleted_messages = Message.objects.filter(
+            id__in=message_ids,
+            sender=request.user,
+            sender_deleted=False
+        )
+
+        deleted_count = 0
+        for message in deleted_messages:
+            message.sender_deleted = True
+            message.save()
+
+            # 如果雙方都刪除，則真正刪除訊息
+            if message.recipient_deleted:
+                message.delete()
+
+            deleted_count += 1
+
+        if deleted_count > 0:
+            messages.success(request, f'✅ 已成功刪除 {deleted_count} 則訊息！')
+        else:
+            messages.warning(request, '⚠️ 沒有訊息被刪除！')
+
+    return redirect('outbox')

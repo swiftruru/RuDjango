@@ -47,10 +47,24 @@
         </div>
 
         <div class="message-content-detail">
-            {{ message.content|linebreaksbr }}
+            {% if message.is_recalled %}
+                <div class="recalled-message-notice">
+                    {% if is_sender %}
+                    <p>⚠️ 此訊息已被您收回</p>
+                    {% else %}
+                    <p>⚠️ 此訊息已被寄件者收回</p>
+                    {% endif %}
+                    <p class="recalled-time">收回時間：{{ message.recalled_at|date:"Y-m-d H:i" }}</p>
+                </div>
+            {% else %}
+                {{ message.content|linebreaksbr }}
+            {% endif %}
         </div>
 
         <div class="message-detail-actions">
+            {% if can_recall %}
+            <a href="{% url 'message_recall' message.id %}" class="btn-recall" onclick="return confirm('確定要收回此訊息嗎？收回後對方將無法查看此訊息內容。')">🔙 收回訊息</a>
+            {% endif %}
             <a href="{% url 'message_delete' message.id %}" class="btn-delete" onclick="return confirm('確定要刪除此訊息嗎？')">🗑️ 刪除</a>
         </div>
     </div>

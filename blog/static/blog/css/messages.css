@@ -590,3 +590,259 @@
         justify-content: center;
     }
 }
+
+/* ===== 收回訊息相關樣式 ===== */
+
+/* 收回按鈕 */
+.btn-recall {
+    padding: 0.5rem 1rem;
+    background: #f59e0b;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-recall:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* 已收回標籤 */
+.recalled-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #fbbf24;
+    color: #78350f;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* 已收回訊息提示 */
+.recalled-message-notice {
+    padding: 2rem;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.recalled-message-notice p {
+    margin: 0.5rem 0;
+    color: #78350f;
+    font-weight: 600;
+}
+
+.recalled-time {
+    font-size: 0.875rem;
+    font-weight: 400 !important;
+    color: #92400e !important;
+}
+
+/* 訊息預覽中的已收回樣式 */
+.message-preview em {
+    color: #92400e;
+    font-style: italic;
+}
+
+/* ===== 批次操作相關樣式 ===== */
+
+/* 批次操作區域 */
+.bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* 可愛的核選框樣式 */
+.checkbox-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: relative;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-container:hover .checkmark {
+    border-color: #667eea;
+    transform: scale(1.1);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+/* 批次操作按鈕 */
+.btn-bulk {
+    padding: 0.5rem 1rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-bulk:hover:not(:disabled) {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-bulk:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-bulk-delete {
+    background: #ef4444;
+}
+
+.btn-bulk-delete:hover:not(:disabled) {
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* 訊息項目佈局調整 */
+.message-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.message-checkbox-wrapper {
+    padding-top: 1.5rem;
+    flex-shrink: 0;
+}
+
+.message-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .bulk-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .btn-bulk {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .message-checkbox-wrapper {
+        padding-top: 1rem;
+    }
+}
+
+/* 修正寄件箱和收件箱的標題區域間距 */
+.message-header {
+    padding: 0 0.5rem;
+    gap: 1rem;
+}
+
+.message-recipient {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* 分頁導航樣式 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    padding: 0.5rem 1rem;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+}
+
+.page-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.page-info {
+    padding: 0.5rem 1rem;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}

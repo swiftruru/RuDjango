@@ -42,7 +42,11 @@ from .message_views import (
     message_compose,
     message_detail,
     message_delete,
-    mark_all_read
+    mark_all_read,
+    message_recall,
+    bulk_mark_read,
+    bulk_delete,
+    outbox_bulk_delete
 )
 
 __all__ = [
@@ -79,4 +83,8 @@ __all__ = [
     'message_detail',
     'message_delete',
     'mark_all_read',
+    'message_recall',
+    'bulk_mark_read',
+    'bulk_delete',
+    'outbox_bulk_delete',
 ]

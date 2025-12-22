@@ -40,13 +40,17 @@ message_patterns = [
     path('messages/compose/<str:username>/', views.message_compose, name='message_compose_to'),
     path('messages/<int:message_id>/', views.message_detail, name='message_detail'),
     path('messages/<int:message_id>/delete/', views.message_delete, name='message_delete'),
+    path('messages/<int:message_id>/recall/', views.message_recall, name='message_recall'),
     path('messages/mark-all-read/', views.mark_all_read, name='mark_all_read'),
+    path('messages/bulk-mark_read/', views.bulk_mark_read, name='bulk_mark_read'),
+    path('messages/bulk-delete/', views.bulk_delete, name='bulk_delete'),
+    path('messages/outbox/bulk-delete/', views.outbox_bulk_delete, name='outbox_bulk_delete'),
 ]
 
 # 標籤相關路由
 tag_patterns = [
     path('tags/', views.tags_list, name='tags_list'),
-    path('tags/<slug:slug>/', views.tag_articles, name='tag_articles'),
+    path('tags/<str:slug>/', views.tag_articles, name='tag_articles'),
 ]
 
 # 靜態頁面路由

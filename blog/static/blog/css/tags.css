@@ -265,19 +265,24 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
     text-decoration: none;
-    border-radius: 20px;
+    border: 2px dashed #a5b4fc;
+    border-radius: 16px;
     font-size: 0.875rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.08);
 }
 
 .tag-link:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #667eea;
+    border-style: solid;
+    color: #5b6dd6;
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 /* ===== 響應式設計 ===== */

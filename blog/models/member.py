@@ -296,6 +296,10 @@ class Message(models.Model):
     sender_deleted = models.BooleanField(default=False, verbose_name='寄件者已刪除')
     recipient_deleted = models.BooleanField(default=False, verbose_name='收件者已刪除')
 
+    # 收回標記
+    is_recalled = models.BooleanField(default=False, verbose_name='已收回')
+    recalled_at = models.DateTimeField(null=True, blank=True, verbose_name='收回時間')
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
     read_at = models.DateTimeField(null=True, blank=True, verbose_name='閱讀時間')
 
@@ -314,6 +318,26 @@ class Message(models.Model):
             self.is_read = True
             self.read_at = timezone.now()
             self.save()
+
+    def can_recall(self, user):
+        """檢查是否可以收回訊息"""
+        # 只有寄件者可以收回
+        if self.sender != user:
+            return False
+        # 已經收回過的不能再收回
+        if self.is_recalled:
+            return False
+        # 對方已讀的不能收回
+        if self.is_read:
+            return False
+        return True
+
+    def recall(self):
+        """收回訊息"""
+        from django.utils import timezone
+        self.is_recalled = True
+        self.recalled_at = timezone.now()
+        self.save()
 
 
 # ===== 信號處理器 =====

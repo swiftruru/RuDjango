@@ -25,7 +25,15 @@
     <!-- 操作按鈕 -->
     {% if messages_list %}
     <div class="messages-actions">
-        <a href="{% url 'mark_all_read' %}" class="btn-action">標記全部為已讀</a>
+        <div class="bulk-actions">
+            <label class="checkbox-container">
+                <input type="checkbox" id="select-all-messages" class="message-checkbox">
+                <span class="checkmark"></span>
+                <span class="checkbox-label">全選</span>
+            </label>
+            <button type="button" id="bulk-mark-read" class="btn-bulk" disabled>標記為已讀</button>
+            <button type="button" id="bulk-delete" class="btn-bulk btn-bulk-delete" disabled>批次刪除</button>
+        </div>
         <span class="messages-count">共 {{ messages_list.count }} 則訊息</span>
     </div>
     {% endif %}
@@ -34,32 +42,50 @@
     <div class="messages-list">
         {% if messages_list %}
             {% for message in messages_list %}
-            <div class="message-item {% if not message.is_read %}unread{% endif %}">
-                <div class="message-header">
-                    <div class="message-sender">
-                        <span class="sender-icon">👤</span>
-                        <a href="{% url 'member_profile' username=message.sender.username %}" class="sender-name">
-                            {{ message.sender.first_name|default:message.sender.username }}
-                        </a>
-                    </div>
-                    <div class="message-time">
-                        {{ message.created_at|date:"Y-m-d H:i" }}
-                    </div>
+            <div class="message-item {% if not message.is_read %}unread{% endif %}" data-message-id="{{ message.id }}">
+                <div class="message-checkbox-wrapper">
+                    <label class="checkbox-container">
+                        <input type="checkbox" class="message-checkbox-item" data-message-id="{{ message.id }}">
+                        <span class="checkmark"></span>
+                    </label>
                 </div>
+                <div class="message-content-wrapper">
+                    <div class="message-header">
+                        <div class="message-sender">
+                            <span class="sender-icon">👤</span>
+                            <a href="{% url 'member_profile' username=message.sender.username %}" class="sender-name">
+                                {{ message.sender.first_name|default:message.sender.username }}
+                            </a>
+                        </div>
+                        <div class="message-time">
+                            {{ message.created_at|date:"Y-m-d H:i" }}
+                        </div>
+                    </div>
 
                 <a href="{% url 'message_detail' message.id %}" class="message-content-link">
                     <div class="message-subject">
-                        {% if not message.is_read %}<span class="new-badge">NEW</span>{% endif %}
                         {{ message.subject }}
+                        {% if message.is_recalled %}
+                        <span class="recalled-badge">已收回</span>
+                        {% elif message.is_read %}
+                        <span class="read-badge">已讀</span>
+                        {% else %}
+                        <span class="new-badge">NEW</span>
+                        {% endif %}
                     </div>
                     <div class="message-preview">
+                        {% if message.is_recalled %}
+                        <em>此訊息已被寄件者收回</em>
+                        {% else %}
                         {{ message.content|truncatewords:15 }}
+                        {% endif %}
                     </div>
                 </a>
 
-                <div class="message-actions">
-                    <a href="{% url 'message_detail' message.id %}" class="btn-read">查看</a>
-                    <a href="{% url 'message_delete' message.id %}" class="btn-delete" onclick="return confirm('確定要刪除此訊息嗎？')">刪除</a>
+                    <div class="message-actions">
+                        <a href="{% url 'message_detail' message.id %}" class="btn-read">查看</a>
+                        <a href="{% url 'message_delete' message.id %}" class="btn-delete" onclick="return confirm('確定要刪除此訊息嗎？')">刪除</a>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -70,5 +96,149 @@
             </div>
         {% endif %}
     </div>
+
+    <!-- 分頁導航 -->
+    {% if messages_list.has_other_pages %}
+    <div class="pagination">
+        {% if messages_list.has_previous %}
+        <a href="?page=1" class="page-link">&laquo; 首頁</a>
+        <a href="?page={{ messages_list.previous_page_number }}" class="page-link">上一頁</a>
+        {% endif %}
+
+        <span class="page-info">
+            第 {{ messages_list.number }} 頁，共 {{ messages_list.paginator.num_pages }} 頁
+        </span>
+
+        {% if messages_list.has_next %}
+        <a href="?page={{ messages_list.next_page_number }}" class="page-link">下一頁</a>
+        <a href="?page={{ messages_list.paginator.num_pages }}" class="page-link">末頁 &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-messages');
+    const messageCheckboxes = document.querySelectorAll('.message-checkbox-item');
+    const bulkMarkReadBtn = document.getElementById('bulk-mark-read');
+    const bulkDeleteBtn = document.getElementById('bulk-delete');
+
+    // 全選/取消全選
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            messageCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkButtons();
+        });
+    }
+
+    // 單個核選框變化
+    messageCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateBulkButtons();
+        });
+    });
+
+    // 更新全選框狀態
+    function updateSelectAllState() {
+        if (!selectAllCheckbox) return;
+        const checkedCount = document.querySelectorAll('.message-checkbox-item:checked').length;
+        selectAllCheckbox.checked = checkedCount === messageCheckboxes.length && checkedCount > 0;
+    }
+
+    // 更新批次按鈕狀態
+    function updateBulkButtons() {
+        const checkedCount = document.querySelectorAll('.message-checkbox-item:checked').length;
+        const hasChecked = checkedCount > 0;
+
+        if (bulkMarkReadBtn) bulkMarkReadBtn.disabled = !hasChecked;
+        if (bulkDeleteBtn) bulkDeleteBtn.disabled = !hasChecked;
+    }
+
+    // 批次標記已讀
+    if (bulkMarkReadBtn) {
+        bulkMarkReadBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.message-checkbox-item:checked');
+            const messageIds = Array.from(checkedBoxes).map(cb => cb.dataset.messageId);
+
+            if (messageIds.length === 0) return;
+
+            if (confirm(`確定要將 ${messageIds.length} 則訊息標記為已讀嗎？`)) {
+                bulkAction('mark_read', messageIds);
+            }
+        });
+    }
+
+    // 批次刪除
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.message-checkbox-item:checked');
+            const messageIds = Array.from(checkedBoxes).map(cb => cb.dataset.messageId);
+
+            if (messageIds.length === 0) return;
+
+            if (confirm(`確定要刪除 ${messageIds.length} 則訊息嗎？此操作無法復原。`)) {
+                bulkAction('delete', messageIds);
+            }
+        });
+    }
+
+    // 執行批次操作
+    function bulkAction(action, messageIds) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/blog/messages/bulk-${action}/`;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken.value;
+            form.appendChild(csrfInput);
+        } else {
+            const csrfCookie = getCookie('csrftoken');
+            if (csrfCookie) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfCookie;
+                form.appendChild(csrfInput);
+            }
+        }
+
+        messageIds.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'message_ids';
+            input.value = id;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // 獲取 Cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
 {% endblock %}

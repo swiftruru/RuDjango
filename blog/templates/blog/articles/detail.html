@@ -73,30 +73,37 @@
         <div class="article-content">{{ article.content|markdown }}</div>
     </div>
 
-    <!-- 點讚區 -->
+    <!-- 點讚區 (Instagram 風格) -->
     <div class="article-like-section">
         {% if user.is_authenticated %}
             {% if article.author == user %}
-                <button class="like-button disabled" disabled title="不能對自己的文章點讚">
-                    <span class="like-icon">❤️</span>
-                    <span class="like-text">不能對自己的文章點讚</span>
-                    <span class="like-count">{{ like_count }}</span>
+                <button class="like-button own-article"
+                        id="like-button-own">
+                    <span class="like-icon">🤍</span>
+                    <span class="like-text">讚</span>
+                    {% if like_count > 0 %}
+                    <span class="like-count">· {{ like_count }}</span>
+                    {% endif %}
                 </button>
             {% else %}
                 <button class="like-button {% if user_has_liked %}liked{% endif %}"
                         id="like-button"
                         data-article-id="{{ article.id }}"
                         data-liked="{% if user_has_liked %}true{% else %}false{% endif %}">
-                    <span class="like-icon">❤️</span>
-                    <span class="like-text">{% if user_has_liked %}已點讚{% else %}點讚{% endif %}</span>
-                    <span class="like-count">{{ like_count }}</span>
+                    <span class="like-icon">{% if user_has_liked %}❤️{% else %}🤍{% endif %}</span>
+                    <span class="like-text">讚</span>
+                    {% if like_count > 0 %}
+                    <span class="like-count">· {{ like_count }}</span>
+                    {% endif %}
                 </button>
             {% endif %}
         {% else %}
             <a href="{% url 'user_login' %}?next={{ request.path }}" class="like-button">
-                <span class="like-icon">❤️</span>
-                <span class="like-text">登入後點讚</span>
-                <span class="like-count">{{ like_count }}</span>
+                <span class="like-icon">🤍</span>
+                <span class="like-text">讚</span>
+                {% if like_count > 0 %}
+                <span class="like-count">· {{ like_count }}</span>
+                {% endif %}
             </a>
         {% endif %}
     </div>

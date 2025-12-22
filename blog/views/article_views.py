@@ -285,22 +285,32 @@ def article_like(request, id):
             'error': '不能對自己的文章點讚'
         }, status=403)
 
-    # 檢查是否已經點讚
-    like_exists = Like.objects.filter(article=article, user=request.user).first()
+    # 使用 get_or_create 處理點讚邏輯
+    # 這個方法在 SQLite 上更穩定
+    try:
+        like_obj, created = Like.objects.get_or_create(
+            article=article,
+            user=request.user
+        )
 
-    if like_exists:
-        # 取消點讚
-        like_exists.delete()
-        liked = False
-        message = '已取消點讚'
-    else:
-        # 新增點讚
-        Like.objects.create(article=article, user=request.user)
-        liked = True
-        message = '點讚成功'
+        if not created:
+            # 如果記錄已存在,刪除它(取消點讚)
+            like_obj.delete()
+            liked = False
+            message = '已取消點讚'
+        else:
+            # 如果是新創建的,表示點讚成功
+            liked = True
+            message = '點讚成功'
 
-    # 獲取最新的點讚數量
-    like_count = article.likes.count()
+        # 獲取最新的點讚數量
+        like_count = article.likes.count()
+    except Exception as e:
+        # 如果發生錯誤(例如併發衝突),返回錯誤
+        return JsonResponse({
+            'success': False,
+            'error': '操作失敗,請稍後再試'
+        }, status=500)
 
     return JsonResponse({
         'success': True,

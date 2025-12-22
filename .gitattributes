@@ -1,0 +1,10 @@
+# 將靜態資源和模板標記為 vendored，不計入語言統計
+static/** linguist-vendored
+templates/** linguist-vendored
+media/** linguist-vendored
+
+# 將特定目錄標記為文檔，不計入語言統計
+*.md linguist-documentation
+
+# 確保 Python 檔案被正確識別
+*.py linguist-detectable

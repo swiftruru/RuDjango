@@ -7,7 +7,8 @@ from django.db.models import Q, F
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from ..models import Article, ArticleReadHistory, Comment
+from django.http import JsonResponse
+from ..models import Article, ArticleReadHistory, Comment, Like
 from ..forms import ArticleForm, CommentForm
 
 
@@ -127,12 +128,20 @@ def article_detail(request, id):
     # 取得所有主留言（沒有父留言的留言）
     comments = article.comments.filter(parent=None).order_by('-created_at')
 
+    # 點讚相關數據
+    like_count = article.likes.count()
+    user_has_liked = False
+    if request.user.is_authenticated:
+        user_has_liked = Like.objects.filter(article=article, user=request.user).exists()
+
     context = {
         'article': article,
         'previous_article': previous_article,
         'next_article': next_article,
         'comment_form': comment_form,
         'comments': comments,
+        'like_count': like_count,
+        'user_has_liked': user_has_liked,
     }
     return render(request, 'blog/articles/detail.html', context)
 
@@ -253,3 +262,49 @@ def comment_delete(request, comment_id):
     if next_url:
         return redirect(next_url)
     return redirect('article_detail', id=article_id)
+
+
+@login_required
+def article_like(request, id):
+    """
+    文章點讚功能
+    - 使用者可以對其他會員的文章點讚
+    - 不能對自己的文章點讚
+    - 再次點擊取消點讚
+    - 返回 JSON 格式的響應
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '無效的請求方法'}, status=405)
+
+    article = get_object_or_404(Article, id=id)
+
+    # 檢查是否為自己的文章
+    if article.author == request.user:
+        return JsonResponse({
+            'success': False,
+            'error': '不能對自己的文章點讚'
+        }, status=403)
+
+    # 檢查是否已經點讚
+    like_exists = Like.objects.filter(article=article, user=request.user).first()
+
+    if like_exists:
+        # 取消點讚
+        like_exists.delete()
+        liked = False
+        message = '已取消點讚'
+    else:
+        # 新增點讚
+        Like.objects.create(article=article, user=request.user)
+        liked = True
+        message = '點讚成功'
+
+    # 獲取最新的點讚數量
+    like_count = article.likes.count()
+
+    return JsonResponse({
+        'success': True,
+        'liked': liked,
+        'like_count': like_count,
+        'message': message
+    })

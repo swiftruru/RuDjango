@@ -128,7 +128,7 @@
                     <div class="article-footer-info">
                         <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
                         {% if article.author %}
-                        <span class="author-name">✍️ {{ article.author|author_display }}</span>
+                        <span class="author-name">✍️ <a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
                         {% endif %}
                     </div>
                     <div class="article-footer-link">

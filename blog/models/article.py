@@ -92,3 +92,29 @@ class Comment(models.Model):
         verbose_name = '留言'
         verbose_name_plural = '留言'
         ordering = ['-created_at']
+
+
+class Like(models.Model):
+    """文章按讚模型"""
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='likes',
+        verbose_name='文章'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='likes',
+        verbose_name='按讚者'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='按讚時間')
+
+    def __str__(self):
+        return f"{self.user.username} 讚了 {self.article.title}"
+
+    class Meta:
+        verbose_name = '按讚'
+        verbose_name_plural = '按讚'
+        unique_together = ['article', 'user']  # 確保每個使用者對每篇文章只能按一次讚
+        ordering = ['-created_at']

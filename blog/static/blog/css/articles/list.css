@@ -391,6 +391,19 @@ mark.highlight {
     font-size: 0.9rem;
 }
 
+.article-footer-info .author-link {
+    color: #667eea;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.article-footer-info .author-link:hover {
+    color: #764ba2;
+    border-bottom-color: #764ba2;
+}
+
 .article-footer-link a {
     color: #667eea;
     text-decoration: none;

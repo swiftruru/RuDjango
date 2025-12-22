@@ -207,6 +207,19 @@
     margin: 0;
 }
 
+.activity-title .article-link {
+    color: #667eea;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 700;
+}
+
+.activity-title .article-link:hover {
+    color: #764ba2;
+    border-bottom-color: #764ba2;
+}
+
 .activity-type-badge {
     display: inline-flex;
     padding: 0.25rem 0.75rem;
@@ -297,37 +310,41 @@
 /* Pagination */
 .pagination {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.5rem;
     margin-top: 3rem;
     flex-wrap: wrap;
 }
 
-.pagination-btn {
-    padding: 0.75rem 1.5rem;
-    background: #fff;
+.page-link {
+    padding: 0.75rem 1rem;
+    background: white;
     color: #667eea;
-    border: 2px solid #667eea;
-    border-radius: 8px;
     text-decoration: none;
+    border-radius: 8px;
+    border: 2px solid #667eea;
     font-weight: 600;
     transition: all 0.3s ease;
+    min-width: 45px;
+    text-align: center;
 }
 
-.pagination-btn:hover {
-    background: #667eea;
-    color: #fff;
+.page-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.pagination-info {
-    padding: 0.75rem 1.5rem;
-    background: #f7fafc;
+.page-current {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border-radius: 8px;
     font-weight: 600;
-    color: #64748b;
+    min-width: 45px;
+    text-align: center;
 }
 
 /* Responsive Design */
@@ -366,8 +383,10 @@
         font-size: 1.1rem;
     }
 
-    .pagination-btn {
-        padding: 0.6rem 1rem;
+    .page-link,
+    .page-current {
+        padding: 0.6rem 0.8rem;
         font-size: 0.9rem;
+        min-width: 40px;
     }
 }

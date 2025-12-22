@@ -225,6 +225,42 @@ class Activity(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.title}'
 
+    def get_related_object(self):
+        """獲取相關物件"""
+        if not self.related_object_id:
+            return None
+
+        try:
+            if self.activity_type == 'post':
+                from .article import Article
+                return Article.objects.get(id=self.related_object_id)
+            elif self.activity_type == 'achievement':
+                return Achievement.objects.get(id=self.related_object_id)
+            elif self.activity_type == 'course':
+                return LearningCourse.objects.get(id=self.related_object_id)
+            elif self.activity_type == 'comment':
+                from .article import Comment
+                return Comment.objects.get(id=self.related_object_id)
+        except Exception:
+            return None
+
+        return None
+
+    def get_related_url(self):
+        """獲取相關物件的 URL"""
+        obj = self.get_related_object()
+        if not obj:
+            return None
+
+        if self.activity_type == 'post':
+            from django.urls import reverse
+            return reverse('article_detail', kwargs={'id': obj.id})
+        elif self.activity_type == 'comment':
+            from django.urls import reverse
+            return reverse('article_detail', kwargs={'id': obj.article.id})
+
+        return None
+
     class Meta:
         verbose_name = '使用者活動'
         verbose_name_plural = '使用者活動'

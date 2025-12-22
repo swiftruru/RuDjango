@@ -92,23 +92,36 @@ def selected_if_equal(value1, value2):
     return ''
 
 
+@register.filter(name='get_item')
+def get_item(dictionary, key):
+    """
+    從字典中獲取指定鍵的值
+
+    使用方式：
+    {{ my_dict|get_item:key_variable }}
+    """
+    if not dictionary:
+        return None
+    return dictionary.get(key)
+
+
 @register.simple_tag
 def activity_title_with_link(activity):
     """
     將活動標題中的文章名稱轉換為連結
     例如：「發表了文章《Django 教學》」會變成「發表了文章<a>《Django 教學》</a>」
-    
+
     使用方式：
     {% activity_title_with_link activity %}
     """
     title = activity.title
-    
+
     # 如果是發表文章類型且有相關物件ID
     if activity.activity_type == 'post' and activity.related_object_id:
         # 使用正則表達式找出《》內的文章名稱
         pattern = r'(《.*?》)'
         match = re.search(pattern, title)
-        
+
         if match:
             article_title = match.group(1)
             # 將《》內的文字替換為連結
@@ -119,6 +132,6 @@ def activity_title_with_link(activity):
                 f'<a href="{article_url}" class="activity-link">{article_title}</a>'
             )
             return mark_safe(linked_title)
-    
+
     # 其他情況直接返回原標題
     return title

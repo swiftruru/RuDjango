@@ -327,6 +327,8 @@
     gap: 1rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
 }
 
 .stat-card:hover {
@@ -334,8 +336,39 @@
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
 }
 
+.stat-card-link {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.stat-card-link:hover::before {
+    left: 100%;
+}
+
+.stat-card-link:hover .stat-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card-link:hover .stat-number {
+    color: #667eea;
+}
+
 .stat-icon {
     font-size: 2.5rem;
+    transition: transform 0.3s ease;
 }
 
 .stat-content {
@@ -348,12 +381,14 @@
     color: #1f2937;
     line-height: 1;
     margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
 }
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: #718096;
     margin-top: 0.25rem;
+    font-weight: 500;
 }
 
 /* Main Content */
@@ -1370,6 +1405,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -1401,6 +1437,7 @@
         opacity: 0;
         transform: scale(0.8);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -1487,4 +1524,52 @@
     .avatar-modal-info h3 {
         font-size: 1.125rem;
     }
+}
+
+/* ===== 追蹤訊息提示 ===== */
+.follow-message {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.follow-message.success {
+    background: #c6f6d5;
+    color: #22543d;
+    border: 2px solid #38a169;
+}
+
+.follow-message.error {
+    background: #fed7d7;
+    color: #742a2a;
+    border: 2px solid #e53e3e;
+}
+
+.follow-message.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 768px) {
+    .follow-message {
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
+        transform: translateX(0) translateY(-100px);
+        width: calc(100% - 2rem);
+    }
+
+    .follow-message.show {
+        transform: translateX(0) translateY(0);
+    }
+}
 }

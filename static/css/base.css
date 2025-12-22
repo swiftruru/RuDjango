@@ -67,7 +67,7 @@ body {
 .nav-link::after {
     content: '';
     position: absolute;
-    bottom: -5px;
+    bottom: -8px;
     left: 0;
     width: 0;
     height: 2px;
@@ -78,6 +78,45 @@ body {
 .nav-link:hover::after,
 .nav-link.active::after {
     width: 100%;
+}
+
+/* 用戶名稱徽章 */
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 1.75rem;
+    padding: 0 0.75rem;
+    background: rgba(102, 126, 234, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(102, 126, 234, 0.3);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-left: 0.5rem;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    transition: all 0.3s ease;
+    animation: badge-appear 0.5s ease;
+    vertical-align: middle;
+}
+
+.nav-link:hover .user-badge {
+    transform: scale(1.1);
+    background: rgba(102, 126, 234, 0.2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+@keyframes badge-appear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* ===== Hero 區域 (通用) ===== */

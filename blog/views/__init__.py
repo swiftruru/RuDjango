@@ -11,6 +11,7 @@ from .article_views import (
     article_create,
     article_edit,
     article_delete,
+    article_like,
     my_articles,
     comment_delete
 )
@@ -26,7 +27,10 @@ from .member_views import (
     user_login,
     user_register,
     user_logout,
-    edit_skills
+    edit_skills,
+    follow_user,
+    followers_list,
+    following_list
 )
 
 __all__ = [
@@ -37,6 +41,7 @@ __all__ = [
     'article_create',
     'article_edit',
     'article_delete',
+    'article_like',
     'my_articles',
     'comment_delete',
     # 會員相關
@@ -50,4 +55,7 @@ __all__ = [
     'user_register',
     'user_logout',
     'edit_skills',
+    'follow_user',
+    'followers_list',
+    'following_list',
 ]

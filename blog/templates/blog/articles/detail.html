@@ -55,7 +55,7 @@
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
             {% if article.author %}
-            <span>✍️ 作者：{{ article.author|author_display }}</span>
+            <span>✍️ 作者：<a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
             {% endif %}
             <span>📅 發布於 {{ article.created_at|date:"Y年m月d日 H:i" }}</span>
             {% if article.created_at != article.updated_at %}
@@ -71,6 +71,34 @@
          data-article-title="{{ article.title }}"
          data-article-excerpt="{{ article.content|striptags|truncatewords:20 }}">
         <div class="article-content">{{ article.content|markdown }}</div>
+    </div>
+
+    <!-- 點讚區 -->
+    <div class="article-like-section">
+        {% if user.is_authenticated %}
+            {% if article.author == user %}
+                <button class="like-button disabled" disabled title="不能對自己的文章點讚">
+                    <span class="like-icon">❤️</span>
+                    <span class="like-text">不能對自己的文章點讚</span>
+                    <span class="like-count">{{ like_count }}</span>
+                </button>
+            {% else %}
+                <button class="like-button {% if user_has_liked %}liked{% endif %}"
+                        id="like-button"
+                        data-article-id="{{ article.id }}"
+                        data-liked="{% if user_has_liked %}true{% else %}false{% endif %}">
+                    <span class="like-icon">❤️</span>
+                    <span class="like-text">{% if user_has_liked %}已點讚{% else %}點讚{% endif %}</span>
+                    <span class="like-count">{{ like_count }}</span>
+                </button>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'user_login' %}?next={{ request.path }}" class="like-button">
+                <span class="like-icon">❤️</span>
+                <span class="like-text">登入後點讚</span>
+                <span class="like-count">{{ like_count }}</span>
+            </a>
+        {% endif %}
     </div>
 
     <!-- 文章底部 -->
@@ -213,5 +241,6 @@
 
 {% block extra_js %}
 <script src="{% static 'blog/js/articles/share.js' %}"></script>
+<script src="{% static 'blog/js/articles/like.js' %}"></script>
 {% endblock %}
 {% endblock %}

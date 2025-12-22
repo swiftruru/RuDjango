@@ -12,7 +12,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
-from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow, ArticleReadHistory, Article, Comment
+from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow, ArticleReadHistory, Article, Comment, Like
 
 
 @login_required
@@ -37,10 +37,13 @@ def member_profile(request, username):
     is_own_profile = request.user.is_authenticated and request.user == target_user
 
     # 計算統計數據
+    # 計算用戶所有文章收到的讚數總和
+    likes_received = Like.objects.filter(article__author=target_user).count()
+
     stats = {
         'posts': target_user.articles.count(),
         'comments': target_user.comments.count(),  # 計算實際留言數
-        'likes_received': 0,  # 待實作
+        'likes_received': likes_received,
         'followers': target_user.followers.count(),
         'following': target_user.following.count(),
     }
@@ -120,9 +123,15 @@ def member_profile(request, username):
         'recent_articles': recent_articles,
     }
 
+    # 追蹤狀態
+    is_following = False
+    if request.user.is_authenticated and not is_own_profile:
+        is_following = Follow.objects.filter(follower=request.user, following=target_user).exists()
+
     context = {
         'member': member_data,
         'is_own_profile': is_own_profile,
+        'is_following': is_following,
     }
     return render(request, 'blog/members/profile.html', context)
 
@@ -263,16 +272,10 @@ def member_activities(request, username):
     # 取得所有活動記錄
     activities_list = Activity.objects.filter(user=target_user).order_by('-created_at')
 
-    # 分頁設定
-    paginator = Paginator(activities_list, 20)  # 每頁顯示 20 筆
-    page = request.GET.get('page', 1)
-
-    try:
-        activities = paginator.page(page)
-    except PageNotAnInteger:
-        activities = paginator.page(1)
-    except EmptyPage:
-        activities = paginator.page(paginator.num_pages)
+    # 分頁設定（與部落格列表一致）
+    paginator = Paginator(activities_list, 10)  # 每頁顯示 10 筆
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     # 準備會員資料
     member_data = {
@@ -282,9 +285,8 @@ def member_activities(request, username):
 
     context = {
         'member': member_data,
-        'activities': activities,
-        'is_paginated': paginator.num_pages > 1,
-        'page_obj': activities,
+        'activities': page_obj,
+        'page_obj': page_obj,
     }
 
     return render(request, 'blog/members/activities.html', context)
@@ -439,3 +441,129 @@ def learning_progress(request, username):
     }
 
     return render(request, 'blog/members/learning_progress.html', context)
+
+
+def followers_list(request, username):
+    """查看會員的追蹤者列表"""
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 取得追蹤者列表
+    followers = Follow.objects.filter(following=target_user).select_related('follower', 'follower__profile').order_by('-created_at')
+
+    # 分頁
+    paginator = Paginator(followers, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 如果當前用戶已登入，檢查是否追蹤了列表中的用戶
+    following_status = {}
+    if request.user.is_authenticated:
+        for follow in page_obj:
+            follower = follow.follower
+            if follower != request.user:
+                following_status[follower.id] = Follow.objects.filter(
+                    follower=request.user,
+                    following=follower
+                ).exists()
+
+    context = {
+        'member': target_user,
+        'is_own_profile': is_own_profile,
+        'page_obj': page_obj,
+        'following_status': following_status,
+        'list_type': 'followers',
+        'total_count': followers.count(),
+    }
+
+    return render(request, 'blog/members/follow_list.html', context)
+
+
+def following_list(request, username):
+    """查看會員的追蹤中列表"""
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 取得追蹤中列表
+    following = Follow.objects.filter(follower=target_user).select_related('following', 'following__profile').order_by('-created_at')
+
+    # 分頁
+    paginator = Paginator(following, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 如果當前用戶已登入，檢查是否追蹤了列表中的用戶
+    following_status = {}
+    if request.user.is_authenticated:
+        for follow in page_obj:
+            following_user = follow.following
+            if following_user != request.user:
+                following_status[following_user.id] = Follow.objects.filter(
+                    follower=request.user,
+                    following=following_user
+                ).exists()
+
+    context = {
+        'member': target_user,
+        'is_own_profile': is_own_profile,
+        'page_obj': page_obj,
+        'following_status': following_status,
+        'list_type': 'following',
+        'total_count': following.count(),
+    }
+
+    return render(request, 'blog/members/follow_list.html', context)
+
+
+@login_required
+def follow_user(request, username):
+    """
+    追蹤/取消追蹤使用者
+    - 使用者可以追蹤其他使用者
+    - 不能追蹤自己
+    - 再次點擊取消追蹤
+    - 返回 JSON 格式的響應
+    """
+    from django.http import JsonResponse
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '無效的請求方法'}, status=405)
+
+    target_user = get_object_or_404(User, username=username)
+
+    # 檢查是否為自己
+    if target_user == request.user:
+        return JsonResponse({
+            'success': False,
+            'error': '不能追蹤自己'
+        }, status=403)
+
+    # 檢查是否已經追蹤
+    follow_exists = Follow.objects.filter(follower=request.user, following=target_user).first()
+
+    if follow_exists:
+        # 取消追蹤
+        follow_exists.delete()
+        is_following = False
+        message = '已取消追蹤'
+    else:
+        # 新增追蹤
+        Follow.objects.create(follower=request.user, following=target_user)
+        is_following = True
+        message = '追蹤成功'
+
+    # 獲取最新的追蹤數量
+    followers_count = target_user.followers.count()
+    following_count = target_user.following.count()
+
+    return JsonResponse({
+        'success': True,
+        'is_following': is_following,
+        'followers_count': followers_count,
+        'following_count': following_count,
+        'message': message
+    })

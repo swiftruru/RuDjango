@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Article, ArticleReadHistory, Comment, UserProfile, Skill, Achievement, UserAchievement,
+    Article, ArticleReadHistory, Comment, Like, UserProfile, Skill, Achievement, UserAchievement,
     LearningCourse, UserCourseProgress, Activity, Follow
 )
 
@@ -44,6 +44,16 @@ class CommentAdmin(admin.ModelAdmin):
         """顯示留言內容預覽"""
         return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
     content_preview.short_description = '留言內容'
+
+
+# 按讚管理
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'article', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'article__title']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at']
 
 
 # 使用者資料管理

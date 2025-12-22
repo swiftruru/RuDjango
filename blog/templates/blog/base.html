@@ -21,7 +21,7 @@
                     <li><a href="{% url 'blog_home' %}" class="nav-link">部落格</a></li>
                     {% if user.is_authenticated %}
                     <li><a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心</a></li>
-                    <li><a href="{% url 'user_logout' %}" class="nav-link">登出 ({{ user_display_name }})</a></li>
+                    <li><a href="{% url 'user_logout' %}" class="nav-link">登出 <span class="user-badge">{{ user_display_name }}</span></a></li>
                     {% else %}
                     <li><a href="{% url 'user_login' %}" class="nav-link">登入</a></li>
                     <li><a href="{% url 'user_register' %}" class="nav-link">註冊</a></li>

@@ -67,7 +67,19 @@
                     </div>
                     <div class="activity-details">
                         <div class="activity-header">
-                            <h3 class="activity-title">{{ activity.title }}</h3>
+                            <h3 class="activity-title">
+                                {% if activity.activity_type == 'post' and activity.get_related_object %}
+                                    {% with article=activity.get_related_object %}
+                                        發表了文章《<a href="{% url 'article_detail' id=article.id %}" class="article-link">{{ article.title }}</a>》
+                                    {% endwith %}
+                                {% elif activity.activity_type == 'comment' and activity.get_related_object %}
+                                    {% with comment=activity.get_related_object %}
+                                        評論了文章《<a href="{% url 'article_detail' id=comment.article.id %}" class="article-link">{{ comment.article.title }}</a>》
+                                    {% endwith %}
+                                {% else %}
+                                    {{ activity.title }}
+                                {% endif %}
+                            </h3>
                             <span class="activity-type-badge {{ activity.activity_type }}">
                                 {{ activity.get_activity_type_display }}
                             </span>
@@ -90,20 +102,36 @@
             </div>
 
             <!-- Pagination -->
-            {% if is_paginated %}
+            {% if page_obj.paginator.num_pages > 1 %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                <a href="?page=1" class="pagination-btn">« 首頁</a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn">上一頁</a>
+                <a href="?page=1" class="page-link">
+                    « 首頁
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link">
+                    ‹ 上一頁
+                </a>
                 {% endif %}
 
-                <span class="pagination-info">
-                    第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-current">
+                    {{ num }}
                 </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="page-link">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
 
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn">下一頁</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-btn">末頁 »</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link">
+                    下一頁 ›
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">
+                    末頁 »
+                </a>
                 {% endif %}
             </div>
             {% endif %}

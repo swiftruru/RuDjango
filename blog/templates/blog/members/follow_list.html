@@ -1,0 +1,212 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}
+{% if list_type == 'followers' %}
+追蹤者 - {{ member.first_name|default:member.username }}
+{% else %}
+追蹤中 - {{ member.first_name|default:member.username }}
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/follow_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <a href="{% url 'member_profile' username=member.username %}" class="back-link">
+                <span class="back-icon">←</span>
+                返回個人頁面
+            </a>
+            <h1 class="page-title">
+                {% if list_type == 'followers' %}
+                👥 追蹤者
+                {% else %}
+                🌟 追蹤中
+                {% endif %}
+            </h1>
+            <p class="page-subtitle">
+                {{ member.first_name|default:member.username }} 的{% if list_type == 'followers' %}追蹤者{% else %}追蹤中{% endif %}
+                <span class="count-badge">{{ total_count }}</span>
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Follow List Content -->
+<section class="follow-list-content">
+    <div class="container">
+        <div class="follow-list-wrapper">
+            {% if page_obj %}
+            <div class="users-grid">
+                {% for follow in page_obj %}
+                <div class="user-card">
+                    <div class="user-avatar">
+                        {% if list_type == 'followers' %}
+                        {% if follow.follower.profile.avatar %}
+                        <img src="{{ follow.follower.profile.avatar.url }}" alt="{{ follow.follower.username }}">
+                        {% else %}
+                        <div class="avatar-placeholder">
+                            {{ follow.follower.username|slice:":1"|upper }}
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        {% if follow.following.profile.avatar %}
+                        <img src="{{ follow.following.profile.avatar.url }}" alt="{{ follow.following.username }}">
+                        {% else %}
+                        <div class="avatar-placeholder">
+                            {{ follow.following.username|slice:":1"|upper }}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="user-info">
+                        <h3 class="user-name">
+                            {% if list_type == 'followers' %}
+                            <a href="{% url 'member_profile' username=follow.follower.username %}">
+                                {{ follow.follower.first_name|default:follow.follower.username }}
+                            </a>
+                            {% else %}
+                            <a href="{% url 'member_profile' username=follow.following.username %}">
+                                {{ follow.following.first_name|default:follow.following.username }}
+                            </a>
+                            {% endif %}
+                        </h3>
+                        <p class="user-username">
+                            {% if list_type == 'followers' %}
+                            @{{ follow.follower.username }}
+                            {% else %}
+                            @{{ follow.following.username }}
+                            {% endif %}
+                        </p>
+                        {% if list_type == 'followers' %}
+                        {% if follow.follower.profile.bio %}
+                        <p class="user-bio">{{ follow.follower.profile.bio|truncatewords:15 }}</p>
+                        {% endif %}
+                        {% else %}
+                        {% if follow.following.profile.bio %}
+                        <p class="user-bio">{{ follow.following.profile.bio|truncatewords:15 }}</p>
+                        {% endif %}
+                        {% endif %}
+                        <div class="user-stats">
+                            <span class="stat-item">
+                                <span class="stat-icon">📝</span>
+                                {% if list_type == 'followers' %}
+                                {{ follow.follower.articles.count }} 文章
+                                {% else %}
+                                {{ follow.following.articles.count }} 文章
+                                {% endif %}
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-icon">👥</span>
+                                {% if list_type == 'followers' %}
+                                {{ follow.follower.followers.count }} 追蹤者
+                                {% else %}
+                                {{ follow.following.followers.count }} 追蹤者
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        {% if request.user.is_authenticated %}
+                        {% if list_type == 'followers' %}
+                        {% if follow.follower == request.user %}
+                        <span class="self-badge">這是你</span>
+                        {% else %}
+                        <button
+                            class="btn-follow {% if following_status|get_item:follow.follower.id %}following{% endif %}"
+                            data-username="{{ follow.follower.username }}"
+                            data-following="{% if following_status|get_item:follow.follower.id %}true{% else %}false{% endif %}">
+                            <span class="follow-icon">{% if following_status|get_item:follow.follower.id %}✓{% else %}+{% endif %}</span>
+                            <span class="follow-text">{% if following_status|get_item:follow.follower.id %}已追蹤{% else %}追蹤{% endif %}</span>
+                        </button>
+                        {% endif %}
+                        {% else %}
+                        {% if follow.following == request.user %}
+                        <span class="self-badge">這是你</span>
+                        {% else %}
+                        <button
+                            class="btn-follow {% if following_status|get_item:follow.following.id %}following{% endif %}"
+                            data-username="{{ follow.following.username }}"
+                            data-following="{% if following_status|get_item:follow.following.id %}true{% else %}false{% endif %}">
+                            <span class="follow-icon">{% if following_status|get_item:follow.following.id %}✓{% else %}+{% endif %}</span>
+                            <span class="follow-text">{% if following_status|get_item:follow.following.id %}已追蹤{% else %}追蹤{% endif %}</span>
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                        {% else %}
+                        <a href="{% url 'user_login' %}?next={{ request.path }}" class="btn-follow">
+                            <span class="follow-icon">+</span>
+                            <span class="follow-text">追蹤</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="page-link">« 首頁</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ 上一頁</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-current">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a href="?page={{ num }}"
+                    class="page-link">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-link">下一頁 ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">末頁 »</a>
+                    {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    {% if list_type == 'followers' %}
+                    👥
+                    {% else %}
+                    🌟
+                    {% endif %}
+                </div>
+                <h3 class="empty-title">
+                    {% if list_type == 'followers' %}
+                    還沒有追蹤者
+                    {% else %}
+                    還沒有追蹤任何人
+                    {% endif %}
+                </h3>
+                <p class="empty-text">
+                    {% if is_own_profile %}
+                    {% if list_type == 'followers' %}
+                    持續發表優質內容，會有更多人追蹤你！
+                    {% else %}
+                    開始追蹤其他會員，探索更多精彩內容吧！
+                    {% endif %}
+                    {% else %}
+                    {{ member.first_name|default:member.username }} {% if list_type == 'followers' %}還沒有追蹤者{% else %}還沒有追蹤任何人{% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'blog/js/members/follow_list.js' %}"></script>
+{% endblock %}

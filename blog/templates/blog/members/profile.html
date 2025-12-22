@@ -91,8 +91,19 @@
                     {% if is_own_profile %}
                     <a href="{% url 'member_edit' %}" class="btn btn-primary">編輯個人資料</a>
                     {% else %}
-                    <button class="btn btn-primary">追蹤</button>
-                    <button class="btn btn-secondary">發送訊息</button>
+                    {% if user.is_authenticated %}
+                    <button class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}"
+                        id="follow-btn" data-username="{{ member.username }}"
+                        data-following="{% if is_following %}true{% else %}false{% endif %}">
+                        <span class="follow-icon">{% if is_following %}✓{% else %}+{% endif %}</span>
+                        <span class="follow-text">{% if is_following %}已追蹤{% else %}追蹤{% endif %}</span>
+                    </button>
+                    {% else %}
+                    <a href="{% url 'user_login' %}?next={{ request.path }}" class="btn btn-primary">
+                        <span class="follow-icon">+</span>
+                        <span class="follow-text">追蹤</span>
+                    </a>
+                    {% endif %}
                     {% endif %}
                     <button class="btn btn-outline" id="share-btn">分享</button>
                 </div>
@@ -164,20 +175,20 @@
                     <div class="stat-label">獲得讚數</div>
                 </div>
             </div>
-            <div class="stat-card">
+            <a href="{% url 'followers_list' username=member.username %}" class="stat-card stat-card-link">
                 <div class="stat-icon">👥</div>
                 <div class="stat-content">
                     <div class="stat-number">{{ member.stats.followers|default:"0" }}</div>
                     <div class="stat-label">追蹤者</div>
                 </div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a href="{% url 'following_list' username=member.username %}" class="stat-card stat-card-link">
                 <div class="stat-icon">🌟</div>
                 <div class="stat-content">
                     <div class="stat-number">{{ member.stats.following|default:"0" }}</div>
                     <div class="stat-label">追蹤中</div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </section>
@@ -367,5 +378,6 @@
 
 {% block extra_js %}
 <script src="{% static 'blog/js/members/profile.js' %}"></script>
+<script src="{% static 'blog/js/members/follow.js' %}"></script>
 {% endblock %}
 {% endblock %}

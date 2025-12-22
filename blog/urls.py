@@ -10,6 +10,7 @@ article_patterns = [
     path('article/create/', views.article_create, name='article_create'),
     path('article/<int:id>/edit/', views.article_edit, name='article_edit'),
     path('article/<int:id>/delete/', views.article_delete, name='article_delete'),
+    path('article/<int:id>/like/', views.article_like, name='article_like'),
     path('my-articles/', views.my_articles, name='my_articles'),
     path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
 ]
@@ -20,6 +21,9 @@ member_patterns = [
     path('member/edit/', views.member_edit, name='member_edit'),
     path('member/skills/edit/', views.edit_skills, name='edit_skills'),
     path('member/<str:username>/', views.member_profile, name='member_profile'),
+    path('member/<str:username>/follow/', views.follow_user, name='follow_user'),
+    path('member/<str:username>/followers/', views.followers_list, name='followers_list'),
+    path('member/<str:username>/following/', views.following_list, name='following_list'),
     path('member/<str:username>/activities/', views.member_activities, name='member_activities'),
     path('member/<str:username>/achievements/', views.member_achievements, name='member_achievements'),
     path('member/<str:username>/learning/', views.learning_progress, name='learning_progress'),

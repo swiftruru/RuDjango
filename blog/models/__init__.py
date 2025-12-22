@@ -4,7 +4,7 @@ Blog app 的 Models 模組
 """
 
 # 文章相關 models
-from .article import Article, ArticleReadHistory, Comment
+from .article import Article, ArticleReadHistory, Comment, Like
 
 # 會員相關 models
 from .member import (
@@ -23,6 +23,7 @@ __all__ = [
     'Article',
     'ArticleReadHistory',
     'Comment',
+    'Like',
     # 會員相關
     'UserProfile',
     'Skill',

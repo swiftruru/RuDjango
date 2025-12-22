@@ -98,6 +98,10 @@
                         <span class="follow-icon">{% if is_following %}✓{% else %}+{% endif %}</span>
                         <span class="follow-text">{% if is_following %}已追蹤{% else %}追蹤{% endif %}</span>
                     </button>
+                    <a href="{% url 'message_compose_to' username=member.username %}" class="btn btn-primary btn-message">
+                        <span class="message-icon">✉️</span>
+                        <span class="message-text">發送訊息</span>
+                    </a>
                     {% else %}
                     <a href="{% url 'user_login' %}?next={{ request.path }}" class="btn btn-primary">
                         <span class="follow-icon">+</span>

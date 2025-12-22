@@ -33,6 +33,16 @@ from .member_views import (
     following_list
 )
 
+# 訊息相關 views
+from .message_views import (
+    inbox,
+    outbox,
+    message_compose,
+    message_detail,
+    message_delete,
+    mark_all_read
+)
+
 __all__ = [
     # 文章相關
     'home',
@@ -58,4 +68,11 @@ __all__ = [
     'follow_user',
     'followers_list',
     'following_list',
+    # 訊息相關
+    'inbox',
+    'outbox',
+    'message_compose',
+    'message_detail',
+    'message_delete',
+    'mark_all_read',
 ]

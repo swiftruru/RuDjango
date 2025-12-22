@@ -16,6 +16,7 @@ from .member import (
     UserCourseProgress,
     Activity,
     Follow,
+    Message,
 )
 
 __all__ = [
@@ -33,4 +34,5 @@ __all__ = [
     'UserCourseProgress',
     'Activity',
     'Follow',
+    'Message',
 ]

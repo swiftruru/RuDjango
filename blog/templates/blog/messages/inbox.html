@@ -1,0 +1,74 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}收件匣 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <h1 class="messages-title">📨 收件匣</h1>
+
+    <!-- 訊息導航 -->
+    <div class="messages-nav">
+        <a href="{% url 'inbox' %}" class="nav-tab active">📥 收件匣
+            {% if unread_count > 0 %}
+            <span class="badge">{{ unread_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'outbox' %}" class="nav-tab">📤 寄件匣</a>
+        <a href="{% url 'message_compose' %}" class="nav-tab compose-btn">✏️ 撰寫訊息</a>
+    </div>
+
+    <!-- 操作按鈕 -->
+    {% if messages_list %}
+    <div class="messages-actions">
+        <a href="{% url 'mark_all_read' %}" class="btn-action">標記全部為已讀</a>
+        <span class="messages-count">共 {{ messages_list.count }} 則訊息</span>
+    </div>
+    {% endif %}
+
+    <!-- 訊息列表 -->
+    <div class="messages-list">
+        {% if messages_list %}
+            {% for message in messages_list %}
+            <div class="message-item {% if not message.is_read %}unread{% endif %}">
+                <div class="message-header">
+                    <div class="message-sender">
+                        <span class="sender-icon">👤</span>
+                        <a href="{% url 'member_profile' username=message.sender.username %}" class="sender-name">
+                            {{ message.sender.first_name|default:message.sender.username }}
+                        </a>
+                    </div>
+                    <div class="message-time">
+                        {{ message.created_at|date:"Y-m-d H:i" }}
+                    </div>
+                </div>
+
+                <a href="{% url 'message_detail' message.id %}" class="message-content-link">
+                    <div class="message-subject">
+                        {% if not message.is_read %}<span class="new-badge">NEW</span>{% endif %}
+                        {{ message.subject }}
+                    </div>
+                    <div class="message-preview">
+                        {{ message.content|truncatewords:15 }}
+                    </div>
+                </a>
+
+                <div class="message-actions">
+                    <a href="{% url 'message_detail' message.id %}" class="btn-read">查看</a>
+                    <a href="{% url 'message_delete' message.id %}" class="btn-delete" onclick="return confirm('確定要刪除此訊息嗎？')">刪除</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-messages">
+                <p>📭 收件匣是空的</p>
+                <p class="hint">目前沒有收到任何訊息</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

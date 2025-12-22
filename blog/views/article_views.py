@@ -207,20 +207,25 @@ def article_delete(request, id):
     只有作者本人才能刪除
     """
     article = get_object_or_404(Article, id=id)
-    
+
     # 檢查是否為作者本人
     if article.author != request.user:
         messages.error(request, '❌ 您沒有權限刪除此文章！')
         return redirect('article_detail', id=id)
-    
+
+    # 獲取來源頁面，預設為文章詳細頁
+    next_url = request.GET.get('next', '')
+
     if request.method == 'POST':
         title = article.title
         article.delete()
         messages.success(request, f'✅ 已刪除文章「{title}」')
+        # 刪除成功後返回我的文章頁面
         return redirect('my_articles')
-    
+
     context = {
         'article': article,
+        'next_url': next_url,  # 傳遞來源頁面給模板
     }
     return render(request, 'blog/articles/delete_confirm.html', context)
 

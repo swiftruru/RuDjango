@@ -1,0 +1,77 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}撰寫訊息 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <h1 class="messages-title">✏️ 撰寫訊息</h1>
+
+    <!-- 訊息導航 -->
+    <div class="messages-nav">
+        <a href="{% url 'inbox' %}" class="nav-tab">📥 收件匣</a>
+        <a href="{% url 'outbox' %}" class="nav-tab">📤 寄件匣</a>
+        <a href="{% url 'message_compose' %}" class="nav-tab active compose-btn">✏️ 撰寫訊息</a>
+    </div>
+
+    <!-- 訊息表單 -->
+    <div class="message-form-container">
+        <form method="post" class="message-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.recipient_username.id_for_label }}">
+                    {{ form.recipient_username.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.recipient_username }}
+                {% if form.recipient_username.errors %}
+                    <div class="error-message">
+                        {{ form.recipient_username.errors }}
+                    </div>
+                {% endif %}
+                {% if recipient %}
+                    <div class="hint-message">
+                        正在發送訊息給 <strong>{{ recipient.first_name|default:recipient.username }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.subject.id_for_label }}">
+                    {{ form.subject.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.subject }}
+                {% if form.subject.errors %}
+                    <div class="error-message">
+                        {{ form.subject.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}">
+                    {{ form.content.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                    <div class="error-message">
+                        {{ form.content.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">📤 發送訊息</button>
+                <a href="{% url 'inbox' %}" class="btn-cancel">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

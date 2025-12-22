@@ -23,7 +23,11 @@
         {% csrf_token %}
         <div class="delete-actions">
             <button type="submit" class="btn btn-danger">確定刪除</button>
-            <a href="{% url 'article_detail' article.id %}" class="btn btn-secondary">取消</a>
+            {% if next_url %}
+                <a href="{{ next_url }}" class="btn btn-secondary">取消</a>
+            {% else %}
+                <a href="{% url 'article_detail' article.id %}" class="btn btn-secondary">取消</a>
+            {% endif %}
         </div>
     </form>
 </div>

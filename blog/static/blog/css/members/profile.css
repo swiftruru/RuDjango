@@ -276,6 +276,22 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Message Button Specific Styles */
+.btn-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-message .message-icon {
+    font-size: 1.125rem;
+}
+
+.btn-message .message-text {
+    font-weight: 600;
+}
+
 /* Level Progress */
 .level-progress {
     background: rgba(255, 255, 255, 0.15);

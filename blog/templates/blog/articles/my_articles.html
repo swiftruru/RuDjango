@@ -64,7 +64,7 @@
                     <a href="{% url 'article_detail' article.id %}" class="btn-action"
                         style="background: #667eea; color: white;">📖 查看</a>
                     <a href="{% url 'article_edit' article.id %}" class="btn-action btn-edit">✏️ 編輯</a>
-                    <a href="{% url 'article_delete' article.id %}" class="btn-action btn-delete">🗑️ 刪除</a>
+                    <a href="{% url 'article_delete' article.id %}?next={{ request.path }}" class="btn-action btn-delete">🗑️ 刪除</a>
                 </div>
             </article>
             {% endfor %}

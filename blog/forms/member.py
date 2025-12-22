@@ -198,3 +198,76 @@ class UserProfileForm(forms.ModelForm):
                 if len(skill_name) <= 50:
                     skill, created = Skill.objects.get_or_create(name=skill_name)
                     self.user.skills.add(skill)
+
+
+class MessageForm(forms.Form):
+    """私人訊息表單"""
+    recipient_username = forms.CharField(
+        max_length=150,
+        required=True,
+        label='收件者',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '請輸入收件者的使用者名稱'
+        })
+    )
+    subject = forms.CharField(
+        max_length=200,
+        required=True,
+        label='主旨',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '請輸入訊息主旨'
+        })
+    )
+    content = forms.CharField(
+        required=True,
+        label='內容',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': '請輸入訊息內容',
+            'rows': 8
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.sender = kwargs.pop('sender', None)
+        self.recipient = kwargs.pop('recipient', None)
+        super().__init__(*args, **kwargs)
+
+        # 如果有指定收件者，預填並設為唯讀
+        if self.recipient:
+            self.fields['recipient_username'].initial = self.recipient.username
+            self.fields['recipient_username'].widget.attrs['readonly'] = True
+
+    def clean_recipient_username(self):
+        username = self.cleaned_data.get('recipient_username')
+
+        # 如果已有指定收件者，使用指定的
+        if self.recipient:
+            return self.recipient.username
+
+        # 檢查用戶是否存在
+        try:
+            User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise forms.ValidationError('找不到此使用者')
+
+        # 不能發送訊息給自己
+        if self.sender and username == self.sender.username:
+            raise forms.ValidationError('不能發送訊息給自己')
+
+        return username
+
+
+class MessageReplyForm(forms.Form):
+    """訊息回覆表單（簡化版，只需要內容）"""
+    content = forms.CharField(
+        required=True,
+        label='回覆內容',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': '請輸入回覆內容',
+            'rows': 6
+        })
+    )

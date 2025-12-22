@@ -1,0 +1,97 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ message.subject }} - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <!-- 返回按鈕 -->
+    <div class="message-detail-header">
+        {% if is_recipient %}
+            <a href="{% url 'inbox' %}" class="btn-back">← 返回收件匣</a>
+        {% else %}
+            <a href="{% url 'outbox' %}" class="btn-back">← 返回寄件匣</a>
+        {% endif %}
+    </div>
+
+    <!-- 訊息詳情 -->
+    <div class="message-detail-card">
+        <div class="message-detail-header-info">
+            <h1 class="message-subject-detail">{{ message.subject }}</h1>
+            <div class="message-meta">
+                <div class="message-participants">
+                    <div class="participant">
+                        <span class="label">寄件者：</span>
+                        <a href="{% url 'member_profile' username=message.sender.username %}" class="participant-name">
+                            {{ message.sender.first_name|default:message.sender.username }}
+                        </a>
+                    </div>
+                    <div class="participant">
+                        <span class="label">收件者：</span>
+                        <a href="{% url 'member_profile' username=message.recipient.username %}" class="participant-name">
+                            {{ message.recipient.first_name|default:message.recipient.username }}
+                        </a>
+                    </div>
+                </div>
+                <div class="message-time-detail">
+                    📅 {{ message.created_at|date:"Y年m月d日 H:i" }}
+                    {% if message.is_read and message.read_at %}
+                        <br><span class="read-time">✓ 已於 {{ message.read_at|date:"Y-m-d H:i" }} 閱讀</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="message-content-detail">
+            {{ message.content|linebreaksbr }}
+        </div>
+
+        <div class="message-detail-actions">
+            <a href="{% url 'message_delete' message.id %}" class="btn-delete" onclick="return confirm('確定要刪除此訊息嗎？')">🗑️ 刪除</a>
+        </div>
+    </div>
+
+    <!-- 回覆列表 -->
+    {% if replies %}
+    <div class="replies-section">
+        <h2 class="replies-title">💬 回覆記錄 ({{ replies.count }})</h2>
+        {% for reply in replies %}
+        <div class="reply-item {% if reply.sender == request.user %}own-reply{% endif %}">
+            <div class="reply-header">
+                <a href="{% url 'member_profile' username=reply.sender.username %}" class="reply-sender">
+                    {{ reply.sender.first_name|default:reply.sender.username }}
+                </a>
+                <span class="reply-time">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            <div class="reply-content">
+                {{ reply.content|linebreaksbr }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 回覆表單 -->
+    <div class="reply-form-section">
+        <h2 class="reply-form-title">💬 回覆訊息</h2>
+        <form method="post" class="reply-form">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ reply_form.content }}
+                {% if reply_form.content.errors %}
+                    <div class="error-message">
+                        {{ reply_form.content.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">📤 發送回覆</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

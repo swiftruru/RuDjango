@@ -64,6 +64,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'blog.context_processors.user_display_name',
                 'blog.context_processors.version_context',
+                'blog.context_processors.unread_messages',
             ],
         },
     },

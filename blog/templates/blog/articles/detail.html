@@ -52,6 +52,26 @@
             🔗
         </button>
 
+        <!-- 編輯與刪除按鈕 -->
+        {% if article.author == request.user %}
+        <div class="article-header-actions">
+            <a href="{% url 'article_edit' article.id %}" class="action-icon-button edit-icon-button" title="編輯文章">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </a>
+            <a href="{% url 'article_delete' article.id %}?next={{ request.path }}" class="action-icon-button delete-icon-button" title="刪除文章">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </a>
+        </div>
+        {% endif %}
+
         <h1>{{ article.title }}</h1>
         <div class="article-meta">
             {% if article.author %}
@@ -81,10 +101,10 @@
                         id="like-button-own">
                     <span class="like-icon">🤍</span>
                     <span class="like-text">讚</span>
-                    {% if like_count > 0 %}
-                    <span class="like-count">· {{ like_count }}</span>
-                    {% endif %}
                 </button>
+                {% if like_count > 0 %}
+                <span class="like-count-display">· {{ like_count }}</span>
+                {% endif %}
             {% else %}
                 <button class="like-button {% if user_has_liked %}liked{% endif %}"
                         id="like-button"
@@ -92,19 +112,19 @@
                         data-liked="{% if user_has_liked %}true{% else %}false{% endif %}">
                     <span class="like-icon">{% if user_has_liked %}❤️{% else %}🤍{% endif %}</span>
                     <span class="like-text">讚</span>
-                    {% if like_count > 0 %}
-                    <span class="like-count">· {{ like_count }}</span>
-                    {% endif %}
                 </button>
+                {% if like_count > 0 %}
+                <span class="like-count-display">· {{ like_count }}</span>
+                {% endif %}
             {% endif %}
         {% else %}
             <a href="{% url 'user_login' %}?next={{ request.path }}" class="like-button">
                 <span class="like-icon">🤍</span>
                 <span class="like-text">讚</span>
-                {% if like_count > 0 %}
-                <span class="like-count">· {{ like_count }}</span>
-                {% endif %}
             </a>
+            {% if like_count > 0 %}
+            <span class="like-count-display">· {{ like_count }}</span>
+            {% endif %}
         {% endif %}
     </div>
 
@@ -132,18 +152,6 @@
 
         <div class="footer-actions-container">
             <a href="{% url 'blog_home' %}" class="back-button">← 返回列表</a>
-            {% if article.author == request.user %}
-            <div class="author-actions">
-                <a href="{% url 'article_edit' article.id %}" class="action-button edit-button">
-                    <span class="button-icon">✏️</span>
-                    <span class="button-text">編輯</span>
-                </a>
-                <a href="{% url 'article_delete' article.id %}" class="action-button delete-button">
-                    <span class="button-icon">🗑️</span>
-                    <span class="button-text">刪除</span>
-                </a>
-            </div>
-            {% endif %}
         </div>
     </div>
 

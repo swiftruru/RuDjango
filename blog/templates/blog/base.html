@@ -20,6 +20,13 @@
                     <li><a href="/blog/about" class="nav-link">關於</a></li>
                     <li><a href="{% url 'blog_home' %}" class="nav-link">部落格</a></li>
                     {% if user.is_authenticated %}
+                    <li><a href="{% url 'inbox' %}" class="nav-link nav-messages">
+                            <span class="message-icon">✉️</span>
+                            訊息
+                            {% if unread_message_count > 0 %}
+                            <span class="message-badge">{{ unread_message_count }}</span>
+                            {% endif %}
+                        </a></li>
                     <li><a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心</a></li>
                     <li><a href="{% url 'user_logout' %}" class="nav-link">登出 <span class="user-badge">{{ user_display_name }}</span></a></li>
                     {% else %}
@@ -30,6 +37,17 @@
             </nav>
         </div>
     </header>
+
+    <!-- Django Messages 顯示區塊 -->
+    {% if messages %}
+    <div class="messages-container-alerts">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main>
         {% block content %}
@@ -50,6 +68,21 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // 自動隱藏訊息提示
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('fade-out');
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 400);
+                }, 3500); // 3.5秒後開始淡出
+            });
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

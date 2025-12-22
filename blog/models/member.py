@@ -283,6 +283,39 @@ class Follow(models.Model):
         ordering = ['-created_at']
 
 
+class Message(models.Model):
+    """私人訊息"""
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages', verbose_name='寄件者')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', verbose_name='收件者')
+    subject = models.CharField(max_length=200, verbose_name='主旨')
+    content = models.TextField(verbose_name='內容')
+    is_read = models.BooleanField(default=False, verbose_name='已讀')
+    parent_message = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies', verbose_name='回覆訊息')
+
+    # 刪除標記（軟刪除）
+    sender_deleted = models.BooleanField(default=False, verbose_name='寄件者已刪除')
+    recipient_deleted = models.BooleanField(default=False, verbose_name='收件者已刪除')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
+    read_at = models.DateTimeField(null=True, blank=True, verbose_name='閱讀時間')
+
+    def __str__(self):
+        return f'{self.sender.username} → {self.recipient.username}: {self.subject}'
+
+    class Meta:
+        verbose_name = '私人訊息'
+        verbose_name_plural = '私人訊息'
+        ordering = ['-created_at']
+
+    def mark_as_read(self):
+        """標記為已讀"""
+        if not self.is_read:
+            from django.utils import timezone
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save()
+
+
 # ===== 信號處理器 =====
 
 @receiver(pre_save, sender=UserProfile)

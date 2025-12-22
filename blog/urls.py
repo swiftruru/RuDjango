@@ -32,10 +32,21 @@ member_patterns = [
     path('logout/', views.user_logout, name='user_logout'),
 ]
 
+# 私人訊息路由
+message_patterns = [
+    path('messages/inbox/', views.inbox, name='inbox'),
+    path('messages/outbox/', views.outbox, name='outbox'),
+    path('messages/compose/', views.message_compose, name='message_compose'),
+    path('messages/compose/<str:username>/', views.message_compose, name='message_compose_to'),
+    path('messages/<int:message_id>/', views.message_detail, name='message_detail'),
+    path('messages/<int:message_id>/delete/', views.message_delete, name='message_delete'),
+    path('messages/mark-all-read/', views.mark_all_read, name='mark_all_read'),
+]
+
 # 靜態頁面路由
 page_patterns = [
     path('about', views.about),
 ]
 
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + page_patterns

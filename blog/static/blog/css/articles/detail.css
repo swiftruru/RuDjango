@@ -58,11 +58,20 @@
 .article-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 3rem 2rem;
+    padding: 4.5rem 2rem 3rem 2rem;
     border-radius: 20px;
     margin-bottom: 3rem;
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     position: relative;
+}
+
+/* 文章標題區的編輯刪除按鈕 */
+.article-header-actions {
+    position: absolute;
+    top: 1rem;
+    right: 4.5rem;
+    display: flex;
+    gap: 0.5rem;
 }
 
 .article-header h1 {
@@ -635,56 +644,104 @@
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-.author-actions {
-    display: flex;
-    gap: 0.75rem;
-}
 
-.action-button {
+/* Icon 按鈕樣式 - 低調設計 */
+.action-icon-button {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.75rem;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
     text-decoration: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
 }
 
-.edit-button {
-    background: white;
-    color: #48bb78;
-    border-color: #48bb78;
+.action-icon-button svg {
+    transition: all 0.25s ease;
 }
 
-.edit-button:hover {
-    background: #48bb78;
+/* 編輯按鈕 */
+.edit-icon-button {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.edit-icon-button:hover {
+    background: rgba(72, 187, 120, 0.9);
+    border-color: rgba(72, 187, 120, 1);
     color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.delete-button {
-    background: white;
-    color: #f56565;
-    border-color: #f56565;
+.edit-icon-button:active {
+    transform: translateY(0) scale(1);
 }
 
-.delete-button:hover {
-    background: #f56565;
+/* 刪除按鈕 */
+.delete-icon-button {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.delete-icon-button:hover {
+    background: rgba(245, 101, 101, 0.9);
+    border-color: rgba(245, 101, 101, 1);
     color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.button-icon {
-    font-size: 1.2rem;
+.delete-icon-button:active {
+    transform: translateY(0) scale(1);
 }
 
-.button-text {
-    font-size: 1rem;
+/* Tooltip 效果 */
+.action-icon-button::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    z-index: 10;
+}
+
+/* Tooltip 小三角形 */
+.action-icon-button::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(0, 0, 0, 0.85);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    z-index: 10;
+}
+
+.action-icon-button:hover::after,
+.action-icon-button:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 /* Message 動畫 */
@@ -726,6 +783,10 @@
 }
 
 @media (max-width: 768px) {
+    .article-header {
+        padding: 3.5rem 1.5rem 2.5rem 1.5rem;
+    }
+
     .article-header h1 {
         font-size: 2rem;
     }
@@ -734,6 +795,23 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 0.75rem;
+    }
+
+    /* 手機版：編輯刪除按鈕組調整位置，為分享按鈕留出空間 */
+    .article-header-actions {
+        top: 0.75rem;
+        right: 3.25rem;
+        gap: 0.25rem;
+    }
+
+    .action-icon-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .action-icon-button svg {
+        width: 16px;
+        height: 16px;
     }
 
     .article-content-wrapper {
@@ -751,27 +829,18 @@
     }
 
     .pagination-nav-bottom {
-        flex-direction: column;
-        gap: 0.75rem;
+        flex-direction: row;
+        gap: 0.5rem;
     }
 
     .nav-button {
         flex: 1;
         justify-content: center;
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
     }
 
     .footer-actions-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .author-actions {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .action-button {
-        width: 100%;
         justify-content: center;
     }
 
@@ -784,8 +853,8 @@
 /* ===== 分享功能樣式 ===== */
 .share-article-icon-btn {
     position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
+    top: 1rem;
+    right: 1rem;
     width: 40px;
     height: 40px;
     display: flex;
@@ -967,11 +1036,11 @@
 
 @media (max-width: 768px) {
     .share-article-icon-btn {
-        top: 1rem;
-        right: 1rem;
-        width: 36px;
-        height: 36px;
-        font-size: 1.1rem;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
     }
 
     .share-buttons {
@@ -1270,16 +1339,16 @@
     line-height: 1.3333;
 }
 
-.like-count {
+/* 點讚數字顯示（按鈕外部，不可點擊） */
+.like-count-display {
     display: inline;
     color: #65676b;
     font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.3333;
-}
-
-.like-button.liked .like-count {
-    color: #e41e3f;
+    margin-left: 0.25rem;
+    pointer-events: none;
+    user-select: none;
 }
 
 /* Facebook 風格的點讚彈跳動畫 */

@@ -65,7 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // 更新按鈕狀態
                 const likeIcon = likeButton.querySelector('.like-icon');
-                let likeCount = likeButton.querySelector('.like-count');
+
+                // 獲取按鈕外部的點讚數字顯示元素
+                let likeCountDisplay = likeButton.parentElement.querySelector('.like-count-display');
 
                 if (data.liked) {
                     // 已點讚狀態
@@ -79,19 +81,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     likeIcon.textContent = '🤍';
                 }
 
-                // 更新點讚數量
+                // 更新點讚數量（在按鈕外部）
                 if (data.like_count > 0) {
-                    if (!likeCount) {
-                        // 如果 like-count 不存在，創建它
-                        likeCount = document.createElement('span');
-                        likeCount.className = 'like-count';
-                        likeButton.appendChild(likeCount);
+                    if (!likeCountDisplay) {
+                        // 如果數字顯示不存在，創建它（插入到按鈕後面）
+                        likeCountDisplay = document.createElement('span');
+                        likeCountDisplay.className = 'like-count-display';
+                        likeButton.parentElement.insertBefore(
+                            likeCountDisplay,
+                            likeButton.nextSibling
+                        );
                     }
-                    likeCount.textContent = `· ${data.like_count}`;
+                    likeCountDisplay.textContent = `· ${data.like_count}`;
                 } else {
                     // 如果點讚數為 0，移除計數顯示
-                    if (likeCount) {
-                        likeCount.remove();
+                    if (likeCountDisplay) {
+                        likeCountDisplay.remove();
                     }
                 }
 

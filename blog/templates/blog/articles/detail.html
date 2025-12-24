@@ -5,9 +5,10 @@
 {% block title %}{{ article.title }} - RuDjango{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
-<link rel="stylesheet" href="{% static 'blog/css/articles/detail.css' %}">
-<link rel="stylesheet" href="{% static 'blog/css/tags.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}?v={{ article.updated_at|date:'U' }}">
+<link rel="stylesheet" href="{% static 'blog/css/articles/detail.css' %}?v={{ article.updated_at|date:'U' }}">
+<link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}?v={{ article.updated_at|date:'U' }}">
+<link rel="stylesheet" href="{% static 'blog/css/tags.css' %}?v={{ article.updated_at|date:'U' }}">
 {% endblock %}
 
 {% block content %}
@@ -74,6 +75,20 @@
         {% endif %}
 
         <h1>{{ article.title }}</h1>
+
+        <!-- 狀態標籤 (僅作者可見) -->
+        {% if article.author == request.user %}
+            {% if article.status == 'draft' %}
+                <div class="article-status-badge draft">
+                    <span>📝 草稿</span>
+                </div>
+            {% elif article.status == 'scheduled' %}
+                <div class="article-status-badge scheduled">
+                    <span>⏰ 排程發布於 {{ article.publish_at|date:"Y年m月d日 H:i" }}</span>
+                </div>
+            {% endif %}
+        {% endif %}
+
         <div class="article-meta">
             {% if article.author %}
             <span>✍️ 作者：<a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
@@ -81,6 +96,9 @@
             <span>📅 發布於 {{ article.created_at|date:"Y年m月d日 H:i" }}</span>
             {% if article.created_at != article.updated_at %}
             <span>✏️ 更新於 {{ article.updated_at|date:"Y年m月d日 H:i" }}</span>
+            {% endif %}
+            {% if article.reading_time > 0 %}
+            <span>📖 閱讀時間: {{ article.reading_time }} 分鐘</span>
             {% endif %}
         </div>
         {% if article.tags.all %}
@@ -92,6 +110,27 @@
         {% endif %}
     </div>
 
+    <!-- 目錄 -->
+    {% if table_of_contents %}
+    <div class="table-of-contents">
+        <div class="toc-header">
+            <h3>📑 目錄</h3>
+            <button class="toc-toggle" id="toc-toggle">
+                <span class="toc-toggle-icon">▼</span>
+            </button>
+        </div>
+        <nav class="toc-nav" id="toc-nav">
+            <ul class="toc-list">
+            {% for item in table_of_contents %}
+                <li class="toc-item toc-level-{{ item.level }}">
+                    <a href="#{{ item.anchor }}" class="toc-link">{{ item.title }}</a>
+                </li>
+            {% endfor %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
     <!-- 文章內容 -->
     <div class="article-content-wrapper"
          data-article-id="{{ article.id }}"
@@ -101,38 +140,71 @@
         <div class="article-content">{{ article.content|markdown }}</div>
     </div>
 
-    <!-- 點讚區 (Instagram 風格) -->
-    <div class="article-like-section">
-        {% if user.is_authenticated %}
-            {% if article.author == user %}
-                <button class="like-button own-article"
-                        id="like-button-own">
-                    <span class="like-icon">🤍</span>
-                    <span class="like-text">讚</span>
-                </button>
-                {% if like_count > 0 %}
-                <span class="like-count-display">· {{ like_count }}</span>
+    <!-- 點讚與收藏區 -->
+    <div class="article-actions-section">
+        <div class="article-like-section">
+            {% if user.is_authenticated %}
+                {% if article.author == user %}
+                    <button class="like-button own-article"
+                            id="like-button-own">
+                        <span class="like-icon">🤍</span>
+                        <span class="like-text">讚</span>
+                    </button>
+                    {% if like_count > 0 %}
+                    <span class="like-count-display">· {{ like_count }}</span>
+                    {% endif %}
+                {% else %}
+                    <button class="like-button {% if user_has_liked %}liked{% endif %}"
+                            id="like-button"
+                            data-article-id="{{ article.id }}"
+                            data-liked="{% if user_has_liked %}true{% else %}false{% endif %}">
+                        <span class="like-icon">{% if user_has_liked %}❤️{% else %}🤍{% endif %}</span>
+                        <span class="like-text">讚</span>
+                    </button>
+                    {% if like_count > 0 %}
+                    <span class="like-count-display">· {{ like_count }}</span>
+                    {% endif %}
                 {% endif %}
             {% else %}
-                <button class="like-button {% if user_has_liked %}liked{% endif %}"
-                        id="like-button"
-                        data-article-id="{{ article.id }}"
-                        data-liked="{% if user_has_liked %}true{% else %}false{% endif %}">
-                    <span class="like-icon">{% if user_has_liked %}❤️{% else %}🤍{% endif %}</span>
+                <a href="{% url 'user_login' %}?next={{ request.path }}" class="like-button">
+                    <span class="like-icon">🤍</span>
                     <span class="like-text">讚</span>
-                </button>
+                </a>
                 {% if like_count > 0 %}
                 <span class="like-count-display">· {{ like_count }}</span>
                 {% endif %}
             {% endif %}
-        {% else %}
-            <a href="{% url 'user_login' %}?next={{ request.path }}" class="like-button">
-                <span class="like-icon">🤍</span>
-                <span class="like-text">讚</span>
-            </a>
-            {% if like_count > 0 %}
-            <span class="like-count-display">· {{ like_count }}</span>
+        </div>
+
+        <!-- 收藏按鈕 -->
+        <div class="article-bookmark-section">
+            {% if user.is_authenticated %}
+                <button class="bookmark-button {% if user_has_bookmarked %}bookmarked{% endif %}"
+                        id="bookmark-button"
+                        data-article-id="{{ article.id }}"
+                        data-bookmarked="{% if user_has_bookmarked %}true{% else %}false{% endif %}">
+                    <span class="bookmark-icon">{% if user_has_bookmarked %}🔖{% else %}📑{% endif %}</span>
+                    <span class="bookmark-text">收藏</span>
+                </button>
+                {% if bookmark_count > 0 %}
+                <span class="bookmark-count-display" id="bookmark-count">· {{ bookmark_count }}</span>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'user_login' %}?next={{ request.path }}" class="bookmark-button">
+                    <span class="bookmark-icon">📑</span>
+                    <span class="bookmark-text">收藏</span>
+                </a>
+                {% if bookmark_count > 0 %}
+                <span class="bookmark-count-display">· {{ bookmark_count }}</span>
+                {% endif %}
             {% endif %}
+        </div>
+
+        <!-- 分享統計 -->
+        {% if share_count > 0 %}
+        <div class="article-share-stats">
+            <span class="share-count">🔗 {{ share_count }} 次分享</span>
+        </div>
         {% endif %}
     </div>
 
@@ -260,10 +332,47 @@
             <button class="share-close" id="share-article-close">✕</button>
         </div>
     </div>
+
+    <!-- Back to Top 按鈕 -->
+    <button class="back-to-top" id="back-to-top" title="回到頂端">
+        ↑
+    </button>
 </div>
 
 {% block extra_js %}
-<script src="{% static 'blog/js/articles/share.js' %}"></script>
-<script src="{% static 'blog/js/articles/like.js' %}"></script>
+<script src="{% static 'blog/js/articles/share.js' %}?v={{ article.updated_at|date:'U' }}"></script>
+<script src="{% static 'blog/js/articles/like.js' %}?v={{ article.updated_at|date:'U' }}"></script>
+<script src="{% static 'blog/js/articles/bookmark.js' %}?v={{ article.updated_at|date:'U' }}"></script>
+<script src="{% static 'blog/js/articles/toc.js' %}?v={{ article.updated_at|date:'U' }}"></script>
+
+<script>
+// Back to Top 功能
+(function() {
+    const backToTopButton = document.getElementById('back-to-top');
+
+    if (!backToTopButton) return;
+
+    // 滾動時顯示/隱藏按鈕
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('show');
+            } else {
+                backToTopButton.classList.remove('show');
+            }
+        }, 100);
+    });
+
+    // 點擊按鈕回到頂端
+    backToTopButton.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+})();
+</script>
 {% endblock %}
 {% endblock %}

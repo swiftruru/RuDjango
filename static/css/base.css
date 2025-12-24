@@ -165,6 +165,81 @@ body {
     }
 }
 
+/* ===== 下拉選單樣式 ===== */
+.nav-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0;
+    padding-top: 0.5rem;
+    background-color: transparent;
+    list-style: none;
+    min-width: 160px;
+    z-index: 1000;
+}
+
+.dropdown-menu::before {
+    content: '';
+    display: block;
+    height: 0.5rem;
+}
+
+.nav-dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
+    display: block;
+}
+
+.dropdown-menu li {
+    background-color: #fff;
+    animation: fadeInDown 0.3s ease;
+}
+
+.dropdown-menu li:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.dropdown-menu li:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.dropdown-menu li:only-child {
+    border-radius: 8px;
+}
+
+.nav-dropdown:hover .dropdown-menu li {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-link {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: #555;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.dropdown-link:hover {
+    background-color: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ===== Hero 區域 (通用) ===== */
 .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

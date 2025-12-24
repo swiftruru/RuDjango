@@ -82,16 +82,18 @@
 
 .article-meta {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: center;
     font-size: 1rem;
     opacity: 0.95;
+    flex-wrap: wrap;
 }
 
 .article-meta span {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    white-space: nowrap;
 }
 
 .article-meta .author-link {
@@ -1459,5 +1461,48 @@
     .like-message {
         font-size: 0.8rem;
         padding: 0.4rem 0.875rem;
+    }
+}
+
+/* ===== Back to Top 按鈕 ===== */
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.25rem;
     }
 }

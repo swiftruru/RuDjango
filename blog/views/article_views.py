@@ -8,14 +8,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from ..models import Article, ArticleReadHistory, Comment, Like, Tag
+from django.utils import timezone
+from ..models import Article, ArticleReadHistory, Comment, Like, Tag, Bookmark, ArticleShare
 from ..forms import ArticleForm, CommentForm
 
 
 def home(request):
     """
     文章列表頁
-    顯示所有文章，按建立時間排序（最新在前）
+    顯示所有已發布的文章，按建立時間排序（最新在前）
     支援進階搜尋功能：
     - q: 搜尋關鍵字（標題或內容）
     - search_type: 搜尋類型（all/content/author）
@@ -24,8 +25,12 @@ def home(request):
     # 取得搜尋參數
     search_query = request.GET.get('q', '')
     search_type = request.GET.get('search_type', 'all')
-    
-    articles = Article.objects.all().order_by("-created_at")
+
+    # 只顯示已發布的文章（包括已到時間的排程文章）
+    articles = Article.objects.filter(
+        Q(status='published') |
+        Q(status='scheduled', publish_at__lte=timezone.now())
+    ).order_by("-created_at")
 
     if search_query:
         if search_type == 'author':
@@ -82,6 +87,12 @@ def article_detail(request, id):
     # 取得指定 id 的文章，若不存在則返回 404
     article = get_object_or_404(Article, id=id)
 
+    # 檢查文章是否可以被查看
+    # 如果是草稿或未到排程時間，只有作者可以查看
+    if not article.can_be_viewed and (not request.user.is_authenticated or article.author != request.user):
+        messages.error(request, '❌ 此文章尚未發布！')
+        return redirect('blog_home')
+
     # 處理留言提交
     if request.method == 'POST' and request.user.is_authenticated:
         comment_form = CommentForm(request.POST)
@@ -134,6 +145,18 @@ def article_detail(request, id):
     if request.user.is_authenticated:
         user_has_liked = Like.objects.filter(article=article, user=request.user).exists()
 
+    # 書籤相關數據
+    user_has_bookmarked = False
+    bookmark_count = article.bookmarks.count()
+    if request.user.is_authenticated:
+        user_has_bookmarked = Bookmark.objects.filter(article=article, user=request.user).exists()
+
+    # 分享統計
+    share_count = article.shares.count()
+
+    # 生成目錄
+    table_of_contents = article.get_table_of_contents()
+
     context = {
         'article': article,
         'previous_article': previous_article,
@@ -142,6 +165,10 @@ def article_detail(request, id):
         'comments': comments,
         'like_count': like_count,
         'user_has_liked': user_has_liked,
+        'user_has_bookmarked': user_has_bookmarked,
+        'bookmark_count': bookmark_count,
+        'share_count': share_count,
+        'table_of_contents': table_of_contents,
     }
     return render(request, 'blog/articles/detail.html', context)
 
@@ -157,12 +184,33 @@ def article_create(request):
         if form.is_valid():
             article = form.save(commit=False)
             article.author = request.user
+
+            # 處理發布狀態
+            status = request.POST.get('status', 'published')
+            article.status = status
+
+            # 處理排程時間
+            if status == 'scheduled':
+                publish_at = request.POST.get('publish_at')
+                if publish_at:
+                    from django.utils.dateparse import parse_datetime
+                    article.publish_at = parse_datetime(publish_at)
+
             article.save()
-            messages.success(request, '✅ 文章發表成功！')
+            form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
+
+            # 根據狀態顯示不同訊息
+            if status == 'draft':
+                messages.success(request, '✅ 文章已儲存為草稿！')
+            elif status == 'scheduled':
+                messages.success(request, f'✅ 文章已排程，將於 {article.publish_at.strftime("%Y年%m月%d日 %H:%M")} 發布！')
+            else:
+                messages.success(request, '✅ 文章發表成功！')
+
             return redirect('article_detail', id=article.id)
     else:
         form = ArticleForm()
-    
+
     context = {
         'form': form,
         'action': '發表文章',
@@ -177,17 +225,41 @@ def article_edit(request, id):
     只有作者本人才能編輯
     """
     article = get_object_or_404(Article, id=id)
-    
+
     # 檢查是否為作者本人
     if article.author != request.user:
         messages.error(request, '❌ 您沒有權限編輯此文章！')
         return redirect('article_detail', id=id)
-    
+
     if request.method == 'POST':
         form = ArticleForm(request.POST, instance=article)
         if form.is_valid():
-            form.save()
-            messages.success(request, '✅ 文章更新成功！')
+            article = form.save(commit=False)
+
+            # 處理發布狀態
+            status = request.POST.get('status', 'published')
+            article.status = status
+
+            # 處理排程時間
+            if status == 'scheduled':
+                publish_at = request.POST.get('publish_at')
+                if publish_at:
+                    from django.utils.dateparse import parse_datetime
+                    article.publish_at = parse_datetime(publish_at)
+            else:
+                article.publish_at = None
+
+            article.save()
+            form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
+
+            # 根據狀態顯示不同訊息
+            if status == 'draft':
+                messages.success(request, '✅ 文章已儲存為草稿！')
+            elif status == 'scheduled':
+                messages.success(request, f'✅ 文章已排程，將於 {article.publish_at.strftime("%Y年%m月%d日 %H:%M")} 發布！')
+            else:
+                messages.success(request, '✅ 文章更新成功！')
+
             return redirect('article_detail', id=article.id)
     else:
         form = ArticleForm(instance=article)
@@ -234,12 +306,35 @@ def article_delete(request, id):
 def my_articles(request):
     """
     我的文章列表
-    顯示當前登入使用者發表的所有文章
+    顯示當前登入使用者發表的所有文章（包括草稿、已發布、排程）
+    支援按狀態篩選
     """
-    articles = Article.objects.filter(author=request.user).order_by('-created_at')
+    status_filter = request.GET.get('status', 'all')
+
+    articles = Article.objects.filter(author=request.user)
+
+    # 根據狀態篩選
+    if status_filter == 'draft':
+        articles = articles.filter(status='draft')
+    elif status_filter == 'published':
+        articles = articles.filter(status='published')
+    elif status_filter == 'scheduled':
+        articles = articles.filter(status='scheduled')
+
+    articles = articles.order_by('-created_at')
+
+    # 統計各狀態數量
+    stats = {
+        'total': Article.objects.filter(author=request.user).count(),
+        'draft': Article.objects.filter(author=request.user, status='draft').count(),
+        'published': Article.objects.filter(author=request.user, status='published').count(),
+        'scheduled': Article.objects.filter(author=request.user, status='scheduled').count(),
+    }
 
     context = {
         'articles': articles,
+        'status_filter': status_filter,
+        'stats': stats,
     }
     return render(request, 'blog/articles/my_articles.html', context)
 
@@ -356,7 +451,11 @@ def tag_articles(request, slug):
     支援分頁
     """
     tag = get_object_or_404(Tag, slug=slug)
-    articles = tag.articles.all().order_by('-created_at')
+    # 只顯示已發布的文章
+    articles = tag.articles.filter(
+        Q(status='published') |
+        Q(status='scheduled', publish_at__lte=timezone.now())
+    ).order_by('-created_at')
 
     # 分頁
     paginator = Paginator(articles, 10)  # 每頁 10 篇文章
@@ -369,3 +468,142 @@ def tag_articles(request, slug):
         'total_articles': articles.count()
     }
     return render(request, 'blog/tags/articles.html', context)
+
+
+@login_required
+def article_bookmark(request, id):
+    """
+    文章書籤/收藏功能
+    - 用戶可以收藏文章
+    - 再次點擊取消收藏
+    - 返回 JSON 格式的響應
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '無效的請求方法'}, status=405)
+
+    article = get_object_or_404(Article, id=id)
+
+    try:
+        bookmark, created = Bookmark.objects.get_or_create(
+            article=article,
+            user=request.user
+        )
+
+        if not created:
+            # 如果記錄已存在，刪除它（取消收藏）
+            bookmark.delete()
+            bookmarked = False
+            message = '已取消收藏'
+        else:
+            # 如果是新創建的，表示收藏成功
+            bookmarked = True
+            message = '收藏成功'
+
+        # 獲取最新的收藏數量
+        bookmark_count = article.bookmarks.count()
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': '操作失敗，請稍後再試'
+        }, status=500)
+
+    return JsonResponse({
+        'success': True,
+        'bookmarked': bookmarked,
+        'bookmark_count': bookmark_count,
+        'message': message
+    })
+
+
+@login_required
+def my_bookmarks(request):
+    """
+    我的收藏列表
+    顯示當前用戶收藏的所有文章
+    """
+    bookmarks = Bookmark.objects.filter(user=request.user).order_by('-created_at')
+
+    # 分頁
+    paginator = Paginator(bookmarks, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'bookmarks': page_obj,
+        'total_bookmarks': bookmarks.count()
+    }
+    return render(request, 'blog/articles/my_bookmarks.html', context)
+
+
+def article_share(request, id):
+    """
+    記錄文章分享
+    - 支援記錄不同平台的分享
+    - 可選擇性記錄用戶（訪客也可以分享）
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '無效的請求方法'}, status=405)
+
+    article = get_object_or_404(Article, id=id)
+    platform = request.POST.get('platform', 'other')
+
+    # 獲取用戶IP
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip_address = x_forwarded_for.split(',')[0]
+    else:
+        ip_address = request.META.get('REMOTE_ADDR')
+
+    try:
+        # 創建分享記錄
+        ArticleShare.objects.create(
+            article=article,
+            user=request.user if request.user.is_authenticated else None,
+            platform=platform,
+            ip_address=ip_address
+        )
+
+        # 獲取總分享數
+        share_count = article.shares.count()
+
+        return JsonResponse({
+            'success': True,
+            'share_count': share_count,
+            'message': '感謝分享！'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': '記錄分享失敗'
+        }, status=500)
+
+
+@login_required
+def my_drafts(request):
+    """
+    我的草稿頁面
+    顯示當前用戶的所有草稿和排程文章
+    """
+    # 取得當前用戶的草稿和排程文章
+    drafts = Article.objects.filter(
+        author=request.user
+    ).filter(
+        Q(status='draft') | Q(status='scheduled')
+    ).order_by('-updated_at')
+
+    # 分頁
+    paginator = Paginator(drafts, 10)
+    page_number = request.GET.get('page', 1)
+    drafts_page = paginator.get_page(page_number)
+
+    # 統計
+    draft_count = Article.objects.filter(author=request.user, status='draft').count()
+    scheduled_count = Article.objects.filter(author=request.user, status='scheduled').count()
+
+    context = {
+        'drafts': drafts_page,
+        'total_drafts': drafts.count(),
+        'draft_count': draft_count,
+        'scheduled_count': scheduled_count,
+    }
+    return render(request, 'blog/articles/my_drafts.html', context)

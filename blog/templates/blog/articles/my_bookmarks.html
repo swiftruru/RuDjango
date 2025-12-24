@@ -1,0 +1,337 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}我的收藏 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
+<style>
+    .bookmark-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .bookmark-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+    }
+
+    .bookmark-stats {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bookmark-list {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        padding: 0 0.5rem;
+    }
+
+    .bookmark-item {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .bookmark-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .bookmark-article-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .bookmark-article-title a {
+        color: #2d3748;
+        text-decoration: none;
+    }
+
+    .bookmark-article-title a:hover {
+        color: #667eea;
+    }
+
+    .bookmark-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .bookmark-note {
+        background: #f7fafc;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 4px;
+    }
+
+    .bookmark-note-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .bookmark-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-remove {
+        padding: 0.5rem 1rem;
+        background: #f56565;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+    }
+
+    .btn-remove:hover {
+        background: #e53e3e;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #718096;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: #5a67d8;
+    }
+
+    /* 分頁樣式 */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .pagination a,
+    .pagination .current {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #4a5568;
+    }
+
+    .pagination a:hover {
+        background: #f7fafc;
+    }
+
+    .pagination .current {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-bottom: 3rem;">
+    <!-- 頁面標題 -->
+    <div class="bookmark-header">
+        <h1>📑 我的收藏</h1>
+        <div class="bookmark-stats">
+            <div class="stat-item">
+                <span>📚 總收藏</span>
+                <strong>{{ total_bookmarks }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 收藏列表 -->
+    {% if bookmarks %}
+    <div class="bookmark-list">
+        {% for bookmark in bookmarks %}
+        <div class="bookmark-item">
+            <h2 class="bookmark-article-title">
+                <a href="{% url 'article_detail' bookmark.article.id %}">{{ bookmark.article.title }}</a>
+            </h2>
+
+            <div class="bookmark-meta">
+                {% if bookmark.article.author %}
+                <span>✍️ {{ bookmark.article.author|author_display }}</span>
+                {% endif %}
+                <span>📅 收藏於 {{ bookmark.created_at|date:"Y年m月d日 H:i" }}</span>
+                {% if bookmark.article.reading_time > 0 %}
+                <span>📖 閱讀時間: {{ bookmark.article.reading_time }} 分鐘</span>
+                {% endif %}
+            </div>
+
+            <!-- 文章標籤 -->
+            {% if bookmark.article.tags.all %}
+            <div class="article-tags" style="margin-top: 0.5rem;">
+                {% for tag in bookmark.article.tags.all %}
+                <a href="{% url 'tag_articles' tag.slug %}" class="tag" style="display: inline-block; padding: 0.25rem 0.75rem; background: #e2e8f0; color: #4a5568; text-decoration: none; border-radius: 15px; font-size: 0.85rem; margin-right: 0.5rem;">
+                    🏷️ {{ tag.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- 筆記 -->
+            {% if bookmark.note %}
+            <div class="bookmark-note">
+                <div class="bookmark-note-title">📝 我的筆記</div>
+                <div>{{ bookmark.note|linebreaksbr }}</div>
+            </div>
+            {% endif %}
+
+            <!-- 操作按鈕 -->
+            <div class="bookmark-actions">
+                <button class="btn-remove"
+                        data-article-id="{{ bookmark.article.id }}"
+                        data-bookmark-id="{{ bookmark.id }}"
+                        onclick="removeBookmark(this)">
+                    取消收藏
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 分頁 -->
+    {% if bookmarks.has_other_pages %}
+    <div class="pagination">
+        {% if bookmarks.has_previous %}
+        <a href="?page=1">第一頁</a>
+        <a href="?page={{ bookmarks.previous_page_number }}">上一頁</a>
+        {% endif %}
+
+        <span class="current">第 {{ bookmarks.number }} 頁，共 {{ bookmarks.paginator.num_pages }} 頁</span>
+
+        {% if bookmarks.has_next %}
+        <a href="?page={{ bookmarks.next_page_number }}">下一頁</a>
+        <a href="?page={{ bookmarks.paginator.num_pages }}">最後一頁</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- 空狀態 -->
+    <div class="empty-state">
+        <div class="empty-state-icon">📑</div>
+        <h2>還沒有收藏任何文章</h2>
+        <p>開始探索精彩的文章，並將您喜歡的內容加入收藏！</p>
+        <a href="{% url 'blog_home' %}" class="btn-primary">瀏覽文章</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// 從 cookie 中取得 CSRF token
+function getCsrfToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue;
+}
+
+// 取消收藏功能
+function removeBookmark(button) {
+    if (!confirm('確定要取消收藏這篇文章嗎？')) {
+        return;
+    }
+
+    const articleId = button.dataset.articleId;
+    const csrfToken = getCsrfToken();
+
+    if (!csrfToken) {
+        alert('無法取得安全令牌，請重新整理頁面');
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = '處理中...';
+
+    fetch(`/blog/article/${articleId}/bookmark/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 移除這個收藏項目
+            button.closest('.bookmark-item').style.opacity = '0';
+            setTimeout(() => {
+                button.closest('.bookmark-item').remove();
+
+                // 如果沒有更多收藏，刷新頁面顯示空狀態
+                if (document.querySelectorAll('.bookmark-item').length === 0) {
+                    location.reload();
+                }
+            }, 300);
+        } else {
+            alert(data.error || '操作失敗');
+            button.disabled = false;
+            button.textContent = '取消收藏';
+        }
+    })
+    .catch(error => {
+        console.error('取消收藏失敗:', error);
+        alert('網路錯誤，請稍後再試');
+        button.disabled = false;
+        button.textContent = '取消收藏';
+    });
+}
+</script>
+{% endblock %}

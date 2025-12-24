@@ -23,10 +23,12 @@ class ArticleForm(forms.ModelForm):
 
     class Meta:
         model = Article
-        fields = ['title', 'content']
+        fields = ['title', 'content', 'status', 'publish_at']
         labels = {
             'title': '文章標題',
             'content': '文章內容',
+            'status': '發布狀態',
+            'publish_at': '排程發布時間',
         }
         widgets = {
             'title': forms.TextInput(attrs={
@@ -39,10 +41,21 @@ class ArticleForm(forms.ModelForm):
                 'placeholder': '請輸入文章內容',
                 'rows': 10
             }),
+            'status': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'status-select'
+            }),
+            'publish_at': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local',
+                'id': 'publish-at-input'
+            }),
         }
         help_texts = {
             'title': '標題最多 100 個字元',
             'content': '支援 Markdown 語法（# 標題、**粗體**、*斜體**、[連結](URL)、```程式碼區塊```）',
+            'status': '選擇文章狀態：立即發布、儲存草稿或排程發布',
+            'publish_at': '選擇文章的發布時間（僅在「排程發布」時需要）',
         }
 
     def __init__(self, *args, **kwargs):
@@ -51,6 +64,24 @@ class ArticleForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             tag_names = ', '.join([tag.name for tag in self.instance.tags.all()])
             self.fields['tags_input'].initial = tag_names
+
+    def clean(self):
+        """驗證表單數據"""
+        cleaned_data = super().clean()
+        status = cleaned_data.get('status')
+        publish_at = cleaned_data.get('publish_at')
+
+        # 如果狀態是排程，必須提供排程時間
+        if status == 'scheduled' and not publish_at:
+            raise forms.ValidationError('排程發布必須設定發布時間')
+
+        # 排程時間不能是過去
+        if publish_at:
+            from django.utils import timezone
+            if publish_at <= timezone.now():
+                raise forms.ValidationError('排程時間必須是未來的時間')
+
+        return cleaned_data
 
     def save(self, commit=True):
         article = super().save(commit=False)

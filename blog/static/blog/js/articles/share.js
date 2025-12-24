@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function shareFacebook() {
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
         window.open(fbUrl, '_blank', 'width=600,height=400');
+        recordShare('facebook');
         closeShareMenu();
     }
 
@@ -98,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function shareTwitter() {
         const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(pageTitle)}`;
         window.open(twitterUrl, '_blank', 'width=600,height=400');
+        recordShare('twitter');
         closeShareMenu();
     }
 
@@ -107,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function shareLine() {
         const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`;
         window.open(lineUrl, '_blank', 'width=600,height=400');
+        recordShare('line');
         closeShareMenu();
     }
 
@@ -117,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 使用現代的 Clipboard API
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(currentUrl).then(function () {
+                recordShare('copy');
                 showCopySuccess();
             }).catch(function (err) {
                 // 降級方案
@@ -125,6 +129,59 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             // 降級方案
             fallbackCopyLink();
+        }
+    }
+
+    /**
+     * 記錄分享統計
+     */
+    function recordShare(platform) {
+        const articleWrapper = document.querySelector('[data-article-id]');
+        if (!articleWrapper) return;
+
+        const articleId = articleWrapper.dataset.articleId;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+        if (!csrfToken) return;
+
+        fetch(`/blog/article/${articleId}/share/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin',
+            body: `platform=${platform}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('分享統計記錄成功:', platform);
+                // 可選: 更新頁面上的分享數量
+                updateShareCount(data.share_count);
+            }
+        })
+        .catch(error => {
+            console.error('記錄分享失敗:', error);
+        });
+    }
+
+    /**
+     * 更新分享數量顯示
+     */
+    function updateShareCount(count) {
+        const shareStats = document.querySelector('.article-share-stats .share-count');
+        if (shareStats) {
+            shareStats.textContent = `🔗 ${count} 次分享`;
+        } else if (count > 0) {
+            // 如果不存在，創建分享統計顯示
+            const actionsSection = document.querySelector('.article-actions-section');
+            if (actionsSection) {
+                const shareStatsDiv = document.createElement('div');
+                shareStatsDiv.className = 'article-share-stats';
+                shareStatsDiv.innerHTML = `<span class="share-count">🔗 ${count} 次分享</span>`;
+                actionsSection.appendChild(shareStatsDiv);
+            }
         }
     }
 
@@ -141,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             document.execCommand('copy');
+            recordShare('copy');
             showCopySuccess();
         } catch (err) {
             alert('複製失敗，請手動複製：' + currentUrl);

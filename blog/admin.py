@@ -1,17 +1,41 @@
 from django.contrib import admin
 from .models import (
-    Article, ArticleReadHistory, Comment, Like, UserProfile, Skill, Achievement, UserAchievement,
-    LearningCourse, UserCourseProgress, Activity, Follow
+    Article, ArticleReadHistory, Comment, Like, Bookmark, ArticleShare,
+    UserProfile, Skill, Achievement, UserAchievement,
+    LearningCourse, UserCourseProgress, Activity, Follow, Tag
 )
+
+
+# 標籤管理
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'article_count', 'created_at']
+    search_fields = ['name', 'description']
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ['created_at']
 
 
 # 文章管理
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'created_at', 'updated_at']
-    list_filter = ['created_at', 'author']
+    list_display = ['title', 'author', 'status', 'publish_at', 'reading_time', 'created_at', 'updated_at']
+    list_filter = ['status', 'created_at', 'author']
     search_fields = ['title', 'content']
     date_hierarchy = 'created_at'
+    filter_horizontal = ['tags']
+    readonly_fields = ['reading_time', 'created_at', 'updated_at']
+    fieldsets = (
+        ('基本資訊', {
+            'fields': ('title', 'content', 'author', 'tags')
+        }),
+        ('發布設定', {
+            'fields': ('status', 'publish_at')
+        }),
+        ('統計資訊', {
+            'fields': ('reading_time', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 # 文章閱讀記錄管理
@@ -54,6 +78,33 @@ class LikeAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'article__title']
     date_hierarchy = 'created_at'
     readonly_fields = ['created_at']
+
+
+# 書籤管理
+@admin.register(Bookmark)
+class BookmarkAdmin(admin.ModelAdmin):
+    list_display = ['user', 'article', 'created_at', 'note_preview']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'article__title', 'note']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at']
+
+    def note_preview(self, obj):
+        """顯示筆記預覽"""
+        if obj.note:
+            return obj.note[:50] + '...' if len(obj.note) > 50 else obj.note
+        return '-'
+    note_preview.short_description = '筆記'
+
+
+# 文章分享統計管理
+@admin.register(ArticleShare)
+class ArticleShareAdmin(admin.ModelAdmin):
+    list_display = ['article', 'platform', 'user', 'ip_address', 'shared_at']
+    list_filter = ['platform', 'shared_at']
+    search_fields = ['article__title', 'user__username', 'ip_address']
+    date_hierarchy = 'shared_at'
+    readonly_fields = ['shared_at']
 
 
 # 使用者資料管理

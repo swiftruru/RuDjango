@@ -18,8 +18,17 @@
                 <ul class="nav-menu">
                     <li><a href="/" class="nav-link active">首頁</a></li>
                     <li><a href="/blog/about" class="nav-link">關於</a></li>
-                    <li><a href="{% url 'blog_home' %}" class="nav-link">部落格</a></li>
-                    <li><a href="{% url 'tags_list' %}" class="nav-link">🏷️ 標籤</a></li>
+                    <li class="nav-dropdown">
+                        <a href="{% url 'blog_home' %}" class="nav-link">部落格 ▼</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'blog_home' %}" class="dropdown-link">文章列表</a></li>
+                            <li><a href="{% url 'tags_list' %}" class="dropdown-link">🏷️ 標籤</a></li>
+                            {% if user.is_authenticated %}
+                            <li><a href="{% url 'my_bookmarks' %}" class="dropdown-link">📑 我的收藏</a></li>
+                            <li><a href="{% url 'my_drafts' %}" class="dropdown-link">📝 我的草稿</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
                     {% if user.is_authenticated %}
                     <li><a href="{% url 'inbox' %}" class="nav-link nav-messages">
                             <span class="message-icon">✉️</span>
@@ -28,7 +37,12 @@
                             <span class="message-badge">{{ unread_message_count }}</span>
                             {% endif %}
                         </a></li>
-                    <li><a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心</a></li>
+                    <li class="nav-dropdown">
+                        <a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心 ▼</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'member_profile' username=user.username %}" class="dropdown-link">個人資料</a></li>
+                        </ul>
+                    </li>
                     <li><a href="{% url 'user_logout' %}" class="nav-link">登出 <span class="user-badge">{{ user_display_name }}</span></a></li>
                     {% else %}
                     <li><a href="{% url 'user_login' %}" class="nav-link">登入</a></li>

@@ -1,0 +1,250 @@
+/**
+ * 文章功能擴充相關樣式
+ * 包含：收藏、目錄、狀態標籤等
+ */
+
+/* 文章狀態標籤 */
+.article-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.article-status-badge.draft {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.article-status-badge.scheduled {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #3b82f6;
+}
+
+/* 文章操作區域 */
+.article-actions-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+/* 收藏按鈕 */
+.bookmark-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #4b5563;
+}
+
+.bookmark-button:hover {
+    border-color: #667eea;
+    background: #f3f4f6;
+}
+
+.bookmark-button.bookmarked {
+    border-color: #667eea;
+    background: #eef2ff;
+    color: #667eea;
+}
+
+.bookmark-icon {
+    font-size: 1.2rem;
+}
+
+.bookmark-count-display {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* 收藏訊息提示 */
+.bookmark-message {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.bookmark-message-success {
+    background: #10b981;
+    color: white;
+}
+
+.bookmark-message-info {
+    background: #3b82f6;
+    color: white;
+}
+
+.bookmark-message-error {
+    background: #ef4444;
+    color: white;
+}
+
+.bookmark-message.fade-out {
+    animation: fadeOut 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+/* 分享統計 */
+.article-share-stats {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* 目錄 (Table of Contents) */
+.table-of-contents {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.toc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.toc-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+
+.toc-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #6b7280;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.2s;
+}
+
+.toc-toggle:hover {
+    color: #1f2937;
+}
+
+.toc-nav {
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.toc-nav.toc-collapsed {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-item {
+    margin: 0.5rem 0;
+}
+
+.toc-link {
+    display: block;
+    color: #4b5563;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.toc-link:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.toc-link-active {
+    background: #667eea;
+    color: white;
+    font-weight: 500;
+}
+
+/* 目錄層級縮進 */
+.toc-level-1 {
+    margin-left: 0;
+}
+
+.toc-level-2 {
+    margin-left: 1rem;
+}
+
+.toc-level-3 {
+    margin-left: 2rem;
+}
+
+.toc-level-4 {
+    margin-left: 3rem;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .article-actions-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .table-of-contents {
+        font-size: 0.9rem;
+    }
+
+    .bookmark-message {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+    }
+}

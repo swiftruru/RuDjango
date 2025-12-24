@@ -54,9 +54,27 @@
                 {{ form.tags_input.errors }}
             </div>
 
+            <!-- 發布選項 -->
+            <div class="form-group">
+                <label for="id_status">發布狀態</label>
+                <select name="status" id="id_status" class="form-control">
+                    <option value="published" {% if not article or article.status == 'published' %}selected{% endif %}>立即發布</option>
+                    <option value="draft" {% if article and article.status == 'draft' %}selected{% endif %}>儲存為草稿</option>
+                    <option value="scheduled" {% if article and article.status == 'scheduled' %}selected{% endif %}>排程發布</option>
+                </select>
+            </div>
+
+            <!-- 排程時間 (僅在選擇排程發布時顯示) -->
+            <div class="form-group" id="publish-at-group" style="display: none;">
+                <label for="id_publish_at">排程發布時間</label>
+                <input type="datetime-local" name="publish_at" id="id_publish_at" class="form-control"
+                       value="{% if article and article.publish_at %}{{ article.publish_at|date:'Y-m-d\TH:i' }}{% endif %}">
+                <span class="help-text">選擇文章自動發布的時間</span>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    {% if article %}✏️ 更新文章{% else %}📝 發表文章{% endif %}
+                    {% if article %}✏️ 更新文章{% else %}📝 儲存文章{% endif %}
                 </button>
                 <a href="{% if article %}{% url 'article_detail' article.id %}{% else %}{% url 'blog_home' %}{% endif %}"
                     class="btn btn-secondary">取消</a>
@@ -64,4 +82,31 @@
         </form>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+// 控制排程時間欄位的顯示/隱藏
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('id_status');
+    const publishAtGroup = document.getElementById('publish-at-group');
+    const publishAtInput = document.getElementById('id_publish_at');
+
+    function togglePublishAtField() {
+        if (statusSelect.value === 'scheduled') {
+            publishAtGroup.style.display = 'block';
+            publishAtInput.required = true;
+        } else {
+            publishAtGroup.style.display = 'none';
+            publishAtInput.required = false;
+        }
+    }
+
+    // 初始化
+    togglePublishAtField();
+
+    // 監聽狀態變更
+    statusSelect.addEventListener('change', togglePublishAtField);
+});
+</script>
+{% endblock %}
 {% endblock %}

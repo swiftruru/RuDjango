@@ -11,7 +11,11 @@ article_patterns = [
     path('article/<int:id>/edit/', views.article_edit, name='article_edit'),
     path('article/<int:id>/delete/', views.article_delete, name='article_delete'),
     path('article/<int:id>/like/', views.article_like, name='article_like'),
+    path('article/<int:id>/bookmark/', views.article_bookmark, name='article_bookmark'),
+    path('article/<int:id>/share/', views.article_share, name='article_share'),
     path('my-articles/', views.my_articles, name='my_articles'),
+    path('my-bookmarks/', views.my_bookmarks, name='my_bookmarks'),
+    path('my-drafts/', views.my_drafts, name='my_drafts'),
     path('comment/<int:comment_id>/delete/', views.comment_delete, name='comment_delete'),
 ]
 

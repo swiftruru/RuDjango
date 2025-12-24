@@ -21,7 +21,7 @@ venv/
 env/
 ENV/
 RuDjango-env/
-.venv
+.venv/
 
 # IDE
 .vscode/

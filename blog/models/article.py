@@ -36,6 +36,13 @@ class Tag(models.Model):
 
 class Article(models.Model):
     """文章模型"""
+    # 文章狀態選項
+    STATUS_CHOICES = [
+        ('draft', '草稿'),
+        ('published', '已發布'),
+        ('scheduled', '已排程'),
+    ]
+
     title = models.CharField(max_length=100, verbose_name='標題')
     content = models.TextField(verbose_name='內容')
     author = models.ForeignKey(
@@ -52,11 +59,76 @@ class Article(models.Model):
         blank=True,
         verbose_name='標籤'
     )
+
+    # 草稿與排程功能
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='published',
+        verbose_name='狀態'
+    )
+    publish_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='排程發布時間'
+    )
+
+    # 閱讀時間估算 (分鐘)
+    reading_time = models.IntegerField(
+        default=0,
+        verbose_name='閱讀時間(分鐘)'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        """儲存時自動計算閱讀時間"""
+        if self.content:
+            # 假設平均閱讀速度為每分鐘 200 個中文字或 300 個英文字
+            # 簡化計算：每 200 個字元約 1 分鐘
+            word_count = len(self.content)
+            self.reading_time = max(1, round(word_count / 200))
+
+        # 如果是排程文章，自動設定狀態
+        if self.publish_at and self.publish_at > timezone.now():
+            self.status = 'scheduled'
+
+        super().save(*args, **kwargs)
+
+    @property
+    def is_published(self):
+        """檢查文章是否已發布"""
+        if self.status == 'published':
+            return True
+        if self.status == 'scheduled' and self.publish_at and self.publish_at <= timezone.now():
+            return True
+        return False
+
+    @property
+    def can_be_viewed(self):
+        """檢查文章是否可以被查看（已發布或到達排程時間）"""
+        return self.is_published
+
+    def get_table_of_contents(self):
+        """從文章內容生成目錄"""
+        import re
+        # 匹配 Markdown 標題 (# 到 ####)
+        headings = re.findall(r'^(#{1,4})\s+(.+)$', self.content, re.MULTILINE)
+        toc = []
+        for level, title in headings:
+            # 生成錨點 ID (簡化處理)
+            anchor_id = re.sub(r'[^\w\s-]', '', title.lower())
+            anchor_id = re.sub(r'[-\s]+', '-', anchor_id).strip('-')
+            toc.append({
+                'level': len(level),
+                'title': title.strip(),
+                'anchor': anchor_id
+            })
+        return toc
 
     class Meta:
         verbose_name = '文章'
@@ -152,3 +224,76 @@ class Like(models.Model):
         verbose_name_plural = '按讚'
         unique_together = ['article', 'user']  # 確保每個使用者對每篇文章只能按一次讚
         ordering = ['-created_at']
+
+
+class Bookmark(models.Model):
+    """文章書籤/收藏模型"""
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='bookmarks',
+        verbose_name='文章'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookmarks',
+        verbose_name='收藏者'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='收藏時間')
+    note = models.TextField(blank=True, verbose_name='筆記')
+
+    def __str__(self):
+        return f"{self.user.username} 收藏了 {self.article.title}"
+
+    class Meta:
+        verbose_name = '書籤'
+        verbose_name_plural = '書籤'
+        unique_together = ['article', 'user']
+        ordering = ['-created_at']
+
+
+class ArticleShare(models.Model):
+    """文章分享統計模型"""
+    PLATFORM_CHOICES = [
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter'),
+        ('line', 'LINE'),
+        ('copy', '複製連結'),
+        ('other', '其他'),
+    ]
+
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='shares',
+        verbose_name='文章'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='article_shares',
+        verbose_name='分享者'
+    )
+    platform = models.CharField(
+        max_length=20,
+        choices=PLATFORM_CHOICES,
+        verbose_name='分享平台'
+    )
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name='IP位址'
+    )
+    shared_at = models.DateTimeField(auto_now_add=True, verbose_name='分享時間')
+
+    def __str__(self):
+        user_str = self.user.username if self.user else "訪客"
+        return f"{user_str} 在 {self.platform} 分享了 {self.article.title}"
+
+    class Meta:
+        verbose_name = '文章分享'
+        verbose_name_plural = '文章分享'
+        ordering = ['-shared_at']

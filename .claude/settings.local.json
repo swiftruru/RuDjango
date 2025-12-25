@@ -8,7 +8,8 @@
       "Bash(python manage.py migrate:*)",
       "Bash(python manage.py runserver:*)",
       "Bash(curl:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

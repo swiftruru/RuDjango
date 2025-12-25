@@ -1,0 +1,397 @@
+/* ===== 通知中心樣式 ===== */
+
+.notifications-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 0;
+    color: white;
+    text-align: center;
+}
+
+.notifications-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+}
+
+.notifications-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.notifications-section {
+    padding: 3rem 0;
+    background: #f8f9fa;
+    min-height: 70vh;
+}
+
+/* ===== 篩選器 ===== */
+.notifications-filters {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-tab {
+    padding: 0.75rem 1.5rem;
+    background: #f0f0f0;
+    border-radius: 25px;
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-tab:hover {
+    background: #e0e0e0;
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.filter-types .type-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-types .type-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-mark-all-read,
+.btn-delete-read,
+.btn-settings {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-mark-all-read {
+    background: #28a745;
+    color: white;
+}
+
+.btn-mark-all-read:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-mark-all-read:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-delete-read {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete-read:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-settings {
+    background: #6c757d;
+    color: white;
+    display: inline-block;
+}
+
+.btn-settings:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* ===== 通知列表 ===== */
+.notifications-list {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background: #f8f9fa;
+}
+
+.notification-item.unread {
+    background: #f0f3ff;
+    border-left: 4px solid #667eea;
+}
+
+.notification-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #667eea;
+    border-radius: 50%;
+}
+
+.notification-icon {
+    font-size: 2rem;
+    margin-right: 1.25rem;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-message {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.notification-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.btn-view,
+.btn-mark-read,
+.btn-delete {
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+
+.btn-view:hover {
+    background: #5568d3;
+    transform: translateY(-1px);
+}
+
+.btn-mark-read {
+    background: #28a745;
+    color: white;
+    width: 36px;
+    padding: 0;
+}
+
+.btn-mark-read:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    width: 36px;
+    padding: 0;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+/* ===== 無通知狀態 ===== */
+.no-notifications {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.no-notifications-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.3;
+}
+
+.no-notifications p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.btn-view-all {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== 分頁 ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    margin-top: 1rem;
+}
+
+.page-link {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.page-current {
+    padding: 0.5rem 1rem;
+    color: #666;
+    font-weight: 600;
+}
+
+/* ===== 響應式設計 ===== */
+@media (max-width: 768px) {
+    .notifications-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-tabs {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-tab {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .filter-types,
+    .filter-actions {
+        width: 100%;
+    }
+
+    .filter-types .type-select {
+        width: 100%;
+    }
+
+    .filter-actions {
+        justify-content: space-between;
+    }
+
+    .notification-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    .notification-icon {
+        margin-bottom: 0.75rem;
+        margin-right: 0;
+    }
+
+    .notification-actions {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 1rem;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .notifications-header h1 {
+        font-size: 2rem;
+    }
+
+    .notification-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+    }
+
+    .btn-mark-all-read,
+    .btn-delete-read,
+    .btn-settings {
+        width: 100%;
+        text-align: center;
+    }
+}

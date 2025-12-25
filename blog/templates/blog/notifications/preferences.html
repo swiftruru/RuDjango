@@ -1,0 +1,138 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}通知設定 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/notifications/preferences.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="preferences-header">
+    <div class="container">
+        <h1>⚙️ 通知設定</h1>
+        <p>自訂您想接收的通知類型</p>
+    </div>
+</section>
+
+<section class="preferences-section">
+    <div class="container">
+        <div class="preferences-card">
+            <form method="post" action="{% url 'notification_preferences' %}">
+                {% csrf_token %}
+
+                <div class="preferences-intro">
+                    <p>選擇您想接收的通知類型。取消勾選後，您將不會收到該類型的通知。</p>
+                </div>
+
+                <div class="preference-group">
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">💬</div>
+                            <div class="preference-details">
+                                <h3>留言通知</h3>
+                                <p>當有人在您的文章下留言時收到通知</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_comment_notifications"
+                                   {% if preference.enable_comment_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">❤️</div>
+                            <div class="preference-details">
+                                <h3>按讚通知</h3>
+                                <p>當有人喜歡您的文章時收到通知</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_like_notifications"
+                                   {% if preference.enable_like_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">👥</div>
+                            <div class="preference-details">
+                                <h3>追蹤通知</h3>
+                                <p>當有人開始追蹤您時收到通知</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_follower_notifications"
+                                   {% if preference.enable_follower_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">✉️</div>
+                            <div class="preference-details">
+                                <h3>私訊通知</h3>
+                                <p>當收到新的私人訊息時收到通知</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_message_notifications"
+                                   {% if preference.enable_message_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">🔗</div>
+                            <div class="preference-details">
+                                <h3>分享通知</h3>
+                                <p>當有人分享您的文章時收到通知</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_share_notifications"
+                                   {% if preference.enable_share_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-icon">📧</div>
+                            <div class="preference-details">
+                                <h3>Email 通知（即將推出）</h3>
+                                <p>將重要通知發送到您的電子郵件</p>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="enable_email_notifications"
+                                   {% if preference.enable_email_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="preferences-actions">
+                    <a href="{% url 'notifications_center' %}" class="btn-cancel">取消</a>
+                    <button type="submit" class="btn-save">儲存設定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 表單提交確認
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // 可以添加自動儲存提示
+    });
+</script>
+{% endblock %}

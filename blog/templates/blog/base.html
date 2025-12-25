@@ -28,7 +28,12 @@
         <div class="container">
             <nav class="nav">
                 <div class="logo"><a href="/" style="color: inherit; text-decoration: none;">RuDjango</a></div>
-                <ul class="nav-menu">
+                <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                    <span class="hamburger"></span>
+                    <span class="hamburger"></span>
+                    <span class="hamburger"></span>
+                </button>
+                <ul class="nav-menu" id="nav-menu">
                     <li><a href="/" class="nav-link active">首頁</a></li>
                     <li><a href="/blog/about" class="nav-link">關於</a></li>
                     <li class="nav-dropdown">
@@ -43,6 +48,10 @@
                         </ul>
                     </li>
                     {% if user.is_authenticated %}
+                    <li><a href="{% url 'notifications_center' %}" class="nav-link nav-notifications">
+                            通知
+                            <span class="notification-badge" id="notification-count" style="display: none;"></span>
+                        </a></li>
                     <li><a href="{% url 'inbox' %}" class="nav-link nav-messages">
                             <span class="message-icon">✉️</span>
                             訊息
@@ -100,6 +109,11 @@
     <!-- 頁面載入器腳本 - 已暫時停用 -->
     <!-- <script src="{% static 'blog/js/page-loader.js' %}"></script> -->
 
+    <!-- 即時通知腳本 -->
+    {% if user.is_authenticated %}
+    <script src="{% static 'blog/js/notifications/realtime.js' %}"></script>
+    {% endif %}
+
     <script>
         // 自動隱藏訊息提示
         document.addEventListener('DOMContentLoaded', function () {
@@ -112,6 +126,60 @@
                     }, 400);
                 }, 3500); // 3.5秒後開始淡出
             });
+
+            // 漢堡選單切換
+            const navToggle = document.getElementById('nav-toggle');
+            const navMenu = document.getElementById('nav-menu');
+
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+
+                // 處理下拉選單的父項目點擊（手機版）
+                const dropdownParents = navMenu.querySelectorAll('.nav-dropdown > .nav-link');
+                dropdownParents.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const parentDropdown = this.closest('.nav-dropdown');
+                            parentDropdown.classList.toggle('active');
+                        }
+                    });
+                });
+
+                // 處理下拉選單子項目點擊（手機版）- 點擊後關閉選單
+                const dropdownLinks = navMenu.querySelectorAll('.dropdown-link');
+                dropdownLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            navToggle.classList.remove('active');
+                            navMenu.classList.remove('active');
+                        }
+                    });
+                });
+
+                // 處理一般連結點擊（手機版）- 點擊後關閉選單
+                const directLinks = navMenu.querySelectorAll('li:not(.nav-dropdown) > .nav-link');
+                directLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            navToggle.classList.remove('active');
+                            navMenu.classList.remove('active');
+                        }
+                    });
+                });
+
+                // 點擊外部關閉選單
+                document.addEventListener('click', function(event) {
+                    const isClickInside = navMenu.contains(event.target) || navToggle.contains(event.target);
+                    if (!isClickInside && navMenu.classList.contains('active')) {
+                        navToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
 

@@ -1,0 +1,240 @@
+/* ===== 通知偏好設定樣式 ===== */
+
+.preferences-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 0;
+    color: white;
+    text-align: center;
+}
+
+.preferences-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+}
+
+.preferences-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.preferences-section {
+    padding: 3rem 0;
+    background: #f8f9fa;
+    min-height: 70vh;
+}
+
+.preferences-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.preferences-intro {
+    padding: 1.5rem;
+    background: #f0f3ff;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.preferences-intro p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.preference-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.preference-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.preference-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.preference-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.preference-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.preference-details h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.preference-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* ===== 開關按鈕 ===== */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #667eea;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* ===== 動作按鈕 ===== */
+.preferences-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn-cancel,
+.btn-save {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== 響應式設計 ===== */
+@media (max-width: 768px) {
+    .preferences-card {
+        padding: 1.5rem;
+    }
+
+    .preference-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .preference-info {
+        width: 100%;
+    }
+
+    .switch {
+        align-self: flex-end;
+    }
+
+    .preferences-actions {
+        flex-direction: column;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .preferences-header h1 {
+        font-size: 2rem;
+    }
+
+    .preferences-card {
+        padding: 1rem;
+    }
+
+    .preference-item {
+        padding: 1rem;
+    }
+
+    .preference-icon {
+        font-size: 1.5rem;
+    }
+
+    .preference-details h3 {
+        font-size: 1rem;
+    }
+
+    .preference-details p {
+        font-size: 0.85rem;
+    }
+}

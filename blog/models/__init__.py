@@ -19,6 +19,9 @@ from .member import (
     Message,
 )
 
+# 通知相關 models
+from .notification import Notification, NotificationPreference
+
 __all__ = [
     # 文章相關
     'Tag',
@@ -38,4 +41,7 @@ __all__ = [
     'Activity',
     'Follow',
     'Message',
+    # 通知相關
+    'Notification',
+    'NotificationPreference',
 ]

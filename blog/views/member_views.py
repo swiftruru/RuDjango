@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
 from ..models import UserProfile, Activity, UserAchievement, UserCourseProgress, Follow, ArticleReadHistory, Article, Comment, Like
+from ..utils.notifications import notify_follower
 
 
 @login_required
@@ -556,6 +557,9 @@ def follow_user(request, username):
         Follow.objects.create(follower=request.user, following=target_user)
         is_following = True
         message = '追蹤成功'
+
+        # 發送通知給被追蹤的用戶
+        notify_follower(target_user, request.user)
 
     # 獲取最新的追蹤數量
     followers_count = target_user.followers.count()

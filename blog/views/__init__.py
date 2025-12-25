@@ -61,6 +61,17 @@ from .message_views import (
     outbox_bulk_delete
 )
 
+# 通知相關 views
+from .notification_views import (
+    notifications_center,
+    notification_mark_read,
+    notification_mark_all_read,
+    notification_delete,
+    notification_delete_all_read,
+    notification_count,
+    notification_preferences
+)
+
 __all__ = [
     # 文章相關
     'home',
@@ -111,4 +122,12 @@ __all__ = [
     'bulk_mark_read',
     'bulk_delete',
     'outbox_bulk_delete',
+    # 通知相關
+    'notifications_center',
+    'notification_mark_read',
+    'notification_mark_all_read',
+    'notification_delete',
+    'notification_delete_all_read',
+    'notification_count',
+    'notification_preferences',
 ]

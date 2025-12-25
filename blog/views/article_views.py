@@ -12,6 +12,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from ..models import Article, ArticleReadHistory, Comment, Like, Tag, Bookmark, ArticleShare
 from ..forms import ArticleForm, CommentForm
+from ..utils.notifications import notify_comment, notify_like, notify_share
 
 
 def home(request):
@@ -25,20 +26,19 @@ def home(request):
     支援 AJAX 請求返回 JSON 格式數據（用於無限滾動）
     """
     # 自動更新已到期的排程文章為已發布狀態
-    scheduled_articles = Article.objects.filter(
+    # 使用 update() 批次更新，避免逐筆 save() 造成效能問題
+    Article.objects.filter(
         status='scheduled',
         publish_at__lte=timezone.now()
-    )
-    for article in scheduled_articles:
-        article.status = 'published'
-        article.save()
+    ).update(status='published')
 
     # 取得搜尋參數
     search_query = request.GET.get('q', '')
     search_type = request.GET.get('search_type', 'all')
 
     # 只顯示已發布的文章
-    articles = Article.objects.filter(status='published').order_by("-created_at")
+    # 使用 select_related 優化作者查詢，prefetch_related 優化標籤查詢
+    articles = Article.objects.filter(status='published').select_related('author').prefetch_related('tags').order_by("-created_at")
 
     if search_query:
         if search_type == 'author':
@@ -142,6 +142,10 @@ def article_detail(request, id):
             if parent_id:
                 comment.parent = Comment.objects.get(id=parent_id)
             comment.save()
+
+            # 發送通知給文章作者
+            notify_comment(article, comment)
+
             messages.success(request, '✅ 留言發表成功！')
             return redirect('article_detail', id=id)
     else:
@@ -640,6 +644,9 @@ def article_like(request, id):
             liked = True
             message = '點讚成功'
 
+            # 發送通知給文章作者
+            notify_like(article, request.user)
+
         # 獲取最新的點讚數量
         like_count = article.likes.count()
     except Exception as e:
@@ -688,13 +695,11 @@ def tag_articles(request, slug):
     支援分頁
     """
     # 自動更新已到期的排程文章為已發布狀態
-    scheduled_articles = Article.objects.filter(
+    # 使用 update() 批次更新，避免逐筆 save() 造成效能問題
+    Article.objects.filter(
         status='scheduled',
         publish_at__lte=timezone.now()
-    )
-    for article in scheduled_articles:
-        article.status = 'published'
-        article.save()
+    ).update(status='published')
 
     tag = get_object_or_404(Tag, slug=slug)
     # 只顯示已發布的文章
@@ -805,6 +810,10 @@ def article_share(request, id):
             platform=platform,
             ip_address=ip_address
         )
+
+        # 發送通知給文章作者（僅限已登入用戶）
+        if request.user.is_authenticated:
+            notify_share(article, request.user)
 
         # 獲取總分享數
         share_count = article.shares.count()

@@ -70,10 +70,21 @@ search_patterns = [
     path('api/search/quick/', views.quick_search, name='quick_search'),
 ]
 
+# 通知相關路由
+notification_patterns = [
+    path('notifications/', views.notifications_center, name='notifications_center'),
+    path('notifications/<int:notification_id>/read/', views.notification_mark_read, name='notification_mark_read'),
+    path('notifications/mark-all-read/', views.notification_mark_all_read, name='notification_mark_all_read'),
+    path('notifications/<int:notification_id>/delete/', views.notification_delete, name='notification_delete'),
+    path('notifications/delete-all-read/', views.notification_delete_all_read, name='notification_delete_all_read'),
+    path('api/notifications/count/', views.notification_count, name='notification_count'),
+    path('notifications/preferences/', views.notification_preferences, name='notification_preferences'),
+]
+
 # 靜態頁面路由
 page_patterns = [
     path('about', views.about),
 ]
 
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + page_patterns

@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ..models import Message
 from ..forms.member import MessageForm, MessageReplyForm
+from ..utils.notifications import notify_message
 
 
 @login_required
@@ -102,6 +103,9 @@ def message_compose(request, username=None):
                 subject=form.cleaned_data['subject'],
                 content=form.cleaned_data['content']
             )
+
+            # 發送通知給收件者
+            notify_message(recipient_user, request.user, message)
 
             messages.success(request, f'✅ 訊息已發送給 {recipient_username}！')
             return redirect('outbox')

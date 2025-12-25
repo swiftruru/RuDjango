@@ -1,0 +1,181 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}通知中心 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/notifications/center.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="notifications-header">
+    <div class="container">
+        <h1>🔔 通知中心</h1>
+        <p>管理您的所有通知</p>
+    </div>
+</section>
+
+<section class="notifications-section">
+    <div class="container">
+        <!-- 篩選器 -->
+        <div class="notifications-filters">
+            <div class="filter-tabs">
+                <a href="{% url 'notifications_center' %}?filter=all&type={{ notification_type }}"
+                   class="filter-tab {% if filter_type == 'all' %}active{% endif %}">
+                    全部 ({{ unread_count }})
+                </a>
+                <a href="{% url 'notifications_center' %}?filter=unread&type={{ notification_type }}"
+                   class="filter-tab {% if filter_type == 'unread' %}active{% endif %}">
+                    未讀
+                </a>
+                <a href="{% url 'notifications_center' %}?filter=read&type={{ notification_type }}"
+                   class="filter-tab {% if filter_type == 'read' %}active{% endif %}">
+                    已讀
+                </a>
+            </div>
+
+            <div class="filter-types">
+                <select id="notification-type-filter" class="type-select">
+                    <option value="all" {% if notification_type == 'all' %}selected{% endif %}>所有類型</option>
+                    <option value="comment" {% if notification_type == 'comment' %}selected{% endif %}>💬 留言</option>
+                    <option value="like" {% if notification_type == 'like' %}selected{% endif %}>❤️ 按讚</option>
+                    <option value="follower" {% if notification_type == 'follower' %}selected{% endif %}>👥 追蹤</option>
+                    <option value="message" {% if notification_type == 'message' %}selected{% endif %}>✉️ 私訊</option>
+                    <option value="share" {% if notification_type == 'share' %}selected{% endif %}>🔗 分享</option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <form method="post" action="{% url 'notification_mark_all_read' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-mark-all-read" {% if unread_count == 0 %}disabled{% endif %}>
+                        ✓ 全部標為已讀
+                    </button>
+                </form>
+                <form method="post" action="{% url 'notification_delete_all_read' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete-read" onclick="return confirm('確定要刪除所有已讀通知嗎？')">
+                        🗑️ 刪除已讀
+                    </button>
+                </form>
+                <a href="{% url 'notification_preferences' %}" class="btn-settings">
+                    ⚙️ 通知設定
+                </a>
+            </div>
+        </div>
+
+        <!-- 通知列表 -->
+        <div class="notifications-list">
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
+                     data-notification-id="{{ notification.id }}">
+                    <div class="notification-icon">
+                        {{ notification.get_icon }}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-message">
+                            {{ notification.message }}
+                        </div>
+                        <div class="notification-meta">
+                            <span class="notification-time">{{ notification.get_time_since }}</span>
+                            {% if notification.sender %}
+                            <span class="notification-sender">來自 {{ notification.sender.username }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        {% if notification.link %}
+                        <a href="{{ notification.link }}" class="btn-view"
+                           onclick="markAsRead({{ notification.id }})">
+                            查看
+                        </a>
+                        {% endif %}
+                        {% if not notification.is_read %}
+                        <form method="post" action="{% url 'notification_mark_read' notification.id %}"
+                              style="display: inline;" class="mark-read-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-mark-read" title="標為已讀">
+                                ✓
+                            </button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{% url 'notification_delete' notification.id %}"
+                              style="display: inline;" class="delete-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete"
+                                    onclick="return confirm('確定要刪除此通知嗎？')" title="刪除">
+                                ✕
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- 分頁 -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1&filter={{ filter_type }}&type={{ notification_type }}"
+                       class="page-link">« 首頁</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&filter={{ filter_type }}&type={{ notification_type }}"
+                       class="page-link">‹ 上一頁</a>
+                    {% endif %}
+
+                    <span class="page-current">第 {{ page_obj.number }} 頁，共 {{ page_obj.paginator.num_pages }} 頁</span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&filter={{ filter_type }}&type={{ notification_type }}"
+                       class="page-link">下一頁 ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&filter={{ filter_type }}&type={{ notification_type }}"
+                       class="page-link">末頁 »</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            {% else %}
+                <div class="no-notifications">
+                    <div class="no-notifications-icon">🔔</div>
+                    <p>沒有通知</p>
+                    {% if filter_type != 'all' %}
+                    <a href="{% url 'notifications_center' %}" class="btn-view-all">查看所有通知</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'blog/js/notifications/center.js' %}"></script>
+<script>
+    // 類型篩選切換
+    document.getElementById('notification-type-filter').addEventListener('change', function() {
+        const type = this.value;
+        const filter = '{{ filter_type }}';
+        window.location.href = `{% url 'notifications_center' %}?filter=${filter}&type=${type}`;
+    });
+
+    // 標記為已讀 (AJAX)
+    function markAsRead(notificationId) {
+        fetch(`/blog/notifications/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  // 更新 UI
+                  const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                  if (item) {
+                      item.classList.remove('unread');
+                  }
+              }
+          });
+    }
+</script>
+{% endblock %}

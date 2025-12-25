@@ -1,0 +1,140 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}發表文章 - {{ member.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/articles.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <a href="{% url 'member_profile' username=member.username %}" class="back-link">
+                <span class="back-icon">←</span>
+                返回個人頁面
+            </a>
+            <h1 class="page-title">發表文章</h1>
+            <p class="page-subtitle">{{ member.name }} 的所有文章 (共 {{ total_count }} 篇)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Articles Content -->
+<section class="articles-content">
+    <div class="container">
+        <div class="articles-wrapper">
+            <!-- Articles List -->
+            <div class="articles-list">
+                {% for article in articles %}
+                <article class="article-card {% if article.status == 'draft' %}article-draft{% elif article.status == 'scheduled' %}article-scheduled{% endif %}">
+                    <div class="article-header">
+                        <div class="article-title-wrapper">
+                            <a href="{% url 'article_detail' id=article.id %}" class="article-title-link">
+                                <h2 class="article-title">{{ article.title }}</h2>
+                            </a>
+                            {% if is_own_profile %}
+                                {% if article.status == 'draft' %}
+                                <span class="status-badge draft-badge">📝 草稿</span>
+                                {% elif article.status == 'scheduled' %}
+                                <span class="status-badge scheduled-badge">⏰ 排程</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="article-date">
+                            <span class="date-icon">📅</span>
+                            {% if article.status == 'scheduled' and is_own_profile %}
+                                {{ article.publish_at|date:"Y年m月d日 H:i" }}
+                            {% else %}
+                                {{ article.created_at|date:"Y年m月d日" }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="article-excerpt">
+                        <p>{{ article.content|truncatewords:50 }}</p>
+                    </div>
+
+                    <div class="article-tags">
+                        {% for tag in article.tags.all %}
+                        <a href="{% url 'tag_articles' slug=tag.slug %}" class="tag">
+                            #{{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="article-footer">
+                        <div class="article-stats">
+                            <span class="stat-item">
+                                <span class="stat-icon">👁️</span>
+                                {{ article.views }} 瀏覽
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-icon">💬</span>
+                                {{ article.comments.count }} 評論
+                            </span>
+                            <span class="stat-item">
+                                <span class="stat-icon">❤️</span>
+                                {{ article.likes.count }} 讚
+                            </span>
+                        </div>
+                        <a href="{% url 'article_detail' id=article.id %}" class="read-more">
+                            閱讀全文 →
+                        </a>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3 class="empty-title">尚未發表任何文章</h3>
+                    <p class="empty-text">{% if is_own_profile %}開始撰寫你的第一篇文章吧！{% else %}期待 {{ member.name }} 的精彩分享{% endif %}</p>
+                    {% if is_own_profile %}
+                    <a href="{% url 'article_create' %}" class="btn-primary">
+                        <span class="btn-icon">✏️</span>
+                        開始寫作
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="page-link">
+                    « 首頁
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link">
+                    ‹ 上一頁
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-current">
+                    {{ num }}
+                </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="page-link">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link">
+                    下一頁 ›
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">
+                    末頁 »
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -34,6 +34,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(max_length=500, blank=True, verbose_name='個人簡介')
     avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True, verbose_name='頭像')
+    avatar_updated_at = models.DateTimeField(null=True, blank=True, verbose_name='頭像更新時間')
     school = models.CharField(max_length=100, blank=True, verbose_name='學校')
     grade = models.CharField(max_length=50, blank=True, verbose_name='年級')
     location = models.CharField(max_length=100, blank=True, verbose_name='地點')
@@ -52,6 +53,25 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f'{self.user.username} 的個人資料'
+
+    def get_avatar_url(self):
+        """
+        獲取帶有版本參數的頭像 URL
+        用於解決瀏覽器緩存問題
+        """
+        if not self.avatar:
+            return None
+
+        # 如果有頭像更新時間，使用時間戳記作為版本號
+        if self.avatar_updated_at:
+            import time
+            timestamp = int(self.avatar_updated_at.timestamp())
+            return f"{self.avatar.url}?v={timestamp}"
+
+        # 沒有更新時間則使用當前時間（首次上傳的情況）
+        import time
+        timestamp = int(time.time())
+        return f"{self.avatar.url}?v={timestamp}"
 
     class Meta:
         verbose_name = '使用者資料'
@@ -345,11 +365,16 @@ class Message(models.Model):
 @receiver(pre_save, sender=UserProfile)
 def delete_old_avatar(sender, instance, **kwargs):
     """
-    在保存新頭像之前，自動刪除舊頭像檔案
-    避免佔用 media 空間
+    在保存新頭像之前：
+    1. 自動刪除舊頭像檔案（避免佔用 media 空間）
+    2. 更新頭像更新時間（用於 cache busting）
     """
     if not instance.pk:
         # 如果是新建的 profile，不需要刪除舊檔案
+        # 但如果有頭像，需要設定更新時間
+        if instance.avatar:
+            from django.utils import timezone
+            instance.avatar_updated_at = timezone.now()
         return
 
     try:
@@ -358,12 +383,20 @@ def delete_old_avatar(sender, instance, **kwargs):
 
         # 如果舊 profile 有頭像，且新頭像與舊頭像不同
         if old_profile.avatar and old_profile.avatar != instance.avatar:
+            # 更新頭像更新時間
+            from django.utils import timezone
+            instance.avatar_updated_at = timezone.now()
+
             # 刪除舊頭像檔案
             if os.path.isfile(old_profile.avatar.path):
                 os.remove(old_profile.avatar.path)
+        elif instance.avatar and not old_profile.avatar:
+            # 首次上傳頭像的情況
+            from django.utils import timezone
+            instance.avatar_updated_at = timezone.now()
     except UserProfile.DoesNotExist:
         # 如果找不到舊 profile，不做任何處理
         pass
     except Exception as e:
         # 記錄錯誤但不中斷保存流程
-        print(f"刪除舊頭像時發生錯誤: {e}")
+        print(f"處理頭像時發生錯誤: {e}")

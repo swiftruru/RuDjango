@@ -5,27 +5,51 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/articles/form.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="form-container">
         <div class="form-header">
             <h1>{{ action }}</h1>
+            <div class="autosave-status" id="autosave-status">
+                <span class="status-icon">💾</span>
+                <span class="status-text">使用 Cmd/Ctrl + S 快速儲存草稿</span>
+            </div>
         </div>
 
-        <form method="post" novalidate>
+        <!-- Gmail 風格草稿提示（編輯已發布文章且有草稿時顯示） -->
+        {% if article and article.status == 'published' and article.has_draft %}
+        <div class="draft-notification-bar">
+            <div class="draft-notification-content">
+                <div class="draft-notification-info">
+                    <span class="draft-icon">📝</span>
+                    <div class="draft-text">
+                        <strong>正在編輯草稿版本</strong>
+                        <span class="draft-time-text">{{ article.draft_updated_at|date:"Y年m月d日 H:i" }} 上次儲存</span>
+                    </div>
+                </div>
+                <div class="draft-notification-actions">
+                    <a href="{% url 'draft_publish' article.id %}" class="btn-draft-publish-primary" onclick="return confirm('確定要發布草稿？這將覆蓋目前的已發布內容。')">
+                        發布草稿
+                    </a>
+                    <a href="{% url 'draft_discard' article.id %}" class="btn-draft-discard-secondary" onclick="return confirm('確定要捨棄草稿？草稿內容將會被刪除。')">
+                        捨棄草稿
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate id="article-form" data-article-id="{% if article %}{{ article.id }}{% endif %}">
             {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
 
             <div class="form-group">
                 <label for="id_title">{{ form.title.label }}</label>
@@ -58,9 +82,12 @@
             <div class="form-group">
                 <label for="id_status">發布狀態</label>
                 <select name="status" id="id_status" class="form-control">
+                    {% if article and article.status == 'published' %}
+                    <option value="published" selected>立即更新</option>
+                    {% else %}
                     <option value="published" {% if not article or article.status == 'published' %}selected{% endif %}>立即發布</option>
-                    <option value="draft" {% if article and article.status == 'draft' %}selected{% endif %}>儲存為草稿</option>
                     <option value="scheduled" {% if article and article.status == 'scheduled' %}selected{% endif %}>排程發布</option>
+                    {% endif %}
                 </select>
             </div>
 
@@ -68,16 +95,23 @@
             <div class="form-group" id="publish-at-group" style="display: none;">
                 <label for="id_publish_at">排程發布時間</label>
                 <input type="datetime-local" name="publish_at" id="id_publish_at" class="form-control"
-                       value="{% if article and article.publish_at %}{{ article.publish_at|date:'Y-m-d\TH:i' }}{% endif %}">
-                <span class="help-text">選擇文章自動發布的時間</span>
+                       value="{% if article and article.publish_at and article.status == 'scheduled' %}{{ article.publish_at|date:'Y-m-d\TH:i' }}{% endif %}"
+                       min="">
+                <span class="help-text">選擇文章自動發布的時間（必須是未來時間，預設為 30 分鐘後）</span>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if article %}✏️ 更新文章{% else %}📝 儲存文章{% endif %}
-                </button>
+            <!-- Gmail 風格的操作按鈕區 -->
+            <div class="form-actions-container">
+                <div class="form-actions-primary">
+                    <button type="submit" class="btn btn-publish" name="action" value="publish">
+                        {% if article and article.status == 'published' %}✏️ 更新文章{% else %}📤 發布{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-save-draft" name="action" value="draft">
+                        💾 儲存為草稿
+                    </button>
+                </div>
                 <a href="{% if article %}{% url 'article_detail' article.id %}{% else %}{% url 'blog_home' %}{% endif %}"
-                    class="btn btn-secondary">取消</a>
+                    class="btn btn-cancel">取消</a>
             </div>
         </form>
     </div>
@@ -91,10 +125,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const publishAtGroup = document.getElementById('publish-at-group');
     const publishAtInput = document.getElementById('id_publish_at');
 
+    // 格式化日期時間為 datetime-local 格式
+    function formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    // 設定最小可選時間為當前時間
+    function setMinDateTime() {
+        const now = new Date();
+        publishAtInput.min = formatDateTime(now);
+    }
+
+    // 設定預設排程時間（當前時間 + 30 分鐘，並進位到下個整 5 分鐘）
+    function setDefaultPublishTime() {
+        // 如果欄位已經有值（編輯現有文章），就不覆蓋
+        if (publishAtInput.value) {
+            return;
+        }
+
+        // 取得當前時間並加 30 分鐘
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 30);
+
+        // 進位到下個整 5 分鐘（例如：14:23 -> 14:25, 14:28 -> 14:30）
+        const minutes = now.getMinutes();
+        const roundedMinutes = Math.ceil(minutes / 5) * 5;
+        now.setMinutes(roundedMinutes);
+        now.setSeconds(0);
+        now.setMilliseconds(0);
+
+        publishAtInput.value = formatDateTime(now);
+    }
+
     function togglePublishAtField() {
         if (statusSelect.value === 'scheduled') {
             publishAtGroup.style.display = 'block';
             publishAtInput.required = true;
+            setMinDateTime(); // 設定最小時間限制
+            setDefaultPublishTime();
         } else {
             publishAtGroup.style.display = 'none';
             publishAtInput.required = false;
@@ -102,10 +175,149 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 初始化
+    setMinDateTime(); // 頁面載入時就設定最小時間
     togglePublishAtField();
 
     // 監聽狀態變更
     statusSelect.addEventListener('change', togglePublishAtField);
+
+    // 每分鐘更新一次最小時間限制（確保 min 值始終是最新的）
+    setInterval(setMinDateTime, 60000);
+
+    // ========== 自動儲存草稿功能 ==========
+    const form = document.getElementById('article-form');
+    const autosaveStatus = document.getElementById('autosave-status');
+    const statusIcon = autosaveStatus.querySelector('.status-icon');
+    const statusText = autosaveStatus.querySelector('.status-text');
+    const articleId = form.dataset.articleId;
+
+    let isSaving = false;
+    let lastSavedTime = null;
+
+    // 更新狀態顯示
+    function updateStatus(state, message) {
+        if (state === 'saving') {
+            statusIcon.textContent = '⏳';
+            statusText.textContent = '正在儲存...';
+            autosaveStatus.className = 'autosave-status saving';
+        } else if (state === 'saved') {
+            statusIcon.textContent = '✅';
+            statusText.textContent = message;
+            autosaveStatus.className = 'autosave-status saved';
+            lastSavedTime = new Date();
+            updateTimeSince();
+        } else if (state === 'error') {
+            statusIcon.textContent = '❌';
+            statusText.textContent = message;
+            autosaveStatus.className = 'autosave-status error';
+        } else {
+            statusIcon.textContent = '💾';
+            statusText.textContent = message;
+            autosaveStatus.className = 'autosave-status';
+        }
+    }
+
+    // 更新「多久前儲存」的時間顯示
+    function updateTimeSince() {
+        if (!lastSavedTime) return;
+
+        const now = new Date();
+        const diff = Math.floor((now - lastSavedTime) / 1000); // 秒
+
+        let timeText;
+        if (diff < 60) {
+            timeText = '剛剛';
+        } else if (diff < 3600) {
+            const minutes = Math.floor(diff / 60);
+            timeText = `${minutes} 分鐘前`;
+        } else {
+            const hours = Math.floor(diff / 3600);
+            timeText = `${hours} 小時前`;
+        }
+
+        statusText.textContent = `已儲存草稿 (${timeText})`;
+    }
+
+    // 每 30 秒更新一次時間顯示
+    setInterval(updateTimeSince, 30000);
+
+    // 自動儲存函數
+    async function autosaveDraft() {
+        if (isSaving) return;
+
+        const titleField = document.getElementById('id_title');
+        const contentField = document.getElementById('id_content');
+        const tagsField = document.getElementById('tags-input');
+
+        if (!titleField || !contentField) {
+            console.error('Form fields not found');
+            updateStatus('error', '表單欄位錯誤');
+            return;
+        }
+
+        const title = titleField.value;
+        const content = contentField.value;
+        const tagsInput = tagsField ? tagsField.value : '';
+
+        // 如果標題和內容都是空的，不保存
+        if (!title.trim() && !content.trim()) {
+            updateStatus('default', '使用 Cmd/Ctrl + S 快速儲存草稿');
+            return;
+        }
+
+        isSaving = true;
+        updateStatus('saving', '正在儲存...');
+
+        try {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const url = articleId
+                ? `/blog/article/${articleId}/autosave/`
+                : '/blog/article/autosave/';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    title: title,
+                    content: content,
+                    tags_input: tagsInput,
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                updateStatus('saved', '已儲存草稿 (剛剛)');
+
+                // 如果是新文章，更新表單的 article ID 和 URL
+                if (!articleId && data.article_id) {
+                    form.dataset.articleId = data.article_id;
+                    // 更新瀏覽器歷史記錄，但不重新載入頁面
+                    const newUrl = `/blog/article/${data.article_id}/edit/`;
+                    history.replaceState({}, '', newUrl);
+                }
+            } else {
+                updateStatus('error', data.error || '儲存失敗');
+            }
+        } catch (error) {
+            console.error('Autosave error:', error);
+            updateStatus('error', '儲存失敗：網路錯誤');
+        } finally {
+            isSaving = false;
+        }
+    }
+
+    // 監聽 Cmd/Ctrl + S 快捷鍵
+    document.addEventListener('keydown', function(e) {
+        // Cmd + S (Mac) 或 Ctrl + S (Windows/Linux)
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            e.preventDefault(); // 防止瀏覽器的預設儲存行為
+            autosaveDraft();
+        }
+    });
 });
 </script>
 {% endblock %}

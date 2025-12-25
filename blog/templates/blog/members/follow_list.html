@@ -49,7 +49,7 @@
                     <div class="user-avatar">
                         {% if list_type == 'followers' %}
                         {% if follow.follower.profile.avatar %}
-                        <img src="{{ follow.follower.profile.avatar.url }}" alt="{{ follow.follower.username }}">
+                        <img src="{{ follow.follower.profile|avatar_url }}" alt="{{ follow.follower.username }}">
                         {% else %}
                         <div class="avatar-placeholder">
                             {{ follow.follower.username|slice:":1"|upper }}
@@ -57,7 +57,7 @@
                         {% endif %}
                         {% else %}
                         {% if follow.following.profile.avatar %}
-                        <img src="{{ follow.following.profile.avatar.url }}" alt="{{ follow.following.username }}">
+                        <img src="{{ follow.following.profile|avatar_url }}" alt="{{ follow.following.username }}">
                         {% else %}
                         <div class="avatar-placeholder">
                             {{ follow.following.username|slice:":1"|upper }}

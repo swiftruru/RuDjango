@@ -12,32 +12,98 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 文件上傳處理與即時預覽
     const fileInput = document.querySelector('.file-input');
-    const fileUploadName = document.querySelector('.file-upload-name');
     const avatarPreviewImg = document.getElementById('avatar-preview-img');
+    const dropZone = document.getElementById('drop-zone');
+    const dropZoneFilename = document.getElementById('drop-zone-filename');
 
-    if (fileInput && fileUploadName) {
+    /**
+     * 處理檔案選擇或拖曳
+     * @param {File} file - 圖片檔案
+     */
+    function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            alert('請選擇圖片檔案');
+            return;
+        }
+
+        // 檢查檔案大小 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('圖片大小不能超過 5MB');
+            return;
+        }
+
+        // 更新拖曳區域顯示
+        if (dropZoneFilename) {
+            dropZoneFilename.textContent = file.name;
+            dropZone.classList.add('has-file');
+        }
+
+        // 即時預覽頭像
+        if (avatarPreviewImg) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                avatarPreviewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 文件上傳輸入框處理
+    if (fileInput) {
         fileInput.addEventListener('change', function () {
             if (this.files && this.files.length > 0) {
-                const file = this.files[0];
-                const fileName = file.name;
-
-                // 更新檔案名稱顯示
-                fileUploadName.textContent = fileName;
-                fileUploadName.classList.add('has-file');
-
-                // 即時預覽頭像
-                if (avatarPreviewImg && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        avatarPreviewImg.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
+                handleFile(this.files[0]);
             } else {
-                fileUploadName.textContent = '尚未選擇檔案';
-                fileUploadName.classList.remove('has-file');
+                if (dropZoneFilename) {
+                    dropZoneFilename.textContent = '';
+                    dropZone.classList.remove('has-file');
+                }
             }
         });
+    }
+
+    // 拖曳上傳功能
+    if (dropZone && fileInput) {
+        // 點擊拖曳區域觸發檔案選擇
+        dropZone.addEventListener('click', function () {
+            fileInput.click();
+        });
+
+        // 防止預設的拖曳行為
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // 拖曳進入和離開的視覺效果
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                dropZone.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                dropZone.classList.remove('drag-over');
+            }, false);
+        });
+
+        // 處理拖曳檔案
+        dropZone.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                // 將檔案設定到 input 元素
+                fileInput.files = files;
+                handleFile(files[0]);
+            }
+        }, false);
     }
 
     // 存儲當前技能的集合

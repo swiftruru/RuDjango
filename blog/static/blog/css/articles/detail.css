@@ -1153,11 +1153,33 @@
     border-radius: 12px;
     background: #f9fafb;
     transition: all 0.3s;
+    scroll-margin-top: 100px;
 }
 
 .comment-item:hover {
     border-color: #667eea;
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+/* 錨點目標高亮效果 */
+.comment-item:target,
+.reply-item:target {
+    background: #f0f4ff;
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+    0% {
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
 }
 
 .comment-header {
@@ -1230,6 +1252,8 @@
     background: white;
     border-radius: 10px;
     border: 1px solid #e5e7eb;
+    transition: all 0.3s;
+    scroll-margin-top: 100px;
 }
 
 .reply-item:hover {

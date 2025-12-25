@@ -11,16 +11,6 @@
 
 <!-- #region Content -->
 {% block content %}
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
 <section class="hero">
     <div class="container">
         <div class="hero-header">
@@ -113,14 +103,25 @@
 
         <div class="articles-grid">
             {% for article in articles %}
-            <article class="article-card">
+            <article class="article-card {% if article.status == 'scheduled' %}article-scheduled{% endif %}">
                 <div class="article-header">
-                    <h3 class="article-title">
-                        <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
-                            {{ article.title|truncatechars:40|highlight:search_query }}
-                        </a>
-                    </h3>
-                    <time class="article-date">{{ article.created_at|date:"Y年m月d日" }}</time>
+                    <div class="article-title-wrapper">
+                        <h3 class="article-title">
+                            <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
+                                {{ article.title|truncatechars:40|highlight:search_query }}
+                            </a>
+                        </h3>
+                        {% if article.status == 'scheduled' and request.user == article.author %}
+                        <span class="status-badge scheduled-badge">⏰ 排程</span>
+                        {% endif %}
+                    </div>
+                    <time class="article-date">
+                        {% if article.status == 'scheduled' and request.user == article.author %}
+                            {{ article.publish_at|date:"Y年m月d日 H:i" }}
+                        {% else %}
+                            {{ article.created_at|date:"Y年m月d日" }}
+                        {% endif %}
+                    </time>
                 </div>
                 <div class="article-content">
                     <p>{{ article.content|markdown|truncatewords_html:30|highlight:search_query }}</p>

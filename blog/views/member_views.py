@@ -130,6 +130,7 @@ def member_profile(request, username):
 
     context = {
         'member': member_data,
+        'profile': profile,  # 添加 profile 物件以便使用 avatar_url filter
         'is_own_profile': is_own_profile,
         'is_following': is_following,
     }
@@ -567,3 +568,69 @@ def follow_user(request, username):
         'following_count': following_count,
         'message': message
     })
+
+
+def member_articles(request, username):
+    """查看會員發表的所有文章"""
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 取得該用戶的所有文章（公開發表的）
+    articles_list = Article.objects.filter(author=target_user).order_by('-created_at')
+
+    # 分頁設定
+    paginator = Paginator(articles_list, 10)  # 每頁顯示 10 篇
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 準備會員資料
+    member_data = {
+        'name': target_user.first_name or target_user.username,
+        'username': target_user.username,
+    }
+
+    context = {
+        'member': member_data,
+        'is_own_profile': is_own_profile,
+        'articles': page_obj,
+        'page_obj': page_obj,
+        'total_count': articles_list.count(),
+    }
+
+    return render(request, 'blog/members/articles.html', context)
+
+
+def member_comments(request, username):
+    """查看會員的所有評論"""
+    target_user = get_object_or_404(User, username=username)
+
+    # 判斷是否為本人
+    is_own_profile = request.user.is_authenticated and request.user == target_user
+
+    # 取得該用戶的所有評論，並預載相關的文章資料
+    comments_list = Comment.objects.filter(
+        author=target_user
+    ).select_related('article', 'article__author').order_by('-created_at')
+
+    # 分頁設定
+    paginator = Paginator(comments_list, 15)  # 每頁顯示 15 條評論
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 準備會員資料
+    member_data = {
+        'name': target_user.first_name or target_user.username,
+        'username': target_user.username,
+    }
+
+    context = {
+        'member': member_data,
+        'is_own_profile': is_own_profile,
+        'comments': page_obj,
+        'page_obj': page_obj,
+        'total_count': comments_list.count(),
+    }
+
+    return render(request, 'blog/members/comments.html', context)

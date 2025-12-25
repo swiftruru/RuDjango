@@ -85,18 +85,54 @@ mark.highlight {
     border-color: #667eea;
 }
 
+/* 排程文章樣式 */
+.article-card.article-scheduled {
+    background: #e8f4fd;
+    border-left: 4px solid #3498db;
+}
+
+.article-card.article-scheduled:hover {
+    box-shadow: 0 20px 50px rgba(52, 152, 219, 0.2);
+    border-color: #3498db;
+}
+
 .article-header {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid #e9ecef;
 }
 
+.article-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
 .article-title {
     font-size: 1.8rem;
     font-weight: bold;
     color: #333;
-    margin: 0 0 0.75rem 0;
+    margin: 0;
     line-height: 1.4;
+}
+
+/* 狀態徽章 */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.scheduled-badge {
+    background: #3498db;
+    color: #fff;
 }
 
 .article-date {
@@ -443,6 +479,17 @@ mark.highlight {
 
     .articles-section {
         padding: 60px 0;
+    }
+
+    .article-title-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
     }
 }
 

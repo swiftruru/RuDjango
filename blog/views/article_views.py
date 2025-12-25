@@ -22,15 +22,21 @@ def home(request):
     - search_type: 搜尋類型（all/content/author）
     每頁顯示 6 篇文章
     """
+    # 自動更新已到期的排程文章為已發布狀態
+    scheduled_articles = Article.objects.filter(
+        status='scheduled',
+        publish_at__lte=timezone.now()
+    )
+    for article in scheduled_articles:
+        article.status = 'published'
+        article.save()
+
     # 取得搜尋參數
     search_query = request.GET.get('q', '')
     search_type = request.GET.get('search_type', 'all')
 
-    # 只顯示已發布的文章（包括已到時間的排程文章）
-    articles = Article.objects.filter(
-        Q(status='published') |
-        Q(status='scheduled', publish_at__lte=timezone.now())
-    ).order_by("-created_at")
+    # 只顯示已發布的文章
+    articles = Article.objects.filter(status='published').order_by("-created_at")
 
     if search_query:
         if search_type == 'author':
@@ -86,6 +92,13 @@ def article_detail(request, id):
     """
     # 取得指定 id 的文章，若不存在則返回 404
     article = get_object_or_404(Article, id=id)
+
+    # 自動更新排程文章狀態（如果已到發布時間）- 靜默更新，不顯示訊息
+    if article.status == 'scheduled' and article.publish_at and article.publish_at <= timezone.now():
+        article.status = 'published'
+        article.save()
+        # 重新載入文章以確保狀態已更新
+        article.refresh_from_db()
 
     # 檢查文章是否可以被查看
     # 如果是草稿或未到排程時間，只有作者可以查看
@@ -185,24 +198,32 @@ def article_create(request):
             article = form.save(commit=False)
             article.author = request.user
 
-            # 處理發布狀態
-            status = request.POST.get('status', 'published')
-            article.status = status
+            # 檢查使用者點擊的按鈕 (action 參數)
+            action = request.POST.get('action', 'publish')
 
-            # 處理排程時間
-            if status == 'scheduled':
-                publish_at = request.POST.get('publish_at')
-                if publish_at:
-                    from django.utils.dateparse import parse_datetime
-                    article.publish_at = parse_datetime(publish_at)
+            if action == 'draft':
+                # 點擊「儲存為草稿」按鈕
+                article.status = 'draft'
+                article.publish_at = None
+            else:
+                # 點擊「發布」按鈕，使用下拉選單的狀態
+                status = request.POST.get('status', 'published')
+                article.status = status
+
+                # 處理排程時間
+                if status == 'scheduled':
+                    publish_at = request.POST.get('publish_at')
+                    if publish_at:
+                        from django.utils.dateparse import parse_datetime
+                        article.publish_at = parse_datetime(publish_at)
 
             article.save()
             form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
 
             # 根據狀態顯示不同訊息
-            if status == 'draft':
+            if article.status == 'draft':
                 messages.success(request, '✅ 文章已儲存為草稿！')
-            elif status == 'scheduled':
+            elif article.status == 'scheduled':
                 messages.success(request, f'✅ 文章已排程，將於 {article.publish_at.strftime("%Y年%m月%d日 %H:%M")} 發布！')
             else:
                 messages.success(request, '✅ 文章發表成功！')
@@ -223,6 +244,7 @@ def article_edit(request, id):
     """
     編輯文章
     只有作者本人才能編輯
+    已發布文章編輯時會儲存為草稿版本，不影響已發布內容
     """
     article = get_object_or_404(Article, id=id)
 
@@ -232,30 +254,64 @@ def article_edit(request, id):
         return redirect('article_detail', id=id)
 
     if request.method == 'POST':
+        # 檢查使用者點擊的按鈕 (action 參數)
+        action = request.POST.get('action', 'publish')
+
+        # 如果是已發布文章且點擊「儲存為草稿」，使用草稿版本系統
+        if article.status == 'published' and action == 'draft':
+            import json
+            title = request.POST.get('title', '')
+            content = request.POST.get('content', '')
+            tags_input = request.POST.get('tags_input', '')
+
+            # 分割標籤（支援逗號和空格）
+            tag_names = [name.strip() for name in tags_input.replace(',', ' ').split() if name.strip()]
+
+            # 儲存草稿版本
+            article.save_draft_version(title, content, tag_names)
+
+            messages.success(request, '✅ 草稿已儲存！您可以在文章詳情頁發布或捨棄草稿。')
+            return redirect('article_detail', id=article.id)
+
+        # 正常編輯流程（包括已發布文章的直接更新）
         form = ArticleForm(request.POST, instance=article)
         if form.is_valid():
             article = form.save(commit=False)
 
-            # 處理發布狀態
-            status = request.POST.get('status', 'published')
-            article.status = status
-
-            # 處理排程時間
-            if status == 'scheduled':
-                publish_at = request.POST.get('publish_at')
-                if publish_at:
-                    from django.utils.dateparse import parse_datetime
-                    article.publish_at = parse_datetime(publish_at)
-            else:
+            if action == 'draft':
+                # 點擊「儲存為草稿」按鈕
+                article.status = 'draft'
                 article.publish_at = None
+            else:
+                # 點擊「發布/更新」按鈕
+                if article.status == 'published':
+                    # 已發布文章保持發布狀態，清除草稿
+                    article.has_draft = False
+                    article.draft_title = None
+                    article.draft_content = None
+                    article.draft_tags_json = None
+                    article.draft_updated_at = None
+                else:
+                    # 草稿或排程文章，使用下拉選單的狀態
+                    status = request.POST.get('status', 'published')
+                    article.status = status
+
+                    # 處理排程時間
+                    if status == 'scheduled':
+                        publish_at = request.POST.get('publish_at')
+                        if publish_at:
+                            from django.utils.dateparse import parse_datetime
+                            article.publish_at = parse_datetime(publish_at)
+                    else:
+                        article.publish_at = None
 
             article.save()
             form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
 
             # 根據狀態顯示不同訊息
-            if status == 'draft':
+            if article.status == 'draft':
                 messages.success(request, '✅ 文章已儲存為草稿！')
-            elif status == 'scheduled':
+            elif article.status == 'scheduled':
                 messages.success(request, f'✅ 文章已排程，將於 {article.publish_at.strftime("%Y年%m月%d日 %H:%M")} 發布！')
             else:
                 messages.success(request, '✅ 文章更新成功！')
@@ -263,13 +319,160 @@ def article_edit(request, id):
             return redirect('article_detail', id=article.id)
     else:
         form = ArticleForm(instance=article)
-    
+
     context = {
         'form': form,
         'article': article,
         'action': '編輯文章',
     }
     return render(request, 'blog/articles/form.html', context)
+
+
+@login_required
+def article_autosave(request, id=None):
+    """
+    自動儲存文章為草稿 (AJAX)
+    支援 Cmd/Ctrl + S 快捷鍵
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '無效的請求方法'}, status=405)
+
+    try:
+        from django.utils.dateparse import parse_datetime
+        import json
+
+        data = json.loads(request.body)
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        tags_input = data.get('tags_input', '').strip()
+
+        # 如果標題和內容都是空的，不保存
+        if not title and not content:
+            return JsonResponse({
+                'success': False,
+                'error': '標題和內容不能都為空'
+            })
+
+        # 如果是編輯現有文章
+        if id:
+            article = get_object_or_404(Article, id=id)
+            # 檢查權限
+            if article.author != request.user:
+                return JsonResponse({
+                    'success': False,
+                    'error': '您沒有權限編輯此文章'
+                }, status=403)
+
+            # 如果是已發布文章，使用草稿版本系統
+            if article.status == 'published':
+                # 分割標籤（支援逗號和頓號）
+                tag_names = [t.strip() for t in tags_input.replace('、', ',').split(',') if t.strip()]
+                # 儲存草稿版本
+                article.save_draft_version(title or '未命名文章', content, tag_names)
+            else:
+                # 草稿和排程文章直接更新
+                article.title = title or '未命名文章'
+                article.content = content
+                article.save()
+
+                # 處理標籤
+                if tags_input:
+                    from ..models import Tag
+                    tag_names = [t.strip() for t in tags_input.replace('、', ',').split(',') if t.strip()]
+                    tags = []
+                    for tag_name in tag_names:
+                        tag, created = Tag.objects.get_or_create(name=tag_name)
+                        tags.append(tag)
+                    article.tags.set(tags)
+        else:
+            # 創建新文章
+            article = Article(
+                title=title or '未命名文章',
+                content=content,
+                author=request.user,
+                status='draft'
+            )
+            article.save()
+
+            # 處理標籤
+            if tags_input:
+                from ..models import Tag
+                tag_names = [t.strip() for t in tags_input.replace('、', ',').split(',') if t.strip()]
+                tags = []
+                for tag_name in tag_names:
+                    tag, created = Tag.objects.get_or_create(name=tag_name)
+                    tags.append(tag)
+                article.tags.set(tags)
+
+        return JsonResponse({
+            'success': True,
+            'message': '草稿已自動儲存',
+            'article_id': article.id,
+            'saved_at': timezone.now().isoformat()
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': '無效的 JSON 格式'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+def draft_publish(request, id):
+    """
+    發布草稿版本
+    將草稿版本的內容覆蓋到已發布文章
+    """
+    article = get_object_or_404(Article, id=id)
+
+    # 檢查是否為作者本人
+    if article.author != request.user:
+        messages.error(request, '❌ 您沒有權限發布此草稿！')
+        return redirect('article_detail', id=id)
+
+    # 檢查是否有草稿
+    if not article.has_draft:
+        messages.warning(request, '⚠️ 沒有未發布的草稿！')
+        return redirect('article_detail', id=id)
+
+    # 發布草稿版本
+    if article.publish_draft_version():
+        messages.success(request, '✅ 草稿已發布！文章內容已更新。')
+    else:
+        messages.error(request, '❌ 發布草稿失敗！')
+
+    return redirect('article_detail', id=id)
+
+
+@login_required
+def draft_discard(request, id):
+    """
+    捨棄草稿版本
+    刪除草稿版本，保留已發布內容不變
+    """
+    article = get_object_or_404(Article, id=id)
+
+    # 檢查是否為作者本人
+    if article.author != request.user:
+        messages.error(request, '❌ 您沒有權限捨棄此草稿！')
+        return redirect('article_detail', id=id)
+
+    # 檢查是否有草稿
+    if not article.has_draft:
+        messages.warning(request, '⚠️ 沒有未發布的草稿！')
+        return redirect('article_detail', id=id)
+
+    # 捨棄草稿版本
+    article.discard_draft_version()
+    messages.success(request, '✅ 草稿已捨棄！')
+
+    return redirect('article_detail', id=id)
 
 
 @login_required
@@ -309,6 +512,16 @@ def my_articles(request):
     顯示當前登入使用者發表的所有文章（包括草稿、已發布、排程）
     支援按狀態篩選
     """
+    # 自動更新已到期的排程文章為已發布狀態
+    scheduled_articles = Article.objects.filter(
+        author=request.user,
+        status='scheduled',
+        publish_at__lte=timezone.now()
+    )
+    for article in scheduled_articles:
+        article.status = 'published'
+        article.save()
+
     status_filter = request.GET.get('status', 'all')
 
     articles = Article.objects.filter(author=request.user)
@@ -450,12 +663,18 @@ def tag_articles(request, slug):
     顯示某個標籤的所有文章
     支援分頁
     """
+    # 自動更新已到期的排程文章為已發布狀態
+    scheduled_articles = Article.objects.filter(
+        status='scheduled',
+        publish_at__lte=timezone.now()
+    )
+    for article in scheduled_articles:
+        article.status = 'published'
+        article.save()
+
     tag = get_object_or_404(Tag, slug=slug)
     # 只顯示已發布的文章
-    articles = tag.articles.filter(
-        Q(status='published') |
-        Q(status='scheduled', publish_at__lte=timezone.now())
-    ).order_by('-created_at')
+    articles = tag.articles.filter(status='published').order_by('-created_at')
 
     # 分頁
     paginator = Paginator(articles, 10)  # 每頁 10 篇文章

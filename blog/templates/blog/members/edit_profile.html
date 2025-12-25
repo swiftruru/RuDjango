@@ -1,5 +1,5 @@
 {% extends 'blog/base.html' %}
-{% load static %}
+{% load static blog_extras %}
 
 {% block title %}編輯個人資料{% endblock %}
 
@@ -51,12 +51,22 @@
                     <div class="avatar-preview-container">
                         <div class="avatar-preview">
                             {% if profile.avatar %}
-                            <img src="{{ profile.avatar.url }}" alt="Current Avatar" id="avatar-preview-img">
+                            <img src="{{ profile|avatar_url }}" alt="Current Avatar" id="avatar-preview-img">
                             {% else %}
                             <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="Default Avatar" id="avatar-preview-img">
                             {% endif %}
                         </div>
                         <div class="avatar-upload-info">
+                            <!-- 拖曳上傳區 -->
+                            <div class="drop-zone" id="drop-zone">
+                                <div class="drop-zone-icon">📤</div>
+                                <div class="drop-zone-text">
+                                    <strong>拖曳圖片到這裡</strong>
+                                    <span>或點擊下方按鈕選擇檔案</span>
+                                </div>
+                                <div class="drop-zone-filename" id="drop-zone-filename"></div>
+                            </div>
+
                             <div class="file-upload-wrapper">
                                 <input type="file" id="{{ form.avatar.id_for_label }}" name="{{ form.avatar.name }}"
                                     class="file-input" accept="image/*">
@@ -64,7 +74,6 @@
                                     <span class="file-upload-icon">📷</span>
                                     <span class="file-upload-text">選擇頭像圖片</span>
                                 </label>
-                                <span class="file-upload-name">尚未選擇檔案</span>
                             </div>
                             <p class="form-help">建議使用正方形圖片，大小不超過 5MB</p>
                         </div>

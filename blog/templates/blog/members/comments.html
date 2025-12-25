@@ -1,0 +1,123 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}評論記錄 - {{ member.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/comments.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="header-content">
+            <a href="{% url 'member_profile' username=member.username %}" class="back-link">
+                <span class="back-icon">←</span>
+                返回個人頁面
+            </a>
+            <h1 class="page-title">評論記錄</h1>
+            <p class="page-subtitle">{{ member.name }} 的所有評論 (共 {{ total_count }} 則)</p>
+        </div>
+    </div>
+</section>
+
+<!-- Comments Content -->
+<section class="comments-content">
+    <div class="container">
+        <div class="comments-wrapper">
+            <!-- Comments List -->
+            <div class="comments-list">
+                {% for comment in comments %}
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div class="comment-info">
+                            <span class="comment-icon">💬</span>
+                            <span class="comment-label">評論於</span>
+                            <a href="{% url 'article_detail' id=comment.article.id %}" class="article-link">
+                                《{{ comment.article.title }}》
+                            </a>
+                        </div>
+                        <div class="comment-date">
+                            {{ comment.created_at|date:"Y年m月d日 H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="comment-content">
+                        <blockquote class="comment-text">
+                            {{ comment.content }}
+                        </blockquote>
+                    </div>
+
+                    <div class="comment-footer">
+                        <div class="article-meta">
+                            <span class="article-author">
+                                <span class="meta-icon">✍️</span>
+                                文章作者：
+                                <a href="{% url 'member_profile' username=comment.article.author.username %}" class="author-link">
+                                    {{ comment.article.author.first_name|default:comment.article.author.username }}
+                                </a>
+                            </span>
+                            <span class="article-date">
+                                <span class="meta-icon">📅</span>
+                                {{ comment.article.created_at|date:"Y-m-d" }}
+                            </span>
+                        </div>
+                        <a href="{% url 'article_detail' id=comment.article.id %}#comment-{{ comment.id }}" class="view-comment">
+                            查看評論 →
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h3 class="empty-title">尚未發表任何評論</h3>
+                    <p class="empty-text">{% if is_own_profile %}開始參與討論，分享你的想法吧！{% else %}期待 {{ member.name }} 的精彩評論{% endif %}</p>
+                    {% if is_own_profile %}
+                    <a href="{% url 'blog_home' %}" class="btn-primary">
+                        <span class="btn-icon">📚</span>
+                        瀏覽文章
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="page-link">
+                    « 首頁
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link">
+                    ‹ 上一頁
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-current">
+                    {{ num }}
+                </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="page-link">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link">
+                    下一頁 ›
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">
+                    末頁 »
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -79,6 +79,33 @@ class Article(models.Model):
         verbose_name='閱讀時間(分鐘)'
     )
 
+    # 草稿版本系統 - 用於已發布文章的編輯草稿
+    has_draft = models.BooleanField(
+        default=False,
+        verbose_name='有未發布的草稿'
+    )
+    draft_title = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name='草稿標題'
+    )
+    draft_content = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='草稿內容'
+    )
+    draft_tags_json = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='草稿標籤(JSON)'
+    )
+    draft_updated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='草稿更新時間'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='建立時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
 
@@ -93,9 +120,24 @@ class Article(models.Model):
             word_count = len(self.content)
             self.reading_time = max(1, round(word_count / 200))
 
+        # 檢查是否為首次發布（從草稿或排程變為已發布）
+        if self.pk:  # 如果文章已存在（不是第一次創建）
+            try:
+                old_article = Article.objects.get(pk=self.pk)
+                # 如果從草稿或排程狀態變為發布狀態，更新 created_at 為當前時間
+                if old_article.status in ['draft', 'scheduled'] and self.status == 'published':
+                    self.created_at = timezone.now()
+            except Article.DoesNotExist:
+                pass
+
         # 如果是排程文章，自動設定狀態
-        if self.publish_at and self.publish_at > timezone.now():
-            self.status = 'scheduled'
+        if self.publish_at:
+            # 確保 publish_at 是時區感知的
+            if timezone.is_naive(self.publish_at):
+                self.publish_at = timezone.make_aware(self.publish_at)
+
+            if self.publish_at > timezone.now():
+                self.status = 'scheduled'
 
         super().save(*args, **kwargs)
 
@@ -129,6 +171,53 @@ class Article(models.Model):
                 'anchor': anchor_id
             })
         return toc
+
+    def save_draft_version(self, title, content, tags_input):
+        """儲存草稿版本（不影響已發布內容）"""
+        import json
+        self.draft_title = title
+        self.draft_content = content
+        self.draft_tags_json = json.dumps(tags_input) if tags_input else None
+        self.has_draft = True
+        self.draft_updated_at = timezone.now()
+        self.save()
+
+    def publish_draft_version(self):
+        """將草稿版本發布為正式內容"""
+        import json
+        if not self.has_draft:
+            return False
+
+        # 更新正式內容
+        self.title = self.draft_title
+        self.content = self.draft_content
+
+        # 處理標籤
+        if self.draft_tags_json:
+            tag_names = json.loads(self.draft_tags_json)
+            self.tags.clear()
+            for tag_name in tag_names:
+                if tag_name.strip():
+                    tag, created = Tag.objects.get_or_create(name=tag_name.strip())
+                    self.tags.add(tag)
+
+        # 清除草稿版本
+        self.has_draft = False
+        self.draft_title = None
+        self.draft_content = None
+        self.draft_tags_json = None
+        self.draft_updated_at = None
+        self.save()
+        return True
+
+    def discard_draft_version(self):
+        """捨棄草稿版本"""
+        self.has_draft = False
+        self.draft_title = None
+        self.draft_content = None
+        self.draft_tags_json = None
+        self.draft_updated_at = None
+        self.save()
 
     class Meta:
         verbose_name = '文章'

@@ -304,6 +304,81 @@ textarea.form-control {
     font-weight: 500;
 }
 
+/* 拖曳上傳區樣式 */
+.drop-zone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 160px;
+}
+
+.drop-zone:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.drop-zone.drag-over {
+    border-color: #3b82f6;
+    background: #dbeafe;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.drop-zone.has-file {
+    border-color: #059669;
+    background: #d1fae5;
+}
+
+.drop-zone-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.drop-zone:hover .drop-zone-icon,
+.drop-zone.drag-over .drop-zone-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.drop-zone-text {
+    text-align: center;
+}
+
+.drop-zone-text strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.drop-zone-text span {
+    display: block;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.drop-zone-filename {
+    font-size: 0.875rem;
+    color: #059669;
+    font-weight: 500;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
     .edit-profile-container {

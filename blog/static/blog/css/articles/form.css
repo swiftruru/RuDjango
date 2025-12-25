@@ -8,16 +8,76 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* 表單錯誤訊息 */
+.form-errors {
+    background: #fed7d7;
+    color: #742a2a;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #e53e3e;
+    margin-bottom: 1.5rem;
+}
+
+.form-errors ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.form-errors li {
+    margin: 0.25rem 0;
+}
+
 .form-header {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 3px solid #667eea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .form-header h1 {
     color: #2d3748;
     font-size: 2rem;
     margin: 0;
+}
+
+/* 自動儲存狀態指示器 */
+.autosave-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+    color: #4a5568;
+    transition: all 0.3s ease;
+}
+
+.autosave-status .status-icon {
+    font-size: 1.2rem;
+}
+
+.autosave-status.saving {
+    background: #fff5e6;
+    border-color: #f39c12;
+    color: #f39c12;
+}
+
+.autosave-status.saved {
+    background: #e6f7ed;
+    border-color: #48bb78;
+    color: #2f855a;
+}
+
+.autosave-status.error {
+    background: #fff5f5;
+    border-color: #e53e3e;
+    color: #c53030;
 }
 
 .form-group {
@@ -129,4 +189,123 @@
     background: #fed7d7;
     color: #742a2a;
     border-left: 4px solid #e53e3e;
+}
+
+/* Gmail 風格的操作按鈕區 */
+.form-actions-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.form-actions-primary {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* 主要發布按鈕 (Google 藍) */
+.btn-publish {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.75rem;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-publish:hover {
+    background: #1557b0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-publish:active {
+    background: #0f4c8f;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transform: translateY(0);
+}
+
+/* 儲存草稿按鈕 (白底灰邊) */
+.btn-save-draft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.75rem;
+    background: white;
+    color: #5f6368;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.btn-save-draft:hover {
+    background: #f8f9fa;
+    border-color: #c6c9cc;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-save-draft:active {
+    background: #f1f3f4;
+}
+
+/* 取消按鈕 */
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.75rem;
+    background: transparent;
+    color: #5f6368;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.btn-cancel:hover {
+    background: #f1f3f4;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .form-actions-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions-primary {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-publish,
+    .btn-save-draft,
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
 }

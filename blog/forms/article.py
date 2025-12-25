@@ -59,11 +59,41 @@ class ArticleForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # 如果是已發布文章且有草稿，先將草稿內容複製到 instance，再初始化表單
+        instance = kwargs.get('instance')
+        if instance and instance.pk and instance.status == 'published' and instance.has_draft:
+            import json
+            # 暫時將草稿內容覆蓋到 instance（不儲存到資料庫）
+            instance.title = instance.draft_title
+            instance.content = instance.draft_content
+            # 注意：這裡不處理 tags，因為 tags 是 ManyToMany 關係
+
         super().__init__(*args, **kwargs)
+
         # 如果是編輯現有文章，預填標籤
         if self.instance and self.instance.pk:
-            tag_names = ', '.join([tag.name for tag in self.instance.tags.all()])
-            self.fields['tags_input'].initial = tag_names
+            # 如果是已發布文章且有草稿，載入草稿標籤
+            if self.instance.status == 'published' and self.instance.has_draft:
+                import json
+                # 載入草稿標籤
+                if self.instance.draft_tags_json:
+                    try:
+                        tag_names = json.loads(self.instance.draft_tags_json)
+                        self.fields['tags_input'].initial = ', '.join(tag_names)
+                    except:
+                        tag_names = ', '.join([tag.name for tag in self.instance.tags.all()])
+                        self.fields['tags_input'].initial = tag_names
+                else:
+                    tag_names = ', '.join([tag.name for tag in self.instance.tags.all()])
+                    self.fields['tags_input'].initial = tag_names
+            else:
+                # 正常載入已發布或草稿文章的標籤
+                tag_names = ', '.join([tag.name for tag in self.instance.tags.all()])
+                self.fields['tags_input'].initial = tag_names
+
+            # 如果文章已經發布，清空排程時間（因為已經不需要了）
+            if self.instance.status == 'published':
+                self.fields['publish_at'].initial = None
 
     def clean(self):
         """驗證表單數據"""
@@ -71,12 +101,12 @@ class ArticleForm(forms.ModelForm):
         status = cleaned_data.get('status')
         publish_at = cleaned_data.get('publish_at')
 
-        # 如果狀態是排程，必須提供排程時間
-        if status == 'scheduled' and not publish_at:
-            raise forms.ValidationError('排程發布必須設定發布時間')
+        # 只有在選擇排程發布時才驗證排程時間
+        if status == 'scheduled':
+            if not publish_at:
+                raise forms.ValidationError('排程發布必須設定發布時間')
 
-        # 排程時間不能是過去
-        if publish_at:
+            # 排程時間不能是過去
             from django.utils import timezone
             if publish_at <= timezone.now():
                 raise forms.ValidationError('排程時間必須是未來的時間')

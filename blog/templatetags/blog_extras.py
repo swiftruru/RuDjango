@@ -135,3 +135,21 @@ def activity_title_with_link(activity):
 
     # 其他情況直接返回原標題
     return title
+
+
+@register.filter(name='avatar_url')
+def avatar_url(profile):
+    """
+    獲取帶有版本參數的頭像 URL，解決瀏覽器緩存問題
+
+    使用方式：
+    <img src="{{ request.user.profile|avatar_url }}" alt="Avatar">
+
+    原理：在 URL 後面加上時間戳記參數（?v=timestamp），
+    當頭像更新時，時間戳記會改變，瀏覽器就會重新下載新圖片
+    """
+    if not profile:
+        return ''
+
+    # 使用 UserProfile 模型的 get_avatar_url() 方法
+    return profile.get_avatar_url() or ''

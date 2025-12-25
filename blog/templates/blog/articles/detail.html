@@ -12,17 +12,6 @@
 {% endblock %}
 
 {% block content %}
-{% if messages %}
-<div class="message-container">
-    {% for message in messages %}
-    <div
-        class="message-item {% if message.tags == 'success' %}message-success{% elif message.tags == 'error' %}message-error{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
 <div class="article-detail-container">
     <!-- 返回按鈕與換頁導航 -->
     <div class="top-navigation-container">
@@ -46,6 +35,24 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- 草稿通知區（頂部獨立顯示，點擊可前往編輯） -->
+    {% if article.author == request.user and article.status == 'published' and article.has_draft %}
+    <a href="{% url 'article_edit' article.id %}" class="draft-notification-bar draft-notification-link">
+        <div class="draft-notification-content">
+            <div class="draft-notification-info">
+                <span class="draft-icon">📝</span>
+                <div class="draft-text">
+                    <strong>有未發布的草稿修改</strong>
+                    <span class="draft-time-text">{{ article.draft_updated_at|date:"Y年m月d日 H:i" }} 更新</span>
+                </div>
+            </div>
+            <div class="draft-notification-action">
+                <span class="draft-edit-hint">點擊查看並編輯草稿 →</span>
+            </div>
+        </div>
+    </a>
+    {% endif %}
 
     <!-- 文章標題區 -->
     <div class="article-header">
@@ -83,9 +90,13 @@
                     <span>📝 草稿</span>
                 </div>
             {% elif article.status == 'scheduled' %}
-                <div class="article-status-badge scheduled">
-                    <span>⏰ 排程發布於 {{ article.publish_at|date:"Y年m月d日 H:i" }}</span>
-                </div>
+                {% load tz %}
+                {% now "U" as current_timestamp %}
+                {% if article.publish_at|date:"U" > current_timestamp %}
+                    <div class="article-status-badge scheduled">
+                        <span>⏰ 排程發布於 {{ article.publish_at|date:"Y年m月d日 H:i" }}</span>
+                    </div>
+                {% endif %}
             {% endif %}
         {% endif %}
 
@@ -93,7 +104,7 @@
             {% if article.author %}
             <span>✍️ 作者：<a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
             {% endif %}
-            <span>📅 發布於 {{ article.created_at|date:"Y年m月d日 H:i" }}</span>
+            <span>📅 發布於 {% if article.status == 'scheduled' and article.publish_at and article.publish_at|date:"U" > current_timestamp %}{{ article.publish_at|date:"Y年m月d日 H:i" }}{% else %}{{ article.created_at|date:"Y年m月d日 H:i" }}{% endif %}</span>
             {% if article.created_at != article.updated_at %}
             <span>✏️ 更新於 {{ article.updated_at|date:"Y年m月d日 H:i" }}</span>
             {% endif %}
@@ -260,7 +271,7 @@
         <div class="comments-list">
             {% if comments %}
             {% for comment in comments %}
-            <div class="comment-item">
+            <div class="comment-item" id="comment-{{ comment.id }}">
                 <div class="comment-header">
                     <div class="comment-author">
                         <span class="author-icon">👤</span>
@@ -279,7 +290,7 @@
                 {% if comment.replies.all %}
                 <div class="replies-list">
                     {% for reply in comment.replies.all %}
-                    <div class="reply-item">
+                    <div class="reply-item" id="comment-{{ reply.id }}">
                         <div class="comment-header">
                             <div class="comment-author">
                                 <span class="author-icon">👤</span>

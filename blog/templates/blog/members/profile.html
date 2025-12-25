@@ -9,24 +9,14 @@
 {% endblock %}
 
 {% block content %}
-{% if messages %}
-<div class="messages-container">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
 <!-- Profile Header -->
 <section class="profile-header">
     <div class="container">
         <div class="header-content">
             <div class="avatar-section">
                 <div class="avatar-large" id="avatar-container">
-                    {% if member.avatar %}
-                    <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
+                    {% if profile.avatar %}
+                    <img src="{{ profile|avatar_url }}" alt="{{ member.name }}" class="avatar-img" id="profile-avatar">
                     {% else %}
                     <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-img"
                         id="profile-avatar">
@@ -158,20 +148,20 @@
 <section class="stats-section">
     <div class="container">
         <div class="stats-grid">
-            <div class="stat-card">
+            <a href="{% url 'member_articles' username=member.username %}" class="stat-card stat-card-link">
                 <div class="stat-icon">📝</div>
                 <div class="stat-content">
                     <div class="stat-number">{{ member.stats.posts|default:"0" }}</div>
                     <div class="stat-label">發表文章</div>
                 </div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a href="{% url 'member_comments' username=member.username %}" class="stat-card stat-card-link">
                 <div class="stat-icon">💬</div>
                 <div class="stat-content">
                     <div class="stat-number">{{ member.stats.comments|default:"0" }}</div>
                     <div class="stat-label">評論數</div>
                 </div>
-            </div>
+            </a>
             <div class="stat-card">
                 <div class="stat-icon">❤️</div>
                 <div class="stat-content">
@@ -368,8 +358,8 @@
     <div class="avatar-modal-overlay"></div>
     <div class="avatar-modal-content">
         <button class="avatar-modal-close" id="close-avatar-modal">✕</button>
-        {% if member.avatar %}
-        <img src="{{ member.avatar.url }}" alt="{{ member.name }}" class="avatar-modal-img">
+        {% if profile.avatar %}
+        <img src="{{ profile|avatar_url }}" alt="{{ member.name }}" class="avatar-modal-img">
         {% else %}
         <img src="{% static 'blog/images/大頭綠.JPG' %}" alt="{{ member.name }}" class="avatar-modal-img">
         {% endif %}

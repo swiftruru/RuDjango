@@ -3,12 +3,13 @@
 處理文章的列表、詳細頁、新增、編輯、刪除等功能
 """
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, F
+from django.db.models import Q, F, Count
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.utils import timezone
+from datetime import datetime, timedelta
 from ..models import Article, ArticleReadHistory, Comment, Like, Tag, Bookmark, ArticleShare
 from ..forms import ArticleForm, CommentForm
 
@@ -21,6 +22,7 @@ def home(request):
     - q: 搜尋關鍵字（標題或內容）
     - search_type: 搜尋類型（all/content/author）
     每頁顯示 6 篇文章
+    支援 AJAX 請求返回 JSON 格式數據（用於無限滾動）
     """
     # 自動更新已到期的排程文章為已發布狀態
     scheduled_articles = Article.objects.filter(
@@ -59,12 +61,34 @@ def home(request):
                 Q(author__username__icontains=search_query) |
                 Q(author__first_name__icontains=search_query)
             ).distinct()
-    
+
     # 分頁功能：每頁顯示 6 篇文章
     paginator = Paginator(articles, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    # 如果是 AJAX 請求，返回 JSON 格式數據
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.template.loader import render_to_string
+
+        # 渲染文章卡片 HTML
+        articles_html = render_to_string(
+            'blog/articles/_article_cards.html',
+            {
+                'articles': page_obj,
+                'search_query': search_query,
+                'request': request,
+            }
+        )
+
+        return JsonResponse({
+            'success': True,
+            'html': articles_html,
+            'has_next': page_obj.has_next(),
+            'current_page': page_obj.number,
+            'total_pages': paginator.num_pages,
+        })
+
     context = {
         'articles': page_obj,  # 改為分頁物件
         'page_obj': page_obj,
@@ -826,3 +850,208 @@ def my_drafts(request):
         'scheduled_count': scheduled_count,
     }
     return render(request, 'blog/articles/my_drafts.html', context)
+
+def advanced_search(request):
+    """
+    進階搜尋頁面
+    支援多條件篩選：
+    - q: 關鍵字搜尋
+    - tags: 標籤篩選（支援多個標籤）
+    - author: 作者篩選
+    - date_from: 開始日期
+    - date_to: 結束日期
+    - sort: 排序方式（latest/oldest/popular）
+    """
+    # 取得所有搜尋參數
+    search_query = request.GET.get('q', '').strip()
+    selected_tags = request.GET.getlist('tags')  # 支援多個標籤
+    author_filter = request.GET.get('author', '').strip()
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    sort_by = request.GET.get('sort', 'latest')
+
+    # 基礎查詢：只顯示已發布的文章
+    articles = Article.objects.filter(status='published')
+
+    # 關鍵字搜尋
+    if search_query:
+        articles = articles.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(author__username__icontains=search_query) |
+            Q(author__first_name__icontains=search_query)
+        )
+
+    # 標籤篩選（支援多個標籤 - OR 關係）
+    if selected_tags:
+        articles = articles.filter(tags__slug__in=selected_tags).distinct()
+
+    # 作者篩選
+    if author_filter:
+        articles = articles.filter(
+            Q(author__username__icontains=author_filter) |
+            Q(author__first_name__icontains=author_filter)
+        )
+
+    # 日期範圍篩選
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            articles = articles.filter(created_at__gte=from_date)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            # 包含當天的所有時間
+            to_date = to_date.replace(hour=23, minute=59, second=59)
+            articles = articles.filter(created_at__lte=to_date)
+        except ValueError:
+            pass
+
+    # 排序
+    if sort_by == 'oldest':
+        articles = articles.order_by('created_at')
+    elif sort_by == 'popular':
+        # 按點讚數排序
+        articles = articles.annotate(like_count=Count('likes')).order_by('-like_count', '-created_at')
+    else:  # latest (預設)
+        articles = articles.order_by('-created_at')
+
+    # 分頁
+    paginator = Paginator(articles, 12)  # 進階搜尋每頁顯示更多
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 取得所有可用標籤
+    all_tags = Tag.objects.all().order_by('name')
+
+    # 取得所有作者（有發布文章的）
+    authors = Article.objects.filter(status='published')\
+        .values('author__username', 'author__first_name')\
+        .annotate(article_count=Count('id'))\
+        .order_by('-article_count')[:20]  # 只顯示前20個活躍作者
+
+    context = {
+        'articles': page_obj,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'selected_tags': selected_tags,
+        'author_filter': author_filter,
+        'date_from': date_from,
+        'date_to': date_to,
+        'sort_by': sort_by,
+        'all_tags': all_tags,
+        'authors': authors,
+        'total_results': paginator.count,
+    }
+    return render(request, 'blog/search/advanced.html', context)
+
+
+def search_suggestions(request):
+    """
+    搜尋建議 API
+    提供自動完成建議：
+    - 文章標題
+    - 標籤
+    - 作者
+    返回 JSON 格式
+    """
+    query = request.GET.get('q', '').strip()
+
+    if not query or len(query) < 2:
+        return JsonResponse({'suggestions': []})
+
+    suggestions = []
+
+    # 搜尋文章標題（最多 5 個）
+    articles = Article.objects.filter(
+        status='published',
+        title__icontains=query
+    ).values('id', 'title')[:5]
+
+    for article in articles:
+        suggestions.append({
+            'type': 'article',
+            'text': article['title'],
+            'url': f"/blog/article/{article['id']}/",
+            'icon': '📄'
+        })
+
+    # 搜尋標籤（最多 3 個）
+    tags = Tag.objects.filter(
+        name__icontains=query
+    ).values('slug', 'name')[:3]
+
+    for tag in tags:
+        suggestions.append({
+            'type': 'tag',
+            'text': tag['name'],
+            'url': f"/blog/tag/{tag['slug']}/",
+            'icon': '🏷️'
+        })
+
+    # 搜尋作者（最多 3 個）
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    authors = User.objects.filter(
+        Q(username__icontains=query) |
+        Q(first_name__icontains=query)
+    ).exclude(
+        articles__isnull=True
+    ).distinct()[:3]
+
+    for author in authors:
+        display_name = author.first_name if author.first_name else author.username
+        suggestions.append({
+            'type': 'author',
+            'text': display_name,
+            'url': f"/blog/member/{author.username}/",
+            'icon': '👤'
+        })
+
+    return JsonResponse({
+        'success': True,
+        'suggestions': suggestions,
+        'query': query
+    })
+
+
+def quick_search(request):
+    """
+    快速搜尋 API
+    用於即時搜尋，返回簡化的結果
+    """
+    query = request.GET.get('q', '').strip()
+
+    if not query:
+        return JsonResponse({'results': [], 'count': 0})
+
+    # 搜尋文章
+    articles = Article.objects.filter(
+        status='published'
+    ).filter(
+        Q(title__icontains=query) |
+        Q(content__icontains=query)
+    ).select_related('author').prefetch_related('tags')[:10]
+
+    results = []
+    for article in articles:
+        results.append({
+            'id': article.id,
+            'title': article.title,
+            'excerpt': article.content[:100] + '...' if len(article.content) > 100 else article.content,
+            'author': article.author.first_name if article.author.first_name else article.author.username,
+            'created_at': article.created_at.strftime('%Y-%m-%d'),
+            'url': f"/blog/article/{article.id}/",
+            'tags': [{'name': tag.name, 'slug': tag.slug} for tag in article.tags.all()[:3]]
+        })
+
+    return JsonResponse({
+        'success': True,
+        'results': results,
+        'count': len(results),
+        'query': query
+    })

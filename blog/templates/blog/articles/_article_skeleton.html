@@ -1,0 +1,155 @@
+<!-- 文章骨架屏載入效果 -->
+<div class="articles-skeleton" id="articles-skeleton">
+    {% for i in "123456" %}
+    <div class="article-card skeleton-card">
+        <div class="article-header">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-date"></div>
+        </div>
+        <div class="article-content">
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text" style="width: 70%;"></div>
+        </div>
+        <div class="article-footer">
+            <div class="skeleton-footer-info">
+                <div class="skeleton-text" style="width: 120px;"></div>
+                <div class="skeleton-text" style="width: 100px;"></div>
+            </div>
+        </div>
+        <div class="skeleton-tags">
+            <div class="skeleton-tag"></div>
+            <div class="skeleton-tag"></div>
+            <div class="skeleton-tag"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+/* 骨架屏樣式 */
+.articles-skeleton {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    margin-top: 3rem;
+}
+
+@media (max-width: 1024px) {
+    .articles-skeleton {
+        grid-template-columns: 1fr;
+    }
+}
+
+.skeleton-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+    animation: none !important;
+}
+
+.skeleton-title {
+    height: 28px;
+    width: 70%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeletonLoading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.skeleton-date {
+    height: 20px;
+    width: 120px;
+    background: linear-gradient(90deg, #f0f3ff 25%, #e0e7ff 50%, #f0f3ff 75%);
+    background-size: 200% 100%;
+    animation: skeletonLoading 1.5s ease-in-out infinite;
+    border-radius: 15px;
+}
+
+.skeleton-text {
+    height: 16px;
+    width: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeletonLoading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.skeleton-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.skeleton-tag {
+    height: 24px;
+    width: 80px;
+    background: linear-gradient(90deg, #f0f3ff 25%, #e0e7ff 50%, #f0f3ff 75%);
+    background-size: 200% 100%;
+    animation: skeletonLoading 1.5s ease-in-out infinite;
+    border-radius: 12px;
+}
+
+@keyframes skeletonLoading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 骨架屏淡出效果 */
+.articles-skeleton.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+</style>
+
+<script>
+// 當真實內容載入後，隱藏骨架屏
+document.addEventListener('DOMContentLoaded', function() {
+    const skeleton = document.getElementById('articles-skeleton');
+    const articlesContainer = document.getElementById('articles-container');
+
+    if (skeleton && articlesContainer) {
+        // 檢查文章是否已載入
+        const checkArticlesLoaded = setInterval(function() {
+            const articles = articlesContainer.querySelectorAll('.article-card:not(.skeleton-card)');
+            if (articles.length > 0) {
+                skeleton.classList.add('fade-out');
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                }, 500);
+                clearInterval(checkArticlesLoaded);
+            }
+        }, 100);
+
+        // 超時保護：最多等待 3 秒
+        setTimeout(() => {
+            clearInterval(checkArticlesLoaded);
+            if (skeleton) {
+                skeleton.style.display = 'none';
+            }
+        }, 3000);
+    }
+});
+</script>

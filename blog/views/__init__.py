@@ -22,7 +22,10 @@ from .article_views import (
     my_drafts,
     comment_delete,
     tags_list,
-    tag_articles
+    tag_articles,
+    advanced_search,
+    search_suggestions,
+    quick_search
 )
 
 # 會員相關 views
@@ -78,6 +81,9 @@ __all__ = [
     'comment_delete',
     'tags_list',
     'tag_articles',
+    'advanced_search',
+    'search_suggestions',
+    'quick_search',
     # 會員相關
     'member',
     'member_edit',

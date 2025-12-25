@@ -7,10 +7,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RuDjango{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'blog/css/page-loader.css' %}"> -->
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
+    <!-- 頁面載入動畫 - 已暫時停用 -->
+    <!-- <div id="page-loader" class="page-loader">
+        <div class="loader-content">
+            <div class="loader-logo">RuDjango</div>
+            <div class="loader-spinner"></div>
+            <div class="loader-text">載入中...</div>
+            <div class="loader-subtext">精彩內容即將呈現</div>
+            <div class="loader-progress">
+                <div class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div> -->
     <header class="header">
         <div class="container">
             <nav class="nav">
@@ -83,6 +96,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- 頁面載入器腳本 - 已暫時停用 -->
+    <!-- <script src="{% static 'blog/js/page-loader.js' %}"></script> -->
 
     <script>
         // 自動隱藏訊息提示

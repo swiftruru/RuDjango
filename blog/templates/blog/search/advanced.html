@@ -1,0 +1,250 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}進階搜尋 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/search-autocomplete.css' %}">
+<style>
+.advanced-search-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 0;
+    color: white;
+}
+
+.search-filters {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.filter-input,
+.filter-select {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-checkbox {
+    display: none;
+}
+
+.tag-label {
+    padding: 0.5rem 1rem;
+    background: #f0f0f0;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.tag-checkbox:checked + .tag-label {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tag-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn-search,
+.btn-reset {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-search {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-reset {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.btn-reset:hover {
+    background: #e0e0e0;
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.results-count {
+    font-size: 1.1rem;
+    color: #667eea;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="advanced-search-header">
+    <div class="container">
+        <h1>🔍 進階搜尋</h1>
+        <p>使用多重條件找到您需要的文章</p>
+    </div>
+</section>
+
+<section class="articles-section">
+    <div class="container">
+        <form method="get" action="{% url 'advanced_search' %}" class="search-filters">
+            <!-- 關鍵字搜尋 -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">🔍 關鍵字</label>
+                    <input type="text" name="q" value="{{ search_query }}"
+                           placeholder="搜尋標題或內容..." class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">👤 作者</label>
+                    <input type="text" name="author" value="{{ author_filter }}"
+                           placeholder="作者名稱..." class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📊 排序</label>
+                    <select name="sort" class="filter-select">
+                        <option value="latest" {% if sort_by == 'latest' %}selected{% endif %}>最新發布</option>
+                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>最早發布</option>
+                        <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>最受歡迎</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 日期範圍 -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">📅 開始日期</label>
+                    <input type="date" name="date_from" value="{{ date_from }}" class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">📅 結束日期</label>
+                    <input type="date" name="date_to" value="{{ date_to }}" class="filter-input">
+                </div>
+            </div>
+
+            <!-- 標籤篩選 -->
+            <div class="filter-group">
+                <label class="filter-label">🏷️ 標籤（可多選）</label>
+                <div class="tags-grid">
+                    {% for tag in all_tags %}
+                    <input type="checkbox" name="tags" value="{{ tag.slug }}"
+                           id="tag-{{ tag.slug }}" class="tag-checkbox"
+                           {% if tag.slug in selected_tags %}checked{% endif %}>
+                    <label for="tag-{{ tag.slug }}" class="tag-label">{{ tag.name }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="search-actions">
+                <a href="{% url 'advanced_search' %}" class="btn-reset">清除篩選</a>
+                <button type="submit" class="btn-search">🔍 搜尋</button>
+            </div>
+        </form>
+
+        <!-- 搜尋結果 -->
+        {% if articles %}
+        <div class="search-results-header">
+            <div class="results-count">
+                找到 {{ total_results }} 篇文章
+            </div>
+        </div>
+
+        <div class="articles-grid">
+            {% include 'blog/articles/_article_cards.html' %}
+        </div>
+
+        <!-- 分頁 -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1&q={{ search_query }}&author={{ author_filter }}&sort={{ sort_by }}&date_from={{ date_from }}&date_to={{ date_to }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}"
+               class="page-link">« 首頁</a>
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&author={{ author_filter }}&sort={{ sort_by }}&date_from={{ date_from }}&date_to={{ date_to }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}"
+               class="page-link">‹ 上一頁</a>
+            {% endif %}
+
+            <span class="page-current">{{ page_obj.number }}</span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&author={{ author_filter }}&sort={{ sort_by }}&date_from={{ date_from }}&date_to={{ date_to }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}"
+               class="page-link">下一頁 ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_query }}&author={{ author_filter }}&sort={{ sort_by }}&date_from={{ date_from }}&date_to={{ date_to }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}"
+               class="page-link">末頁 »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% elif search_query or author_filter or selected_tags or date_from or date_to %}
+        <div class="no-articles">
+            <p>😔 找不到符合條件的文章</p>
+            <a href="{% url 'advanced_search' %}" class="btn-back-to-articles">清除篩選</a>
+        </div>
+        {% else %}
+        <div class="no-articles">
+            <p>💡 請使用上方篩選器搜尋文章</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

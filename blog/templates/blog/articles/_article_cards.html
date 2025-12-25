@@ -1,0 +1,45 @@
+{% load blog_extras %}
+{% for article in articles %}
+<article class="article-card {% if article.status == 'scheduled' %}article-scheduled{% endif %}">
+    <div class="article-header">
+        <div class="article-title-wrapper">
+            <h3 class="article-title">
+                <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
+                    {{ article.title|truncatechars:40|highlight:search_query }}
+                </a>
+            </h3>
+            {% if article.status == 'scheduled' and request.user == article.author %}
+            <span class="status-badge scheduled-badge">⏰ 排程</span>
+            {% endif %}
+        </div>
+        <time class="article-date">
+            {% if article.status == 'scheduled' and request.user == article.author %}
+                {{ article.publish_at|date:"Y年m月d日 H:i" }}
+            {% else %}
+                {{ article.created_at|date:"Y年m月d日" }}
+            {% endif %}
+        </time>
+    </div>
+    <div class="article-content">
+        <p>{{ article.content|markdown|truncatewords_html:30|highlight:search_query }}</p>
+    </div>
+    <div class="article-footer">
+        <div class="article-footer-info">
+            <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+            {% if article.author %}
+            <span class="author-name">✍️ <a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
+            {% endif %}
+        </div>
+        <div class="article-footer-link">
+            <a href="{% url 'article_detail' article.id %}">閱讀更多 →</a>
+        </div>
+    </div>
+    {% if article.tags.all %}
+    <div class="article-tags">
+        {% for tag in article.tags.all %}
+        <a href="{% url 'tag_articles' tag.slug %}" class="tag">🏷️ {{ tag.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</article>
+{% endfor %}

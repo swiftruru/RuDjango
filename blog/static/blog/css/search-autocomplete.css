@@ -1,0 +1,314 @@
+/* ===== 搜尋自動完成樣式 ===== */
+
+/* 建議容器 */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.search-suggestions.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 滾動條樣式 */
+.search-suggestions::-webkit-scrollbar {
+    width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0 12px 12px 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+/* 建議項目 */
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.suggestion-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background: linear-gradient(135deg, #f0f3ff 0%, #e8f4fd 100%);
+}
+
+/* 建議圖示 */
+.suggestion-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+/* 建議內容 */
+.suggestion-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-text {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.suggestion-text mark {
+    background-color: #ffeb3b;
+    color: #000;
+    padding: 0.1rem 0.2rem;
+    border-radius: 2px;
+    font-weight: 700;
+}
+
+.suggestion-type {
+    font-size: 0.85rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* 載入狀態 */
+.suggestion-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f0f0f0;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.suggestion-loading span {
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* 無結果狀態 */
+.suggestion-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.no-results-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.suggestion-no-results p {
+    color: #666;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.btn-advanced-search {
+    padding: 0.5rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-advanced-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* 搜尋框容器 */
+.search-form {
+    position: relative;
+}
+
+/* 增強搜尋框樣式 */
+.search-input[data-autocomplete="true"] {
+    padding-right: 3rem;
+}
+
+/* 搜尋清除按鈕 */
+.search-clear-btn {
+    position: absolute;
+    right: 3.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+    display: none;
+}
+
+.search-clear-btn.show {
+    display: block;
+}
+
+.search-clear-btn:hover {
+    color: #667eea;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .search-suggestions {
+        max-height: 300px;
+    }
+
+    .suggestion-item {
+        padding: 0.75rem;
+    }
+
+    .suggestion-icon {
+        font-size: 1.3rem;
+        margin-right: 0.75rem;
+    }
+
+    .suggestion-text {
+        font-size: 0.95rem;
+    }
+
+    .suggestion-type {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-suggestions {
+        margin-top: 0.3rem;
+        border-radius: 8px;
+        max-height: 250px;
+    }
+
+    .suggestion-item {
+        padding: 0.6rem;
+    }
+
+    .suggestion-icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .suggestion-text {
+        font-size: 0.9rem;
+    }
+
+    .no-results-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* 搜尋框聚焦效果增強 */
+.search-input[data-autocomplete="true"]:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* 鍵盤導航指示器 */
+.suggestion-item.active::before {
+    content: '▶';
+    position: absolute;
+    left: 0.5rem;
+    color: #667eea;
+    font-size: 0.8rem;
+}
+
+/* 動畫效果 */
+.suggestion-item {
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 高級搜尋連結 */
+.search-suggestions-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+    border-radius: 0 0 12px 12px;
+}
+
+.advanced-search-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.advanced-search-link:hover {
+    color: #764ba2;
+}
+
+.advanced-search-link::after {
+    content: '→';
+    margin-left: 0.5rem;
+}

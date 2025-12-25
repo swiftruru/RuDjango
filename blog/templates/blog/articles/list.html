@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
 <link rel="stylesheet" href="{% static 'blog/css/tags.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/search-autocomplete.css' %}">
 {% endblock %}
 
 <!-- #region Content -->
@@ -38,7 +39,7 @@
                     <option value="content" {% selected_if_equal search_type 'content' %}>📝 標題/內容</option>
                     <option value="author" {% selected_if_equal search_type 'author' %}>👤 作者</option>
                 </select>
-                <input type="text" name="q" value="{{ search_query }}" placeholder="輸入搜尋關鍵字..." class="search-input">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="輸入搜尋關鍵字..." class="search-input" data-autocomplete="true" autocomplete="off">
                 <button type="submit" class="search-button">
                     🔍 搜尋
                 </button>
@@ -101,51 +102,23 @@
         </div>
         {% endif %}
 
-        <div class="articles-grid">
-            {% for article in articles %}
-            <article class="article-card {% if article.status == 'scheduled' %}article-scheduled{% endif %}">
-                <div class="article-header">
-                    <div class="article-title-wrapper">
-                        <h3 class="article-title">
-                            <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
-                                {{ article.title|truncatechars:40|highlight:search_query }}
-                            </a>
-                        </h3>
-                        {% if article.status == 'scheduled' and request.user == article.author %}
-                        <span class="status-badge scheduled-badge">⏰ 排程</span>
-                        {% endif %}
-                    </div>
-                    <time class="article-date">
-                        {% if article.status == 'scheduled' and request.user == article.author %}
-                            {{ article.publish_at|date:"Y年m月d日 H:i" }}
-                        {% else %}
-                            {{ article.created_at|date:"Y年m月d日" }}
-                        {% endif %}
-                    </time>
-                </div>
-                <div class="article-content">
-                    <p>{{ article.content|markdown|truncatewords_html:30|highlight:search_query }}</p>
-                </div>
-                <div class="article-footer">
-                    <div class="article-footer-info">
-                        <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
-                        {% if article.author %}
-                        <span class="author-name">✍️ <a href="{% url 'member_profile' username=article.author.username %}" class="author-link">{{ article.author|author_display }}</a></span>
-                        {% endif %}
-                    </div>
-                    <div class="article-footer-link">
-                        <a href="{% url 'article_detail' article.id %}">閱讀更多 →</a>
-                    </div>
-                </div>
-                {% if article.tags.all %}
-                <div class="article-tags">
-                    {% for tag in article.tags.all %}
-                    <a href="{% url 'tag_articles' tag.slug %}" class="tag">🏷️ {{ tag.name }}</a>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </article>
-            {% endfor %}
+        <div class="articles-grid" id="articles-container">
+            {% include 'blog/articles/_article_cards.html' %}
+        </div>
+
+        <!-- 載入更多指示器 -->
+        <div id="load-more-container" {% if not page_obj.has_next %}style="display: none;"{% endif %}>
+            <div class="load-more-spinner">
+                <div class="spinner"></div>
+                <p>載入更多文章...</p>
+            </div>
+        </div>
+
+        <!-- 無更多內容提示 -->
+        <div id="no-more-articles" {% if page_obj.has_next %}style="display: none;"{% endif %}>
+            <div class="no-more-content">
+                <p>✨ 已經到底了，沒有更多文章囉！</p>
+            </div>
         </div>
         {% else %}
         <div class="no-articles">
@@ -158,43 +131,55 @@
         </div>
         {% endif %}
 
-        <!-- 分頁導航 -->
-        {% if page_obj.has_other_pages %}
-        <div class="pagination bottom">
-            {% if page_obj.has_previous %}
-            <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link">
-                « 首頁
-            </a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link">
-                ‹ 上一頁
-            </a>
+        <!-- 傳統分頁導航（預設隱藏，可切換） -->
+        <div id="traditional-pagination" class="pagination-wrapper" style="display: none;">
+            {% if page_obj.has_other_pages %}
+            <div class="pagination bottom">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link">
+                    « 首頁
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link">
+                    ‹ 上一頁
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-current">
+                    {{ num }}
+                </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                    href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                    class="page-link">
+                    {{ num }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                        class="page-link">
+                        下一頁 ›
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
+                        class="page-link">
+                        末頁 »
+                    </a>
+                    {% endif %}
+            </div>
             {% endif %}
+        </div>
 
-            {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <span class="page-current">
-                {{ num }}
-            </span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
-                href="?page={{ num }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                class="page-link">
-                {{ num }}
-                </a>
-                {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link">
-                    下一頁 ›
-                </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}&search_type={{ search_type }}{% endif %}"
-                    class="page-link">
-                    末頁 »
-                </a>
-                {% endif %}
+        <!-- 分頁模式切換按鈕 -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-mode-toggle">
+            <button id="toggle-pagination-mode" class="btn-toggle-pagination">
+                <span class="toggle-icon">🔄</span>
+                <span class="toggle-text">切換為傳統分頁</span>
+            </button>
         </div>
         {% endif %}
     </div>
@@ -202,3 +187,10 @@
 
 {% endblock %}
 <!-- #endregion Content -->
+
+<!-- #region Extra JavaScript -->
+{% block extra_js %}
+<script src="{% static 'blog/js/search-autocomplete.js' %}"></script>
+<script src="{% static 'blog/js/articles/infinite-scroll.js' %}"></script>
+{% endblock %}
+<!-- #endregion Extra JavaScript -->

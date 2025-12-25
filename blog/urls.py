@@ -60,7 +60,14 @@ message_patterns = [
 # 標籤相關路由
 tag_patterns = [
     path('tags/', views.tags_list, name='tags_list'),
-    path('tags/<str:slug>/', views.tag_articles, name='tag_articles'),
+    path('tag/<str:slug>/', views.tag_articles, name='tag_articles'),
+]
+
+# 搜尋相關路由
+search_patterns = [
+    path('search/', views.advanced_search, name='advanced_search'),
+    path('api/search/suggestions/', views.search_suggestions, name='search_suggestions'),
+    path('api/search/quick/', views.quick_search, name='quick_search'),
 ]
 
 # 靜態頁面路由
@@ -69,4 +76,4 @@ page_patterns = [
 ]
 
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + page_patterns

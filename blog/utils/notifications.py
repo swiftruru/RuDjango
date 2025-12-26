@@ -4,6 +4,9 @@
 """
 from django.contrib.contenttypes.models import ContentType
 from blog.models import Notification, NotificationPreference
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.utils import timezone
 
 
 def create_notification(user, notification_type, message, sender=None, link='', content_object=None):
@@ -46,7 +49,76 @@ def create_notification(user, notification_type, message, sender=None, link='', 
         notification_data['object_id'] = content_object.id
 
     notification = Notification.objects.create(**notification_data)
+
+    # Send real-time notification via WebSocket
+    send_realtime_notification(user, notification)
+
     return notification
+
+
+def send_realtime_notification(user, notification):
+    """
+    Send real-time notification to user via WebSocket
+
+    Args:
+        user: The user to send notification to
+        notification: The notification object
+    """
+    channel_layer = get_channel_layer()
+
+    # Get notification type icon
+    notification_icons = {
+        'comment': '💬',
+        'like': '❤️',
+        'follower': '👤',
+        'message': '✉️',
+        'share': '🔗',
+        'mention': '@',
+    }
+
+    # Prepare notification data
+    notification_data = {
+        'id': notification.id,
+        'message': notification.message,
+        'notification_type': notification.notification_type,
+        'link': notification.link,
+        'icon': notification_icons.get(notification.notification_type, '🔔'),
+        'time_since': notification.get_time_since(),
+        'created_at': notification.created_at.isoformat(),
+    }
+
+    # Send to user's notification group
+    group_name = f'notifications_{user.id}'
+
+    try:
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'notification_message',
+                'notification': notification_data
+            }
+        )
+
+        # Also send updated count
+        unread_count = Notification.objects.filter(user=user, is_read=False).count()
+
+        # Get unread message count
+        from blog.models import Message
+        unread_messages = Message.objects.filter(recipient=user, is_read=False).count()
+
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'notification_count',
+                'unread_count': unread_count,
+                'unread_messages_count': unread_messages
+            }
+        )
+    except Exception as e:
+        # If channel layer is not available, fail silently
+        # This allows the system to work without WebSocket
+        print(f"Failed to send WebSocket notification: {e}")
+        pass
 
 
 def notify_comment(article, comment):

@@ -35,6 +35,9 @@ from .social import (
     Announcement,
 )
 
+# 即時聊天相關 models
+from .chat import ChatMessage, ChatRoom
+
 __all__ = [
     # 文章相關
     'Tag',
@@ -67,4 +70,7 @@ __all__ = [
     'Event',
     'EventParticipant',
     'Announcement',
+    # 即時聊天相關
+    'ChatMessage',
+    'ChatRoom',
 ]

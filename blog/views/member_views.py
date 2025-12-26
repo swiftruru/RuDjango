@@ -638,3 +638,119 @@ def member_comments(request, username):
     }
 
     return render(request, 'blog/members/comments.html', context)
+
+
+def get_user_api(request, username):
+    """
+    API: 獲取用戶基本資訊（用於即時聊天）
+    """
+    from django.http import JsonResponse
+
+    try:
+        user = User.objects.get(username=username)
+        profile = user.profile
+
+        # 獲取顯示名稱
+        display_name = user.first_name if user.first_name else user.username
+
+        # 獲取頭像 URL
+        if profile.avatar:
+            avatar_url = profile.get_avatar_url()
+        else:
+            from django.templatetags.static import static
+            avatar_url = static('blog/images/大頭綠.JPG')
+
+        return JsonResponse({
+            'success': True,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'display_name': display_name,
+                'avatar_url': request.build_absolute_uri(avatar_url) if avatar_url else None
+            }
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': '用戶不存在'
+        }, status=404)
+
+
+@login_required
+def get_chat_list_api(request):
+    """
+    API: 獲取即時聊天列表
+    返回所有聊天對話，包含最後訊息、未讀數等資訊
+    """
+    from django.http import JsonResponse
+    from django.db.models import Q, Max, Count, Case, When, IntegerField
+    from ..models import ChatMessage
+
+    # 獲取所有與當前用戶相關的聊天訊息
+    # 找出所有與用戶有聊天記錄的其他用戶
+    chat_users = ChatMessage.objects.filter(
+        Q(sender=request.user) | Q(recipient=request.user)
+    ).values_list('sender', 'recipient').distinct()
+
+    # 提取所有唯一的對話用戶 ID
+    user_ids = set()
+    for sender_id, recipient_id in chat_users:
+        if sender_id != request.user.id:
+            user_ids.add(sender_id)
+        if recipient_id != request.user.id:
+            user_ids.add(recipient_id)
+
+    # 獲取每個用戶的聊天資訊
+    chat_list = []
+    for user_id in user_ids:
+        other_user = User.objects.get(id=user_id)
+
+        # 獲取最後一則訊息
+        last_message = ChatMessage.objects.filter(
+            Q(sender=request.user, recipient=other_user) |
+            Q(sender=other_user, recipient=request.user)
+        ).order_by('-created_at').first()
+
+        # 獲取未讀訊息數
+        unread_count = ChatMessage.objects.filter(
+            sender=other_user,
+            recipient=request.user,
+            is_read=False
+        ).count()
+
+        # 獲取顯示名稱
+        display_name = other_user.first_name if other_user.first_name else other_user.username
+
+        # 獲取頭像 URL
+        try:
+            profile = other_user.profile
+            if profile.avatar:
+                avatar_url = profile.get_avatar_url()
+            else:
+                from django.templatetags.static import static
+                avatar_url = static('blog/images/大頭綠.JPG')
+        except:
+            from django.templatetags.static import static
+            avatar_url = static('blog/images/大頭綠.JPG')
+
+        chat_list.append({
+            'user_id': other_user.id,
+            'username': other_user.username,
+            'display_name': display_name,
+            'avatar_url': request.build_absolute_uri(avatar_url) if avatar_url else None,
+            'last_message': {
+                'content': last_message.content if last_message else '',
+                'timestamp': last_message.created_at.isoformat() if last_message else None,
+                'is_from_me': last_message.sender == request.user if last_message else False
+            },
+            'unread_count': unread_count
+        })
+
+    # 按最後訊息時間排序（最新的在前面）
+    chat_list.sort(key=lambda x: x['last_message']['timestamp'] or '', reverse=True)
+
+    return JsonResponse({
+        'success': True,
+        'chats': chat_list,
+        'total': len(chat_list)
+    })

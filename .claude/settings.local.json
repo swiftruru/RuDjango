@@ -12,7 +12,8 @@
       "Bash(pkill:*)",
       "Bash(chmod:*)",
       "Bash(cat:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(pip install:*)"
     ]
   }
 }

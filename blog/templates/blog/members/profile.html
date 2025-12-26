@@ -92,6 +92,14 @@
                         <span class="message-icon">✉️</span>
                         <span class="message-text">發送訊息</span>
                     </a>
+                    <button class="btn btn-primary btn-instant-chat"
+                        data-username="{{ member.username }}"
+                        data-user-id="{{ member.id }}"
+                        data-display-name="{{ member.name }}"
+                        data-avatar-url="{% if profile.avatar %}{{ profile|avatar_url }}{% else %}{% static 'blog/images/大頭綠.JPG' %}{% endif %}">
+                        <span class="chat-icon">💬</span>
+                        <span class="chat-text">即時聊天</span>
+                    </button>
                     {% else %}
                     <a href="{% url 'user_login' %}?next={{ request.path }}" class="btn btn-primary">
                         <span class="follow-icon">+</span>

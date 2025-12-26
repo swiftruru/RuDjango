@@ -94,6 +94,12 @@ social_patterns = [
     path('api/mentions/count/', views.mention_count, name='mention_count'),
     path('api/mentions/search-users/', views.search_users_for_mention, name='search_users_for_mention'),
 
+    # 用戶 API
+    path('api/user/<str:username>/', views.get_user_api, name='get_user_api'),
+
+    # 即時聊天 API
+    path('api/chat/list/', views.get_chat_list_api, name='get_chat_list_api'),
+
     # 文章協作功能
     path('article/<int:article_id>/collaborators/', views.article_collaborators, name='article_collaborators'),
     path('article/<int:article_id>/collaborators/invite/', views.invite_collaborator, name='invite_collaborator'),

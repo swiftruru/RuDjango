@@ -40,6 +40,7 @@ def inbox(request):
     context = {
         'messages_list': messages_list,
         'unread_count': unread_count,
+        'total_count': paginator.count,
         'active_tab': 'inbox',
     }
     return render(request, 'blog/messages/inbox.html', context)
@@ -69,6 +70,7 @@ def outbox(request):
 
     context = {
         'messages_list': messages_list,
+        'total_count': paginator.count,
         'active_tab': 'outbox',
     }
     return render(request, 'blog/messages/outbox.html', context)

@@ -44,11 +44,13 @@
     <!-- <link rel="stylesheet" href="{% static 'blog/css/page-loader.css' %}"> -->
     {% if user.is_authenticated %}
     <link rel="stylesheet" href="{% static 'blog/css/real-time-notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/instant-chat.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/chat-center.css' %}">
     {% endif %}
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
     <!-- 頁面載入動畫 - 已暫時停用 -->
     <!-- <div id="page-loader" class="page-loader">
         <div class="loader-content">
@@ -94,6 +96,25 @@
                             訊息
                             <span class="message-badge" id="message-count" style="{% if unread_message_count == 0 %}display: none;{% endif %}">{{ unread_message_count }}</span>
                         </a></li>
+                    <li class="nav-dropdown nav-chat-center">
+                        <a href="#" class="nav-link" id="chat-center-toggle">
+                            <span class="chat-icon">💬</span>
+                            即時聊天
+                            <span class="chat-badge" id="chat-count" style="display: none;"></span>
+                        </a>
+                        <div class="chat-center-dropdown" id="chat-center-dropdown">
+                            <div class="chat-center-header">
+                                <h3>即時聊天</h3>
+                                <button class="chat-center-close" id="chat-center-close">×</button>
+                            </div>
+                            <div class="chat-center-search">
+                                <input type="text" placeholder="搜尋聊天對象..." id="chat-search-input">
+                            </div>
+                            <div class="chat-center-list" id="chat-center-list">
+                                <div class="chat-center-loading">載入中...</div>
+                            </div>
+                        </div>
+                    </li>
                     <li class="nav-dropdown">
                         <a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心 ▼</a>
                         <ul class="dropdown-menu">
@@ -144,9 +165,9 @@
     <!-- 頁面載入器腳本 - 已暫時停用 -->
     <!-- <script src="{% static 'blog/js/page-loader.js' %}"></script> -->
 
-    <!-- 即時通知腳本 -->
+    <!-- 即時通知腳本 - 已改用 WebSocket，舊的輪詢系統已停用 -->
     {% if user.is_authenticated %}
-    <script src="{% static 'blog/js/notifications/realtime.js' %}"></script>
+    <!-- <script src="{% static 'blog/js/notifications/realtime.js' %}"></script> -->
     {% endif %}
 
     <script>
@@ -221,6 +242,10 @@
     {% if user.is_authenticated %}
     <!-- 即時通知系統 -->
     <script src="{% static 'blog/js/real-time-notifications.js' %}"></script>
+    <!-- 即時聊天系統 -->
+    <script src="{% static 'blog/js/instant-chat.js' %}"></script>
+    <!-- 即時聊天中心 -->
+    <script src="{% static 'blog/js/chat-center.js' %}"></script>
     {% endif %}
 
     {% block extra_js %}{% endblock %}

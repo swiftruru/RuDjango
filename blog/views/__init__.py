@@ -44,7 +44,9 @@ from .member_views import (
     edit_skills,
     follow_user,
     followers_list,
-    following_list
+    following_list,
+    get_user_api,
+    get_chat_list_api
 )
 
 # 訊息相關 views
@@ -140,6 +142,8 @@ __all__ = [
     'follow_user',
     'followers_list',
     'following_list',
+    'get_user_api',
+    'get_chat_list_api',
     # 訊息相關
     'inbox',
     'outbox',

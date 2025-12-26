@@ -34,17 +34,17 @@
 }
 
 .notification-toast-icon {
-    font-size: 24px;
+    font-size: 20px;
     flex-shrink: 0;
     width: 32px;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: transparent;
+    color: #333;
     border-radius: 50%;
-    padding: 4px;
+    padding: 0;
 }
 
 .notification-toast-content {

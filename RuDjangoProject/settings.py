@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -152,14 +157,12 @@ CHANNEL_LAYERS = {
 # }
 
 # Web Push (PWA) 推播通知設定
+# 從環境變數讀取 VAPID keys（不要將私鑰提交到版本控制）
 VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY', '')
-
 VAPID_PUBLIC_KEY_PEM = os.getenv('VAPID_PUBLIC_KEY_PEM', '')
-
-# 前端使用的公鑰（Base64URL 格式）
 VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '')
 
 # VAPID Claims（用於推播通知識別）
 VAPID_CLAIMS = {
-    "sub": "mailto:admin@rudjango.com"
+    "sub": os.getenv('VAPID_MAILTO', 'mailto:admin@rudjango.com')
 }

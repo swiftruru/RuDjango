@@ -150,3 +150,16 @@ CHANNEL_LAYERS = {
 #         },
 #     },
 # }
+
+# Web Push (PWA) 推播通知設定
+VAPID_PRIVATE_KEY = os.getenv('VAPID_PRIVATE_KEY', '')
+
+VAPID_PUBLIC_KEY_PEM = os.getenv('VAPID_PUBLIC_KEY_PEM', '')
+
+# 前端使用的公鑰（Base64URL 格式）
+VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '')
+
+# VAPID Claims（用於推播通知識別）
+VAPID_CLAIMS = {
+    "sub": "mailto:admin@rudjango.com"
+}

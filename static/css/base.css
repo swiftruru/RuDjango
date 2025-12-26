@@ -666,8 +666,13 @@ body {
 
     .nav-dropdown .nav-link {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* 只有帶下拉箭頭的項目才使用 space-between */
+    .nav-dropdown .nav-link::after {
+        margin-left: auto;
     }
 
     .dropdown-menu {
@@ -708,9 +713,12 @@ body {
 
     /* 用戶名徽章 */
     .user-badge {
-        display: block;
-        margin-top: 0.5rem;
-        font-size: 0.85rem;
+        display: inline-flex;
+        margin-left: 0.5rem;
+        padding: 0.35rem 0.875rem;
+        font-size: 0.875rem;
+        min-width: auto;
+        height: auto;
     }
 }
 

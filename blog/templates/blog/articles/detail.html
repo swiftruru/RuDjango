@@ -407,6 +407,42 @@
         </div>
     </div>
 
+    <!-- 相似文章推薦 -->
+    {% if similar_articles %}
+    <div class="similar-articles-section">
+        <h2 class="section-title">✨ 相關文章推薦</h2>
+        <div class="similar-articles-grid">
+            {% for similar_article in similar_articles %}
+            <a href="{% url 'article_detail' similar_article.id %}" class="similar-article-card-link">
+                <article class="similar-article-card">
+                    <div class="article-meta">
+                        <span class="article-author">
+                            {{ similar_article.author.first_name|default:similar_article.author.username }}
+                        </span>
+                        <span class="article-date">{{ similar_article.created_at|date:"Y-m-d" }}</span>
+                    </div>
+                    <h3 class="article-title">
+                        {{ similar_article.title }}
+                    </h3>
+                    <p class="article-excerpt">
+                        {{ similar_article.content|safe|striptags|truncatewords:20 }}
+                    </p>
+                    <div class="article-tags">
+                        {% for tag in similar_article.tags.all|slice:":3" %}
+                        <span class="tag">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="article-stats">
+                        <span class="stat-item">❤️ {{ similar_article.likes.count }}</span>
+                        <span class="stat-item">💬 {{ similar_article.comments.count }}</span>
+                    </div>
+                </article>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Back to Top 按鈕 -->
     <button class="back-to-top" id="back-to-top" title="回到頂端">
         ↑

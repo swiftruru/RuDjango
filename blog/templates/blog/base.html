@@ -39,6 +39,14 @@
     <link rel="alternate" type="application/rss+xml" title="RuDjango RSS Feed" href="{% url 'article_feed_rss' %}">
     <link rel="alternate" type="application/atom+xml" title="RuDjango Atom Feed" href="{% url 'article_feed_atom' %}">
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RuDjango">
+    <link rel="apple-touch-icon" href="{% static 'blog/images/icons/icon-192x192.png' %}">
+
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
     <!-- <link rel="stylesheet" href="{% static 'blog/css/page-loader.css' %}"> -->
@@ -47,6 +55,7 @@
     <link rel="stylesheet" href="{% static 'blog/css/instant-chat.css' %}">
     <link rel="stylesheet" href="{% static 'blog/css/chat-center.css' %}">
     {% endif %}
+    <link rel="stylesheet" href="{% static 'blog/css/pwa.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -81,6 +90,7 @@
                             <li><a href="{% url 'blog_home' %}" class="dropdown-link">文章列表</a></li>
                             <li><a href="{% url 'tags_list' %}" class="dropdown-link">🏷️ 標籤</a></li>
                             {% if user.is_authenticated %}
+                            <li><a href="{% url 'personalized_feed' %}" class="dropdown-link">✨ 為你推薦</a></li>
                             <li><a href="{% url 'my_bookmarks' %}" class="dropdown-link">📑 我的收藏</a></li>
                             <li><a href="{% url 'my_drafts' %}" class="dropdown-link">📝 我的草稿</a></li>
                             {% endif %}
@@ -238,6 +248,14 @@
             }
         });
     </script>
+
+    <!-- VAPID Public Key for Web Push -->
+    <script>
+        window.VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '');
+    </script>
+
+    <!-- PWA 安裝和 Service Worker -->
+    <script src="{% static 'blog/js/pwa-install.js' %}"></script>
 
     {% if user.is_authenticated %}
     <!-- 即時通知系統 -->

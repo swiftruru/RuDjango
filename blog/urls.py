@@ -69,6 +69,9 @@ search_patterns = [
     path('search/', views.advanced_search, name='advanced_search'),
     path('api/search/suggestions/', views.search_suggestions, name='search_suggestions'),
     path('api/search/quick/', views.quick_search, name='quick_search'),
+    path('api/search/history/', views.get_search_history, name='get_search_history'),
+    path('api/search/history/clear/', views.clear_search_history, name='clear_search_history'),
+    path('api/search/history/delete/', views.delete_search_item, name='delete_search_item'),
 ]
 
 # 通知相關路由
@@ -99,6 +102,11 @@ social_patterns = [
 
     # 即時聊天 API
     path('api/chat/list/', views.get_chat_list_api, name='get_chat_list_api'),
+
+    # Web Push 推播通知 API
+    path('api/push/subscribe/', views.subscribe_push, name='subscribe_push'),
+    path('api/push/unsubscribe/', views.unsubscribe_push, name='unsubscribe_push'),
+    path('api/push/test/', views.test_push_notification_view, name='test_push_notification'),
 
     # 文章協作功能
     path('article/<int:article_id>/collaborators/', views.article_collaborators, name='article_collaborators'),
@@ -139,5 +147,16 @@ feed_patterns = [
     path('feed/tag/<int:tag_id>/', ArticlesByTagFeed(), name='tag_feed'),
 ]
 
+# 推薦系統路由
+recommendation_patterns = [
+    # 個人化推薦頁面
+    path('recommendations/', views.personalized_feed, name='personalized_feed'),
+
+    # 推薦系統 API
+    path('api/article/<int:id>/similar/', views.get_similar_articles_api, name='get_similar_articles_api'),
+    path('api/recommendations/personalized/', views.get_personalized_recommendations_api, name='get_personalized_recommendations_api'),
+    path('api/recommendations/', views.get_recommended_articles_api, name='get_recommended_articles_api'),
+]
+
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + social_patterns + page_patterns + feed_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + social_patterns + page_patterns + feed_patterns + recommendation_patterns

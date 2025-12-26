@@ -754,3 +754,133 @@ def get_chat_list_api(request):
         'chats': chat_list,
         'total': len(chat_list)
     })
+
+
+@login_required
+def subscribe_push(request):
+    """
+    API: 訂閱 Web Push 推播通知
+    """
+    from django.http import JsonResponse
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '僅支援 POST 請求'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        subscription_data = data.get('subscription')
+
+        if not subscription_data:
+            return JsonResponse({'success': False, 'error': '缺少訂閱資料'}, status=400)
+
+        from ..models import PushSubscription
+
+        # 提取訂閱資訊
+        endpoint = subscription_data.get('endpoint')
+        keys = subscription_data.get('keys', {})
+        p256dh = keys.get('p256dh')
+        auth = keys.get('auth')
+
+        if not all([endpoint, p256dh, auth]):
+            return JsonResponse({'success': False, 'error': '訂閱資料不完整'}, status=400)
+
+        # 獲取或創建訂閱
+        subscription, created = PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={
+                'user': request.user,
+                'p256dh': p256dh,
+                'auth': auth,
+                'user_agent': request.META.get('HTTP_USER_AGENT', ''),
+                'is_active': True,
+                'failure_count': 0
+            }
+        )
+
+        # 檢測裝置類型
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        if 'mobile' in user_agent or 'android' in user_agent or 'iphone' in user_agent:
+            subscription.device_type = 'mobile'
+        elif 'tablet' in user_agent or 'ipad' in user_agent:
+            subscription.device_type = 'tablet'
+        else:
+            subscription.device_type = 'desktop'
+        subscription.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': '訂閱成功' if created else '訂閱已更新',
+            'created': created
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': '無效的 JSON 資料'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def unsubscribe_push(request):
+    """
+    API: 取消訂閱 Web Push 推播通知
+    """
+    from django.http import JsonResponse
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': '僅支援 POST 請求'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        endpoint = data.get('endpoint')
+
+        if not endpoint:
+            return JsonResponse({'success': False, 'error': '缺少端點資訊'}, status=400)
+
+        from ..models import PushSubscription
+
+        # 刪除訂閱
+        deleted_count, _ = PushSubscription.objects.filter(
+            user=request.user,
+            endpoint=endpoint
+        ).delete()
+
+        if deleted_count > 0:
+            return JsonResponse({
+                'success': True,
+                'message': '取消訂閱成功'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': '找不到對應的訂閱'
+            }, status=404)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': '無效的 JSON 資料'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def test_push_notification_view(request):
+    """
+    API: 測試推播通知
+    """
+    from django.http import JsonResponse
+    from ..utils.push_notifications import test_push_notification
+
+    result = test_push_notification(request.user)
+
+    if result['success'] > 0:
+        return JsonResponse({
+            'success': True,
+            'message': f'測試通知已發送到 {result["success"]} 個裝置'
+        })
+    else:
+        return JsonResponse({
+            'success': False,
+            'message': '沒有可用的訂閱或發送失敗',
+            'result': result
+        })

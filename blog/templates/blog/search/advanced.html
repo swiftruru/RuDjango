@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
 <link rel="stylesheet" href="{% static 'blog/css/search-autocomplete.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/search-suggestions.css' %}">
 <style>
 .advanced-search-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -148,10 +149,11 @@
         <form method="get" action="{% url 'advanced_search' %}" class="search-filters">
             <!-- 關鍵字搜尋 -->
             <div class="filter-row">
-                <div class="filter-group">
+                <div class="filter-group" style="position: relative;">
                     <label class="filter-label">🔍 關鍵字</label>
-                    <input type="text" name="q" value="{{ search_query }}"
-                           placeholder="搜尋標題或內容..." class="filter-input">
+                    <input type="text" id="search-input" name="q" value="{{ search_query }}"
+                           placeholder="搜尋標題或內容..." class="filter-input search-input" autocomplete="off">
+                    <div id="search-suggestions"></div>
                 </div>
 
                 <div class="filter-group">
@@ -247,4 +249,9 @@
         {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 搜尋建議 JavaScript -->
+<script src="{% static 'blog/js/search-suggestions.js' %}"></script>
 {% endblock %}

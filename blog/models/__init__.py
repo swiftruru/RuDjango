@@ -38,6 +38,12 @@ from .social import (
 # 即時聊天相關 models
 from .chat import ChatMessage, ChatRoom
 
+# PWA 推播通知相關 models
+from .push_subscription import PushSubscription
+
+# 搜尋相關 models
+from .search import SearchHistory
+
 __all__ = [
     # 文章相關
     'Tag',
@@ -73,4 +79,8 @@ __all__ = [
     # 即時聊天相關
     'ChatMessage',
     'ChatRoom',
+    # PWA 推播通知相關
+    'PushSubscription',
+    # 搜尋相關
+    'SearchHistory',
 ]

@@ -15,6 +15,7 @@ from ..forms import ArticleForm, CommentForm
 from ..utils.notifications import notify_comment, notify_like, notify_share, notify_mention
 from ..utils.mention_parser import parse_mentions
 from ..utils.seo import generate_meta_description, generate_keywords, extract_first_image_from_markdown
+from ..utils.recommendations import get_recommended_articles, get_similar_articles, get_personalized_feed
 from django.contrib.auth.models import User
 
 
@@ -226,6 +227,9 @@ def article_detail(request, id):
         # 如果是相對路徑，轉換為絕對路徑
         og_image_url = request.build_absolute_uri(og_image_url)
 
+    # 獲取相似文章推薦（基於標籤）
+    similar_articles = get_similar_articles(article, limit=6)
+
     context = {
         'article': article,
         'previous_article': previous_article,
@@ -238,6 +242,7 @@ def article_detail(request, id):
         'bookmark_count': bookmark_count,
         'share_count': share_count,
         'table_of_contents': table_of_contents,
+        'similar_articles': similar_articles,
         # SEO
         'meta_description': meta_description,
         'meta_keywords': meta_keywords,
@@ -1002,6 +1007,16 @@ def advanced_search(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # 記錄搜尋歷史（只在有搜尋關鍵字時）
+    if search_query and request.user.is_authenticated:
+        from ..models import SearchHistory
+        SearchHistory.add_search(
+            user=request.user,
+            query=search_query,
+            search_type='article',
+            results_count=paginator.count
+        )
+
     # 取得所有可用標籤
     all_tags = Tag.objects.all().order_by('name')
 
@@ -1031,18 +1046,50 @@ def search_suggestions(request):
     """
     搜尋建議 API
     提供自動完成建議：
+    - 搜尋歷史（如果沒有輸入或輸入很短）
+    - 熱門搜尋
     - 文章標題
     - 標籤
     - 作者
     返回 JSON 格式
     """
+    from ..models import SearchHistory
+
     query = request.GET.get('q', '').strip()
-
-    if not query or len(query) < 2:
-        return JsonResponse({'suggestions': []})
-
     suggestions = []
 
+    # 如果沒有輸入或輸入很短，顯示搜尋歷史和熱門搜尋
+    if not query or len(query) < 2:
+        # 顯示使用者的搜尋歷史（最多 5 個）
+        if request.user.is_authenticated:
+            recent_searches = SearchHistory.get_recent_searches(request.user, limit=5)
+            for search in recent_searches:
+                suggestions.append({
+                    'type': 'history',
+                    'text': search['query'],
+                    'url': f"/blog/search/?q={search['query']}",
+                    'icon': '🕐'
+                })
+
+        # 顯示熱門搜尋（最多 5 個）
+        popular_searches = SearchHistory.get_popular_searches(limit=5)
+        for search in popular_searches:
+            suggestions.append({
+                'type': 'popular',
+                'text': search['query'],
+                'url': f"/blog/search/?q={search['query']}",
+                'icon': '🔥',
+                'count': search['search_count']
+            })
+
+        return JsonResponse({
+            'success': True,
+            'suggestions': suggestions,
+            'query': query,
+            'show_history': True
+        })
+
+    # 如果有輸入，顯示相關建議
     # 搜尋文章標題（最多 5 個）
     articles = Article.objects.filter(
         status='published',
@@ -1093,7 +1140,8 @@ def search_suggestions(request):
     return JsonResponse({
         'success': True,
         'suggestions': suggestions,
-        'query': query
+        'query': query,
+        'show_history': False
     })
 
 
@@ -1132,4 +1180,273 @@ def quick_search(request):
         'results': results,
         'count': len(results),
         'query': query
+    })
+
+
+def get_similar_articles_api(request, id):
+    """
+    獲取相似文章 API
+    基於標籤相似度推薦相關文章
+    """
+    article = get_object_or_404(Article, id=id)
+
+    # 獲取相似文章（預設 6 篇）
+    limit = int(request.GET.get('limit', 6))
+    similar_articles = get_similar_articles(article, limit=limit)
+
+    # 序列化文章數據
+    results = []
+    for similar_article in similar_articles:
+        results.append({
+            'id': similar_article.id,
+            'title': similar_article.title,
+            'excerpt': similar_article.content[:150] + '...' if len(similar_article.content) > 150 else similar_article.content,
+            'author': {
+                'username': similar_article.author.username,
+                'display_name': similar_article.author.first_name if similar_article.author.first_name else similar_article.author.username,
+            },
+            'created_at': similar_article.created_at.strftime('%Y-%m-%d'),
+            'like_count': similar_article.likes.count(),
+            'comment_count': similar_article.comments.count(),
+            'url': f"/blog/article/{similar_article.id}/",
+            'tags': [{'name': tag.name, 'slug': tag.slug} for tag in similar_article.tags.all()[:5]]
+        })
+
+    return JsonResponse({
+        'success': True,
+        'article_id': article.id,
+        'article_title': article.title,
+        'recommendations': results,
+        'count': len(results)
+    })
+
+
+def get_personalized_recommendations_api(request):
+    """
+    獲取個人化推薦 API
+    基於用戶閱讀歷史的個人化推薦
+    需要登入
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': '需要登入才能獲取個人化推薦'
+        }, status=401)
+
+    # 獲取個人化推薦（預設 20 篇）
+    limit = int(request.GET.get('limit', 20))
+    recommended_articles = get_personalized_feed(request.user, limit=limit)
+
+    # 序列化文章數據
+    results = []
+    for article in recommended_articles:
+        results.append({
+            'id': article.id,
+            'title': article.title,
+            'excerpt': article.content[:150] + '...' if len(article.content) > 150 else article.content,
+            'author': {
+                'username': article.author.username,
+                'display_name': article.author.first_name if article.author.first_name else article.author.username,
+            },
+            'created_at': article.created_at.strftime('%Y-%m-%d'),
+            
+            'like_count': article.likes.count(),
+            'comment_count': article.comments.count(),
+            'url': f"/blog/article/{article.id}/",
+            'tags': [{'name': tag.name, 'slug': tag.slug} for tag in article.tags.all()[:5]]
+        })
+
+    return JsonResponse({
+        'success': True,
+        'recommendations': results,
+        'count': len(results),
+        'strategy': 'personalized'
+    })
+
+
+def get_recommended_articles_api(request):
+    """
+    獲取推薦文章 API
+    支援多種推薦策略
+    - strategy: 推薦策略 (tag_based/reading_history/popular/collaborative/hybrid)
+    - limit: 推薦數量
+    - article_id: 當前文章 ID（用於相關文章推薦）
+    """
+    strategy = request.GET.get('strategy', 'hybrid')
+    limit = int(request.GET.get('limit', 10))
+    article_id = request.GET.get('article_id')
+
+    # 獲取當前文章（如果有）
+    article = None
+    if article_id:
+        try:
+            article = Article.objects.get(id=article_id)
+        except Article.DoesNotExist:
+            pass
+
+    # 獲取推薦文章
+    user = request.user if request.user.is_authenticated else None
+    recommended_articles = get_recommended_articles(
+        article=article,
+        user=user,
+        limit=limit,
+        strategy=strategy
+    )
+
+    # 序列化文章數據
+    results = []
+    for rec_article in recommended_articles:
+        results.append({
+            'id': rec_article.id,
+            'title': rec_article.title,
+            'excerpt': rec_article.content[:150] + '...' if len(rec_article.content) > 150 else rec_article.content,
+            'author': {
+                'username': rec_article.author.username,
+                'display_name': rec_article.author.first_name if rec_article.author.first_name else rec_article.author.username,
+            },
+            'created_at': rec_article.created_at.strftime('%Y-%m-%d'),
+            
+            'like_count': rec_article.likes.count(),
+            'comment_count': rec_article.comments.count(),
+            'url': f"/blog/article/{rec_article.id}/",
+            'tags': [{'name': tag.name, 'slug': tag.slug} for tag in rec_article.tags.all()[:5]]
+        })
+
+    return JsonResponse({
+        'success': True,
+        'recommendations': results,
+        'count': len(results),
+        'strategy': strategy
+    })
+
+
+def personalized_feed(request):
+    """
+    個人化推薦頁面
+    顯示基於用戶閱讀歷史的個人化推薦文章
+    """
+    if not request.user.is_authenticated:
+        messages.info(request, '請先登入以獲取個人化推薦')
+        return redirect('login')
+
+    # 獲取個人化推薦
+    recommended_articles = get_personalized_feed(request.user, limit=20)
+
+    # 分頁
+    paginator = Paginator(list(recommended_articles), 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # 獲取用戶最近閱讀的文章（用於顯示）
+    recent_reads = ArticleReadHistory.objects.filter(
+        user=request.user
+    ).select_related('article').order_by('-last_read_at')[:5]
+
+    context = {
+        'articles': page_obj,
+        'page_obj': page_obj,
+        'recent_reads': recent_reads,
+        'total_recommendations': len(list(recommended_articles)),
+    }
+    return render(request, 'blog/recommendations/personalized_feed.html', context)
+
+
+def get_search_history(request):
+    """
+    獲取搜尋歷史 API
+    返回使用者最近的搜尋記錄
+    """
+    from ..models import SearchHistory
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': '請先登入'
+        }, status=401)
+
+    limit = int(request.GET.get('limit', 20))
+    searches = SearchHistory.objects.filter(
+        user=request.user
+    ).values('query', 'search_type', 'results_count', 'created_at')[:limit]
+
+    history_list = []
+    for search in searches:
+        history_list.append({
+            'query': search['query'],
+            'type': search['search_type'],
+            'results_count': search['results_count'],
+            'created_at': search['created_at'].strftime('%Y-%m-%d %H:%M'),
+            'url': f"/blog/search/?q={search['query']}"
+        })
+
+    return JsonResponse({
+        'success': True,
+        'history': history_list,
+        'count': len(history_list)
+    })
+
+
+def clear_search_history(request):
+    """
+    清除搜尋歷史 API
+    刪除使用者的所有搜尋記錄
+    """
+    from ..models import SearchHistory
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': '請先登入'
+        }, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': '僅支援 POST 請求'
+        }, status=405)
+
+    deleted_count, _ = SearchHistory.clear_user_history(request.user)
+
+    return JsonResponse({
+        'success': True,
+        'message': f'已清除 {deleted_count} 筆搜尋記錄',
+        'deleted_count': deleted_count
+    })
+
+
+def delete_search_item(request):
+    """
+    刪除單筆搜尋記錄 API
+    """
+    from ..models import SearchHistory
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': '請先登入'
+        }, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': '僅支援 POST 請求'
+        }, status=405)
+
+    query = request.POST.get('query', '').strip()
+    if not query:
+        return JsonResponse({
+            'success': False,
+            'error': '缺少搜尋關鍵字'
+        }, status=400)
+
+    # 刪除該使用者的特定搜尋記錄
+    deleted_count, _ = SearchHistory.objects.filter(
+        user=request.user,
+        query=query
+    ).delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': f'已刪除搜尋記錄',
+        'deleted_count': deleted_count
     })

@@ -1,0 +1,264 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% load blog_extras %}
+
+{% block title %}個人化推薦 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/tags.css' %}">
+<style>
+.recommendation-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    color: white;
+    border-radius: 12px;
+}
+
+.recommendation-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+}
+
+.recommendation-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.recommendation-stats {
+    display: flex;
+    gap: 2rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-item {
+    flex: 1;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.recent-reads {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.recent-reads h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+}
+
+.recent-reads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.recent-read-item {
+    background: white;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    transition: all 0.2s;
+}
+
+.recent-read-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recent-read-item a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.recent-read-time {
+    font-size: 0.85rem;
+    color: #999;
+    margin-left: 0.5rem;
+}
+
+.recommendation-badge {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .recommendation-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="recommendation-header">
+            <h1>✨ 為你推薦</h1>
+            <p>基於你的閱讀習慣，我們為你精選了這些文章</p>
+        </div>
+    </div>
+</section>
+
+<section class="articles-section">
+    <div class="container">
+        <!-- 推薦統計 -->
+        <div class="recommendation-stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_recommendations }}</span>
+                <span class="stat-label">推薦文章</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ recent_reads|length }}</span>
+                <span class="stat-label">最近閱讀</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ page_obj.paginator.count }}</span>
+                <span class="stat-label">本頁顯示</span>
+            </div>
+        </div>
+
+        <!-- 最近閱讀的文章 -->
+        {% if recent_reads %}
+        <div class="recent-reads">
+            <h3>📚 你最近閱讀的文章</h3>
+            <div class="recent-reads-list">
+                {% for read in recent_reads %}
+                <div class="recent-read-item">
+                    <a href="{% url 'article_detail' read.article.id %}">
+                        {{ read.article.title }}
+                    </a>
+                    <span class="recent-read-time">{{ read.last_read_at|timesince }}前</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 推薦文章列表 -->
+        <div class="article-actions-bar">
+            <div class="article-actions-left">
+                <h2 class="section-title">個人化推薦文章</h2>
+            </div>
+        </div>
+
+        {% if articles %}
+        <!-- 分頁導航（頂部） -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="page-link">« 首頁</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ 上一頁</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="page-current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link">下一頁 ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">末頁 »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="articles-grid">
+            {% for article in articles %}
+            <article class="article-card">
+                <span class="recommendation-badge">為你推薦</span>
+                <div class="article-header">
+                    <div class="article-title-wrapper">
+                        <h3 class="article-title">
+                            <a href="{% url 'article_detail' article.id %}" title="{{ article.title }}">
+                                {{ article.title }}
+                            </a>
+                        </h3>
+                    </div>
+                    <time class="article-date">{{ article.created_at|date:"Y年m月d日" }}</time>
+                </div>
+                <div class="article-content">
+                    <p>{{ article.content|striptags|truncatewords:30 }}</p>
+                </div>
+                <div class="article-footer">
+                    <div class="article-footer-info">
+                        <span class="article-time">📅 {{ article.created_at|date:"Y-m-d H:i" }}</span>
+                        <span class="author-name">✍️ <a href="{% url 'member_profile' article.author.username %}" class="author-link">{{ article.author.first_name|default:article.author.username }}</a></span>
+                    </div>
+                    <div class="article-stats">
+                        <span class="stat-item">❤️ {{ article.likes.count }}</span>
+                        <span class="stat-item">💬 {{ article.comments.count }}</span>
+                    </div>
+                </div>
+                {% if article.tags.all %}
+                <div class="article-tags">
+                    {% for tag in article.tags.all %}
+                    <a href="{% url 'tag_articles' tag.slug %}" class="tag">🏷️ {{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- 分頁導航（底部） -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination bottom">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="page-link">« 首頁</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ 上一頁</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="page-current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link">下一頁 ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">末頁 »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-articles">
+            <p>😔 目前沒有推薦文章</p>
+            <p>多閱讀一些文章，我們就能為你提供更精準的推薦！</p>
+            <a href="{% url 'blog_home' %}" class="btn-back-to-articles">瀏覽所有文章</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

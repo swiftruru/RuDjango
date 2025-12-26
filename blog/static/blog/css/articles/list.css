@@ -293,7 +293,7 @@ mark.highlight {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .search-select {
@@ -318,7 +318,8 @@ mark.highlight {
     border: 2px solid #e9ecef;
     border-radius: 25px;
     font-size: 1rem;
-    min-width: 300px;
+    flex: 1;
+    min-width: 200px;
     transition: all 0.3s ease;
 }
 
@@ -741,6 +742,25 @@ mark.highlight {
         font-size: 0.9rem;
         padding: 0.65rem 1.5rem;
     }
+
+    /* 小螢幕時搜尋表單可以換行 */
+    .search-form {
+        flex-wrap: wrap;
+    }
+
+    .search-input {
+        min-width: 150px;
+    }
+
+    .search-select {
+        font-size: 0.9rem;
+        padding: 0.65rem 0.875rem;
+    }
+
+    .search-button {
+        font-size: 0.9rem;
+        padding: 0.65rem 1.25rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -763,3 +783,32 @@ mark.highlight {
         min-width: 38px;
     }
 }
+/* 進階搜尋按鈕 */
+.search-advanced-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-advanced-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+@media (max-width: 768px) {
+    .search-advanced-btn {
+        padding: 0.65rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+

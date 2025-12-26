@@ -25,7 +25,14 @@ from .article_views import (
     tag_articles,
     advanced_search,
     search_suggestions,
-    quick_search
+    quick_search,
+    get_similar_articles_api,
+    get_personalized_recommendations_api,
+    get_recommended_articles_api,
+    personalized_feed,
+    get_search_history,
+    clear_search_history,
+    delete_search_item
 )
 
 # 會員相關 views
@@ -46,7 +53,10 @@ from .member_views import (
     followers_list,
     following_list,
     get_user_api,
-    get_chat_list_api
+    get_chat_list_api,
+    subscribe_push,
+    unsubscribe_push,
+    test_push_notification_view
 )
 
 # 訊息相關 views
@@ -126,6 +136,13 @@ __all__ = [
     'advanced_search',
     'search_suggestions',
     'quick_search',
+    'get_similar_articles_api',
+    'get_personalized_recommendations_api',
+    'get_recommended_articles_api',
+    'personalized_feed',
+    'get_search_history',
+    'clear_search_history',
+    'delete_search_item',
     # 會員相關
     'member',
     'member_edit',
@@ -144,6 +161,9 @@ __all__ = [
     'following_list',
     'get_user_api',
     'get_chat_list_api',
+    'subscribe_push',
+    'unsubscribe_push',
+    'test_push_notification_view',
     # 訊息相關
     'inbox',
     'outbox',

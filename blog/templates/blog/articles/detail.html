@@ -4,12 +4,68 @@
 
 {% block title %}{{ article.title }} - RuDjango{% endblock %}
 
+{# SEO Meta Tags #}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block meta_keywords %}{{ meta_keywords }}{% endblock %}
+{% block meta_author %}{{ article.author.first_name|default:article.author.username }}{% endblock %}
+
+{# Open Graph Tags #}
+{% block og_title %}{{ article.title }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}
+{% if og_image_url %}
+{% block og_image %}<meta property="og:image" content="{{ og_image_url }}">{% endblock %}
+{% endif %}
+
+{# Twitter Card Tags #}
+{% block twitter_title %}{{ article.title }}{% endblock %}
+{% block twitter_description %}{{ meta_description }}{% endblock %}
+{% if og_image_url %}
+{% block twitter_image %}<meta name="twitter:image" content="{{ og_image_url }}">{% endblock %}
+{% endif %}
+
+{# Canonical URL #}
+{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/articles/list.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/articles/detail.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/tags.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
+<!-- Highlight.js 語法高亮主題 (GitHub Dark) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<!-- KaTeX 數學公式樣式 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+/* Mermaid 圖表樣式 */
+.article-content .mermaid-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.article-content .mermaid-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* KaTeX 數學公式樣式 */
+.article-content .katex {
+    font-size: 1.1em;
+}
+
+.article-content .katex-display {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -149,8 +205,11 @@
          data-article-url="{% url 'article_detail' article.id %}"
          data-article-title="{{ article.title }}"
          data-article-excerpt="{{ article.content|striptags|truncatewords:20 }}">
-        <div class="article-content">{{ article.content|markdown|highlight_mentions|safe }}</div>
+        <div class="article-content" id="article-content"></div>
     </div>
+
+    <!-- 將 Markdown 內容以 JSON 格式儲存 -->
+    <script id="article-markdown-data" type="application/json">{{ article.content|safe }}</script>
 
     <!-- 點讚與收藏區 -->
     <div class="article-actions-section">
@@ -352,6 +411,100 @@
 </div>
 
 {% block extra_js %}
+<!-- Marked.js - Markdown 解析器 -->
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+<!-- Highlight.js 語法高亮 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- KaTeX 數學公式 -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- Mermaid 圖表 -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<script>
+    // 使用客戶端渲染 Markdown（跟編輯預覽一樣的方式）
+    document.addEventListener('DOMContentLoaded', async function() {
+        const articleContent = document.getElementById('article-content');
+        const markdownDataScript = document.getElementById('article-markdown-data');
+
+        if (!articleContent || !markdownDataScript) {
+            console.error('Article content element or markdown data not found');
+            return;
+        }
+
+        // 從 script 標籤取得原始 Markdown 內容
+        const markdownContent = markdownDataScript.textContent;
+
+        if (!markdownContent || !markdownContent.trim()) {
+            console.error('No markdown content found');
+            return;
+        }
+
+        // 步驟 1: 使用 marked.js 解析 Markdown
+        const html = marked.parse(markdownContent);
+        articleContent.innerHTML = html;
+
+        // 步驟 2: 處理 @mention 連結
+        const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+        articleContent.innerHTML = articleContent.innerHTML.replace(mentionRegex, function(match, username) {
+            return `<a href="/blog/member/${username}/" class="mention" title="${match}">@${username}</a>`;
+        });
+
+        // 步驟 3: 初始化 Mermaid
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'default',
+                securityLevel: 'loose'
+            });
+
+            // 渲染 Mermaid 圖表
+            const mermaidBlocks = articleContent.querySelectorAll('pre code.language-mermaid');
+            for (let i = 0; i < mermaidBlocks.length; i++) {
+                const block = mermaidBlocks[i];
+                const code = block.textContent;
+                const id = `mermaid-detail-${i}`;
+
+                try {
+                    const { svg } = await mermaid.render(id, code);
+                    const container = document.createElement('div');
+                    container.className = 'mermaid-container';
+                    container.innerHTML = svg;
+                    block.parentElement.replaceWith(container);
+                } catch (err) {
+                    console.error('Mermaid render error:', err);
+                }
+            }
+        }
+
+        // 步驟 4: 初始化語法高亮（排除 Mermaid 區塊）
+        if (window.hljs) {
+            articleContent.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+
+        // 步驟 5: 渲染數學公式
+        if (window.renderMathInElement) {
+            try {
+                renderMathInElement(articleContent, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false,
+                    trust: true
+                });
+                console.log('KaTeX rendering completed');
+            } catch (err) {
+                console.error('KaTeX render error:', err);
+            }
+        } else {
+            console.warn('KaTeX renderMathInElement not found');
+        }
+    });
+</script>
 <script src="{% static 'blog/js/articles/share.js' %}?v={{ article.updated_at|date:'U' }}"></script>
 <script src="{% static 'blog/js/articles/like.js' %}?v={{ article.updated_at|date:'U' }}"></script>
 <script src="{% static 'blog/js/articles/bookmark.js' %}?v={{ article.updated_at|date:'U' }}"></script>

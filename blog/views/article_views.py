@@ -14,6 +14,7 @@ from ..models import Article, ArticleReadHistory, Comment, Like, Tag, Bookmark, 
 from ..forms import ArticleForm, CommentForm
 from ..utils.notifications import notify_comment, notify_like, notify_share, notify_mention
 from ..utils.mention_parser import parse_mentions
+from ..utils.seo import generate_meta_description, generate_keywords, extract_first_image_from_markdown
 from django.contrib.auth.models import User
 
 
@@ -215,6 +216,16 @@ def article_detail(request, id):
     # 生成目錄
     table_of_contents = article.get_table_of_contents()
 
+    # SEO 相關數據
+    meta_description = generate_meta_description(article.content)
+    meta_keywords = generate_keywords(article)
+
+    # 提取 Open Graph 圖片
+    og_image_url = extract_first_image_from_markdown(article.content)
+    if og_image_url and not og_image_url.startswith('http'):
+        # 如果是相對路徑，轉換為絕對路徑
+        og_image_url = request.build_absolute_uri(og_image_url)
+
     context = {
         'article': article,
         'previous_article': previous_article,
@@ -227,6 +238,10 @@ def article_detail(request, id):
         'bookmark_count': bookmark_count,
         'share_count': share_count,
         'table_of_contents': table_of_contents,
+        # SEO
+        'meta_description': meta_description,
+        'meta_keywords': meta_keywords,
+        'og_image_url': og_image_url,
     }
     return render(request, 'blog/articles/detail.html', context)
 

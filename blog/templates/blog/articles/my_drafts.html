@@ -266,7 +266,7 @@
             {% endif %}
 
             <h2 class="draft-article-title">
-                <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a>
+                <a href="{% url 'article_detail' article.id %}">{{ article.title|highlight_mentions }}</a>
             </h2>
 
             <div class="draft-meta">
@@ -290,7 +290,7 @@
 
             <!-- 文章摘要 -->
             <div class="draft-excerpt">
-                {{ article.content|striptags|truncatewords:30 }}
+                {{ article.content|highlight_mentions|striptags|truncatewords:30 }}
             </div>
 
             <!-- 排程資訊 -->

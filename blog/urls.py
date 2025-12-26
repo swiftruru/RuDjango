@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from .feeds import LatestArticlesFeed, LatestArticlesAtomFeed, ArticlesByAuthorFeed, ArticlesByTagFeed
 
 # 文章相關路由
 article_patterns = [
@@ -124,5 +125,13 @@ social_patterns = [
     path('announcements/<int:announcement_id>/', views.announcement_detail, name='announcement_detail'),
 ]
 
+# RSS Feed 路由
+feed_patterns = [
+    path('feed/rss/', LatestArticlesFeed(), name='article_feed_rss'),
+    path('feed/atom/', LatestArticlesAtomFeed(), name='article_feed_atom'),
+    path('feed/author/<str:username>/', ArticlesByAuthorFeed(), name='author_feed'),
+    path('feed/tag/<int:tag_id>/', ArticlesByTagFeed(), name='tag_feed'),
+]
+
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + social_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + social_patterns + page_patterns + feed_patterns

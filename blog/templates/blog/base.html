@@ -6,7 +6,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RuDjango{% endblock %}</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}RuDjango - 一個功能完整的 Django 部落格平台，支援文章發表、留言互動、標籤分類、私人訊息等功能。{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Django, Python, 部落格, Blog, 程式設計, 教學{% endblock %}">
+    <meta name="author" content="{% block meta_author %}RuDjango{% endblock %}">
+
+    <!-- Open Graph Meta Tags (Facebook, LinkedIn) -->
+    <meta property="og:site_name" content="RuDjango">
+    <meta property="og:title" content="{% block og_title %}{% block title_for_og %}RuDjango{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% block meta_description_for_og %}RuDjango - 一個功能完整的 Django 部落格平台{% endblock %}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    {% block og_image %}
+    <meta property="og:image" content="{% static 'images/default-og-image.png' %}">
+    {% endblock %}
+    <meta property="og:locale" content="zh_TW">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{% block title_for_twitter %}RuDjango{% endblock %}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{% block meta_description_for_twitter %}RuDjango - 一個功能完整的 Django 部落格平台{% endblock %}{% endblock %}">
+    {% block twitter_image %}
+    <meta name="twitter:image" content="{% static 'images/default-og-image.png' %}">
+    {% endblock %}
+
+    <!-- Additional SEO -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
+
+    <!-- RSS/Atom Feed -->
+    <link rel="alternate" type="application/rss+xml" title="RuDjango RSS Feed" href="{% url 'article_feed_rss' %}">
+    <link rel="alternate" type="application/atom+xml" title="RuDjango Atom Feed" href="{% url 'article_feed_atom' %}">
+
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
     <!-- <link rel="stylesheet" href="{% static 'blog/css/page-loader.css' %}"> -->
     {% if user.is_authenticated %}
     <link rel="stylesheet" href="{% static 'blog/css/real-time-notifications.css' %}">

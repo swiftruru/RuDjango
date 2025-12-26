@@ -1,5 +1,6 @@
 {% extends 'blog/base.html' %}
 {% load static %}
+{% load blog_extras %}
 
 {% block title %}我的文章 - RuDjango{% endblock %}
 
@@ -46,13 +47,13 @@
                     <h3 class="article-title">
                         <a href="{% url 'article_detail' article.id %}" style="color: inherit; text-decoration: none;"
                             title="{{ article.title }}">
-                            {{ article.title|truncatechars:40 }}
+                            {{ article.title|highlight_mentions|truncatechars:40 }}
                         </a>
                     </h3>
                     <time class="article-date">{{ article.created_at|date:"Y年m月d日" }}</time>
                 </div>
                 <div class="article-content">
-                    <p>{{ article.content|truncatewords:30 }}</p>
+                    <p>{{ article.content|highlight_mentions|truncatewords:30 }}</p>
                 </div>
                 <div class="article-meta">
                     <span>📅 發表於 {{ article.created_at|date:"Y-m-d H:i" }}</span>

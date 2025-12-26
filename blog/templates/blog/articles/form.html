@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="{% static 'blog/css/articles/form.css' %}">
 <link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}">
 <link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
+<!-- Highlight.js 語法高亮主題 (GitHub Dark) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<!-- KaTeX 數學公式樣式 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 {% endblock %}
 
 {% block content %}
@@ -62,8 +66,25 @@
             </div>
 
             <div class="form-group">
-                <label for="id_content">{{ form.content.label }}</label>
-                {{ form.content }}
+                <label for="id_content">
+                    {{ form.content.label }}
+                    <button type="button" id="toggle-preview" class="btn-toggle-preview">
+                        <span class="preview-icon">👁️</span>
+                        <span class="preview-text">顯示預覽</span>
+                    </button>
+                </label>
+                <div class="editor-container">
+                    <div class="editor-pane">
+                        {{ form.content }}
+                    </div>
+                    <div class="preview-pane" id="preview-pane" style="display: none;">
+                        <div class="preview-content" id="preview-content">
+                            <div class="preview-placeholder">
+                                在左側輸入 Markdown 內容，這裡會即時顯示預覽
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% if form.content.help_text %}
                 <span class="help-text">{{ form.content.help_text }}</span>
                 {% endif %}
@@ -119,6 +140,18 @@
 </div>
 
 {% block extra_js %}
+<!-- Highlight.js - 語法高亮 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- KaTeX - 數學公式 -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- Mermaid - 圖表 -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<!-- Marked.js - Markdown 解析器 -->
+<script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+<!-- Markdown 即時預覽 -->
+<script src="{% static 'blog/js/markdown-preview.js' %}"></script>
+
 <script>
 // 控制排程時間欄位的顯示/隱藏
 document.addEventListener('DOMContentLoaded', function() {

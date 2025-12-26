@@ -37,14 +37,34 @@ def highlight(text, search_query):
 def markdown_format(text):
     """
     將 Markdown 格式的文字轉換為 HTML
-    
+
+    支援 LaTeX 數學公式（使用 $ 和 $$ 符號）
+    支援 Mermaid 圖表
+
     使用方式：
     {{ article.content|markdown }}
     """
     if not text:
         return ''
-    
-    # 使用 markdown 套件轉換，啟用常用擴展
+
+    text = str(text)
+
+    # 步驟 1: 保護數學公式，避免被 Markdown 處理
+    protected_blocks = []
+
+    def protect_block(match):
+        """將數學公式替換為安全的佔位符"""
+        protected_blocks.append(match.group(0))
+        # 使用 HTML 註釋作為佔位符，Markdown 不會處理它
+        return f'<!--MATH_{len(protected_blocks)-1}-->'
+
+    # 保護 display math ($$...$$)
+    text = re.sub(r'\$\$([\s\S]+?)\$\$', protect_block, text)
+
+    # 保護 inline math ($...$) - 不跨行
+    text = re.sub(r'(?<!\$)\$([^\$\n]+?)\$(?!\$)', protect_block, text)
+
+    # 步驟 2: 正常處理 Markdown
     md = markdown.Markdown(extensions=[
         'extra',      # 支援表格、定義列表等
         'codehilite', # 代碼高亮
@@ -57,8 +77,14 @@ def markdown_format(text):
             'linenums': False,  # 不顯示行號
         }
     })
-    
-    html = md.convert(str(text))
+
+    html = md.convert(text)
+
+    # 步驟 3: 還原數學公式
+    for i, math_content in enumerate(protected_blocks):
+        placeholder = f'<!--MATH_{i}-->'
+        html = html.replace(placeholder, math_content)
+
     return mark_safe(html)
 
 

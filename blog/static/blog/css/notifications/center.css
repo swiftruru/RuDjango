@@ -155,6 +155,21 @@
 
 .notification-item:hover {
     background: #f8f9fa;
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Clickable notification items */
+.notification-item[onclick] {
+    cursor: pointer;
+}
+
+.notification-item[onclick]:hover {
+    background: linear-gradient(90deg, #f0f3ff 0%, #f8f9fa 100%);
+}
+
+.notification-item.unread[onclick]:hover {
+    background: linear-gradient(90deg, #e8edff 0%, #f0f3ff 100%);
 }
 
 .notification-item.unread {

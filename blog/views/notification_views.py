@@ -147,10 +147,23 @@ def notification_delete_all_read(request):
 @login_required
 def notification_count(request):
     """
-    取得未讀通知數量（API）
-    用於即時更新導航欄的通知圖示
+    取得未讀通知數量和未讀訊息數量（API）
+    用於即時更新導航欄的通知和訊息圖示
     """
-    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    from blog.models import Message
+
+    # 未讀通知數量
+    unread_notifications_count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+
+    # 未讀訊息數量
+    unread_messages_count = Message.objects.filter(
+        recipient=request.user,
+        is_read=False,
+        recipient_deleted=False
+    ).count()
 
     # 取得最近的未讀通知（最多 5 則）
     recent_notifications = Notification.objects.filter(
@@ -172,7 +185,8 @@ def notification_count(request):
 
     return JsonResponse({
         'success': True,
-        'unread_count': unread_count,
+        'unread_count': unread_notifications_count,
+        'unread_messages_count': unread_messages_count,
         'recent_notifications': notifications_data
     })
 

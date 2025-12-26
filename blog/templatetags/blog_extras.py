@@ -153,3 +153,42 @@ def avatar_url(profile):
 
     # 使用 UserProfile 模型的 get_avatar_url() 方法
     return profile.get_avatar_url() or ''
+
+
+@register.filter(name='highlight_mentions')
+def highlight_mentions(text):
+    """
+    將文字中的 @username 轉換為可點擊的連結
+
+    使用方式：
+    {{ article.content|highlight_mentions|markdown }}
+    """
+    if not text:
+        return ''
+
+    from ..utils.mention_parser import highlight_mentions as highlight
+    return mark_safe(highlight(str(text)))
+
+
+@register.simple_tag
+def render_mention_context(mention):
+    """
+    渲染提及的上下文內容，並高亮顯示 @username
+
+    使用方式：
+    {% render_mention_context mention %}
+    """
+    if not mention or not mention.context:
+        return ''
+
+    context = mention.context
+    username = mention.mentioned_user.username
+
+    # 高亮顯示被提及的使用者名稱
+    pattern = f'@{username}'
+    highlighted = context.replace(
+        pattern,
+        f'<span class="font-bold text-blue-600">@{username}</span>'
+    )
+
+    return mark_safe(highlighted)

@@ -12,7 +12,9 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from ..models import Article, ArticleReadHistory, Comment, Like, Tag, Bookmark, ArticleShare
 from ..forms import ArticleForm, CommentForm
-from ..utils.notifications import notify_comment, notify_like, notify_share
+from ..utils.notifications import notify_comment, notify_like, notify_share, notify_mention
+from ..utils.mention_parser import parse_mentions
+from django.contrib.auth.models import User
 
 
 def home(request):
@@ -146,6 +148,21 @@ def article_detail(request, id):
             # 發送通知給文章作者
             notify_comment(article, comment)
 
+            # 處理 @mention 通知
+            mentioned_usernames = parse_mentions(comment.content)
+            for username in mentioned_usernames:
+                try:
+                    mentioned_user = User.objects.get(username=username)
+                    notify_mention(
+                        mentioned_user=mentioned_user,
+                        mentioning_user=request.user,
+                        content_type='comment',
+                        content_object=comment,
+                        article=article
+                    )
+                except User.DoesNotExist:
+                    continue
+
             messages.success(request, '✅ 留言發表成功！')
             return redirect('article_detail', id=id)
     else:
@@ -248,6 +265,26 @@ def article_create(request):
             article.save()
             form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
 
+            # 處理 @mention 通知
+            if article.status == 'published':  # 只有已發布的文章才發送通知
+                # 從文章標題和內容中解析 @mention
+                all_text = f"{article.title} {article.content}"
+                mentioned_usernames = parse_mentions(all_text)
+
+                # 為每個被提及的使用者發送通知
+                for username in mentioned_usernames:
+                    try:
+                        mentioned_user = User.objects.get(username=username)
+                        notify_mention(
+                            mentioned_user=mentioned_user,
+                            mentioning_user=request.user,
+                            content_type='article',
+                            content_object=article,
+                            article=article
+                        )
+                    except User.DoesNotExist:
+                        continue
+
             # 根據狀態顯示不同訊息
             if article.status == 'draft':
                 messages.success(request, '✅ 文章已儲存為草稿！')
@@ -335,6 +372,23 @@ def article_edit(request, id):
 
             article.save()
             form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
+
+            # 處理 @mention 通知（僅已發布文章）
+            if article.status == 'published':
+                all_text = f"{article.title} {article.content}"
+                mentioned_usernames = parse_mentions(all_text)
+                for username in mentioned_usernames:
+                    try:
+                        mentioned_user = User.objects.get(username=username)
+                        notify_mention(
+                            mentioned_user=mentioned_user,
+                            mentioning_user=request.user,
+                            content_type='article',
+                            content_object=article,
+                            article=article
+                        )
+                    except User.DoesNotExist:
+                        continue
 
             # 根據狀態顯示不同訊息
             if article.status == 'draft':

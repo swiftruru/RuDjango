@@ -1,0 +1,101 @@
+/* @Mention 自動完成下拉選單樣式 */
+
+.mention-dropdown {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mention-item {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mention-item:last-child {
+    border-bottom: none;
+}
+
+.mention-item:hover {
+    background-color: #f5f5f5 !important;
+}
+
+.mention-item:active {
+    background-color: #ebebeb !important;
+}
+
+.user-avatar {
+    transition: transform 0.2s ease;
+}
+
+.mention-item:hover .user-avatar {
+    transform: scale(1.1);
+}
+
+/* 滾動條樣式 */
+.mention-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.mention-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.mention-dropdown::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.mention-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 載入動畫 */
+.mention-loading {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+.mention-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 提及連結樣式 (顯示在文章和留言中的 @mention) */
+a.mention {
+    color: #1877f2;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background-color: rgba(24, 119, 242, 0.1);
+    transition: all 0.2s ease;
+}
+
+a.mention:hover {
+    background-color: rgba(24, 119, 242, 0.2);
+    text-decoration: none;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .mention-dropdown {
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+    }
+}

@@ -1,0 +1,111 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}使用者群組{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold">使用者群組</h1>
+            {% if user.is_authenticated %}
+            <a href="{% url 'group_create' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                建立群組
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- 搜尋和篩選 -->
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <form method="get" class="flex gap-4">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search_query }}"
+                    placeholder="搜尋群組名稱、描述或標籤..."
+                    class="flex-1 px-4 py-2 border rounded-lg"
+                >
+                <select name="type" class="px-4 py-2 border rounded-lg">
+                    <option value="">所有類型</option>
+                    <option value="public" {% if selected_type == 'public' %}selected{% endif %}>公開群組</option>
+                    <option value="private" {% if selected_type == 'private' %}selected{% endif %}>私密群組</option>
+                    <option value="invite_only" {% if selected_type == 'invite_only' %}selected{% endif %}>邀請制</option>
+                </select>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                    搜尋
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 群組列表 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for group in groups %}
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+            {% if group.cover_image %}
+            <img src="{{ group.cover_image.url }}" alt="{{ group.name }}" class="w-full h-48 object-cover rounded-t-lg">
+            {% else %}
+            <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500 rounded-t-lg"></div>
+            {% endif %}
+
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-xl font-bold">
+                        <a href="{% url 'group_detail' group.id %}" class="hover:text-blue-600">
+                            {{ group.name }}
+                        </a>
+                    </h3>
+                    <span class="px-2 py-1 text-xs rounded-full {% if group.group_type == 'public' %}bg-green-100 text-green-800{% elif group.group_type == 'private' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ group.get_group_type_display }}
+                    </span>
+                </div>
+
+                <p class="text-gray-600 mb-4 line-clamp-2">{{ group.description }}</p>
+
+                <div class="flex justify-between items-center text-sm text-gray-500">
+                    <span>👥 {{ group.member_count }} 成員</span>
+                    <span>📝 {{ group.post_count }} 文章</span>
+                </div>
+
+                {% if group.tags %}
+                <div class="mt-3 flex flex-wrap gap-2">
+                    {% for tag in group.tags.split ',' %}
+                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12 text-gray-500">
+            沒有找到符合條件的群組
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 分頁 -->
+    {% if groups.has_other_pages %}
+    <div class="mt-8 flex justify-center">
+        <nav class="flex gap-2">
+            {% if groups.has_previous %}
+            <a href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}"
+               class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50">
+                上一頁
+            </a>
+            {% endif %}
+
+            <span class="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                第 {{ groups.number }} / {{ groups.paginator.num_pages }} 頁
+            </span>
+
+            {% if groups.has_next %}
+            <a href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}"
+               class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50">
+                下一頁
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

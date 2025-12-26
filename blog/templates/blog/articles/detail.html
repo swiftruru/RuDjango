@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{% static 'blog/css/articles/detail.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}?v={{ article.updated_at|date:'U' }}">
 <link rel="stylesheet" href="{% static 'blog/css/tags.css' %}?v={{ article.updated_at|date:'U' }}">
+<link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -148,7 +149,7 @@
          data-article-url="{% url 'article_detail' article.id %}"
          data-article-title="{{ article.title }}"
          data-article-excerpt="{{ article.content|striptags|truncatewords:20 }}">
-        <div class="article-content">{{ article.content|markdown }}</div>
+        <div class="article-content">{{ article.content|markdown|highlight_mentions|safe }}</div>
     </div>
 
     <!-- 點讚與收藏區 -->
@@ -256,7 +257,7 @@
             <form method="post" class="comment-form">
                 {% csrf_token %}
                 <div class="form-group">
-                    {{ comment_form.content }}
+                    <textarea name="content" id="comment-content" class="form-control" rows="4" placeholder="輸入 @ 可以提及其他使用者..." data-mention-autocomplete data-search-url="{% url 'search_users_for_mention' %}"></textarea>
                 </div>
                 <button type="submit" class="submit-comment-btn">發表留言</button>
             </form>
@@ -284,7 +285,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="comment-content">{{ comment.content|linebreaksbr }}</div>
+                <div class="comment-content">{{ comment.content|linebreaksbr|highlight_mentions|safe }}</div>
 
                 <!-- 回覆留言 -->
                 {% if comment.replies.all %}
@@ -303,7 +304,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="comment-content">{{ reply.content|linebreaksbr }}</div>
+                        <div class="comment-content">{{ reply.content|linebreaksbr|highlight_mentions|safe }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -355,6 +356,7 @@
 <script src="{% static 'blog/js/articles/like.js' %}?v={{ article.updated_at|date:'U' }}"></script>
 <script src="{% static 'blog/js/articles/bookmark.js' %}?v={{ article.updated_at|date:'U' }}"></script>
 <script src="{% static 'blog/js/articles/toc.js' %}?v={{ article.updated_at|date:'U' }}"></script>
+<script src="{% static 'blog/js/mention-autocomplete.js' %}"></script>
 
 <script>
 // Back to Top 功能

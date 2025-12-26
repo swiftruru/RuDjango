@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/messages.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/user-autocomplete.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -74,4 +75,18 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'blog/js/user-autocomplete.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 為收件者輸入框添加自動完成功能
+    const recipientInput = document.getElementById('{{ form.recipient_username.id_for_label }}');
+    if (recipientInput && !recipientInput.hasAttribute('readonly')) {
+        recipientInput.setAttribute('data-user-autocomplete', '');
+        new UserAutocomplete(recipientInput);
+    }
+});
+</script>
 {% endblock %}

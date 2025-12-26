@@ -72,6 +72,35 @@ from .notification_views import (
     notification_preferences
 )
 
+# 社群互動相關 views
+from .social_views import (
+    mention_list,
+    mention_count,
+    search_users_for_mention,
+    article_collaborators,
+    invite_collaborator,
+    accept_collaboration,
+    remove_collaborator,
+    article_edit_history,
+    group_list,
+    group_create,
+    group_detail,
+    group_join,
+    group_leave,
+    group_post_create,
+    group_post_detail,
+    group_members,
+    event_list,
+    event_detail,
+    event_create,
+    event_register,
+    event_cancel_registration,
+    announcement_list,
+    announcement_detail,
+    my_groups,
+    my_events,
+)
+
 __all__ = [
     # 文章相關
     'home',
@@ -130,4 +159,30 @@ __all__ = [
     'notification_delete_all_read',
     'notification_count',
     'notification_preferences',
+    # 社群互動相關
+    'mention_list',
+    'mention_count',
+    'search_users_for_mention',
+    'article_collaborators',
+    'invite_collaborator',
+    'accept_collaboration',
+    'remove_collaborator',
+    'article_edit_history',
+    'group_list',
+    'group_create',
+    'group_detail',
+    'group_join',
+    'group_leave',
+    'group_post_create',
+    'group_post_detail',
+    'group_members',
+    'event_list',
+    'event_detail',
+    'event_create',
+    'event_register',
+    'event_cancel_registration',
+    'announcement_list',
+    'announcement_detail',
+    'my_groups',
+    'my_events',
 ]

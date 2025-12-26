@@ -38,8 +38,10 @@ class ArticleForm(forms.ModelForm):
             }),
             'content': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': '請輸入文章內容',
-                'rows': 10
+                'placeholder': '請輸入文章內容（支援 @mention 提及其他使用者）',
+                'rows': 10,
+                'data-mention-autocomplete': '',
+                'data-search-url': '/blog/api/mentions/search-users/'
             }),
             'status': forms.Select(attrs={
                 'class': 'form-control',

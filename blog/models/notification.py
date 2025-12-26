@@ -20,6 +20,7 @@ class Notification(models.Model):
         ('follower', '新追蹤者'),
         ('message', '私訊'),
         ('share', '分享'),
+        ('mention', '提及'),
     ]
 
     # 接收通知的用戶
@@ -118,6 +119,7 @@ class Notification(models.Model):
             'follower': '👥',
             'message': '✉️',
             'share': '🔗',
+            'mention': '@',
         }
         return icons.get(self.notification_type, '🔔')
 
@@ -177,6 +179,11 @@ class NotificationPreference(models.Model):
         verbose_name='分享通知'
     )
 
+    enable_mention_notifications = models.BooleanField(
+        default=True,
+        verbose_name='提及通知'
+    )
+
     # Email 通知（未來功能）
     enable_email_notifications = models.BooleanField(
         default=False,
@@ -204,6 +211,7 @@ class NotificationPreference(models.Model):
             'follower': self.enable_follower_notifications,
             'message': self.enable_message_notifications,
             'share': self.enable_share_notifications,
+            'mention': self.enable_mention_notifications,
         }
         return type_mapping.get(notification_type, True)
 

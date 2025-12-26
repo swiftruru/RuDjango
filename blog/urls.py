@@ -86,5 +86,43 @@ page_patterns = [
     path('about', views.about),
 ]
 
+# 社群互動路由
+social_patterns = [
+    # @提及功能
+    path('mentions/', views.mention_list, name='mention_list'),
+    path('api/mentions/count/', views.mention_count, name='mention_count'),
+    path('api/mentions/search-users/', views.search_users_for_mention, name='search_users_for_mention'),
+
+    # 文章協作功能
+    path('article/<int:article_id>/collaborators/', views.article_collaborators, name='article_collaborators'),
+    path('article/<int:article_id>/collaborators/invite/', views.invite_collaborator, name='invite_collaborator'),
+    path('collaborator/<int:collaborator_id>/accept/', views.accept_collaboration, name='accept_collaboration'),
+    path('collaborator/<int:collaborator_id>/remove/', views.remove_collaborator, name='remove_collaborator'),
+    path('article/<int:article_id>/history/', views.article_edit_history, name='article_edit_history'),
+
+    # 群組功能
+    path('groups/', views.group_list, name='group_list'),
+    path('groups/create/', views.group_create, name='group_create'),
+    path('groups/<int:group_id>/', views.group_detail, name='group_detail'),
+    path('groups/<int:group_id>/join/', views.group_join, name='group_join'),
+    path('groups/<int:group_id>/leave/', views.group_leave, name='group_leave'),
+    path('groups/<int:group_id>/members/', views.group_members, name='group_members'),
+    path('groups/<int:group_id>/post/create/', views.group_post_create, name='group_post_create'),
+    path('groups/post/<int:post_id>/', views.group_post_detail, name='group_post_detail'),
+    path('my-groups/', views.my_groups, name='my_groups'),
+
+    # 活動功能
+    path('events/', views.event_list, name='event_list'),
+    path('events/create/', views.event_create, name='event_create'),
+    path('events/<int:event_id>/', views.event_detail, name='event_detail'),
+    path('events/<int:event_id>/register/', views.event_register, name='event_register'),
+    path('events/<int:event_id>/cancel/', views.event_cancel_registration, name='event_cancel_registration'),
+    path('my-events/', views.my_events, name='my_events'),
+
+    # 公告功能
+    path('announcements/', views.announcement_list, name='announcement_list'),
+    path('announcements/<int:announcement_id>/', views.announcement_detail, name='announcement_detail'),
+]
+
 # 合併所有路由
-urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + page_patterns
+urlpatterns = article_patterns + member_patterns + message_patterns + tag_patterns + search_patterns + notification_patterns + social_patterns + page_patterns

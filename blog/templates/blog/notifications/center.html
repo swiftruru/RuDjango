@@ -69,7 +69,11 @@
             {% if notifications %}
                 {% for notification in notifications %}
                 <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
-                     data-notification-id="{{ notification.id }}">
+                     data-notification-id="{{ notification.id }}"
+                     {% if notification.link %}
+                     onclick="handleNotificationClick(event, {{ notification.id }}, '{{ notification.link }}')"
+                     style="cursor: pointer;"
+                     {% endif %}>
                     <div class="notification-icon">
                         {{ notification.get_icon }}
                     </div>
@@ -85,17 +89,12 @@
                         </div>
                     </div>
                     <div class="notification-actions">
-                        {% if notification.link %}
-                        <a href="{{ notification.link }}" class="btn-view"
-                           onclick="markAsRead({{ notification.id }})">
-                            查看
-                        </a>
-                        {% endif %}
                         {% if not notification.is_read %}
                         <form method="post" action="{% url 'notification_mark_read' notification.id %}"
                               style="display: inline;" class="mark-read-form">
                             {% csrf_token %}
-                            <button type="submit" class="btn-mark-read" title="標為已讀">
+                            <button type="submit" class="btn-mark-read" title="標為已讀"
+                                    onclick="event.stopPropagation();">
                                 ✓
                             </button>
                         </form>
@@ -104,7 +103,7 @@
                               style="display: inline;" class="delete-form">
                             {% csrf_token %}
                             <button type="submit" class="btn-delete"
-                                    onclick="return confirm('確定要刪除此通知嗎？')" title="刪除">
+                                    onclick="event.stopPropagation(); return confirm('確定要刪除此通知嗎？')" title="刪除">
                                 ✕
                             </button>
                         </form>
@@ -157,6 +156,20 @@
         const filter = '{{ filter_type }}';
         window.location.href = `{% url 'notifications_center' %}?filter=${filter}&type=${type}`;
     });
+
+    // 處理通知區塊點擊
+    function handleNotificationClick(event, notificationId, link) {
+        // 如果點擊的是按鈕，不執行跳轉
+        if (event.target.closest('.notification-actions button')) {
+            return;
+        }
+
+        // 標記為已讀
+        markAsRead(notificationId);
+
+        // 跳轉到通知連結
+        window.location.href = link;
+    }
 
     // 標記為已讀 (AJAX)
     function markAsRead(notificationId) {

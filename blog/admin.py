@@ -2,7 +2,10 @@ from django.contrib import admin
 from .models import (
     Article, ArticleReadHistory, Comment, Like, Bookmark, ArticleShare,
     UserProfile, Skill, Achievement, UserAchievement,
-    LearningCourse, UserCourseProgress, Activity, Follow, Tag
+    LearningCourse, UserCourseProgress, Activity, Follow, Tag,
+    Mention, ArticleCollaborator, ArticleEditHistory,
+    UserGroup, GroupMembership, GroupPost,
+    Event, EventParticipant, Announcement
 )
 
 
@@ -205,3 +208,143 @@ class FollowAdmin(admin.ModelAdmin):
     search_fields = ['follower__username', 'following__username']
     date_hierarchy = 'created_at'
     readonly_fields = ['created_at']
+
+
+# ========== 社群互動功能管理 ==========
+
+# @提及管理
+@admin.register(Mention)
+class MentionAdmin(admin.ModelAdmin):
+    list_display = ['mentioned_user', 'mentioning_user', 'mention_type', 'is_read', 'created_at']
+    list_filter = ['mention_type', 'is_read', 'created_at']
+    search_fields = ['mentioned_user__username', 'mentioning_user__username', 'context']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at']
+
+
+# 文章協作者管理
+@admin.register(ArticleCollaborator)
+class ArticleCollaboratorAdmin(admin.ModelAdmin):
+    list_display = ['article', 'user', 'role', 'permission', 'is_accepted', 'invited_by', 'invited_at']
+    list_filter = ['role', 'permission', 'is_accepted', 'invited_at']
+    search_fields = ['article__title', 'user__username', 'invited_by__username']
+    date_hierarchy = 'invited_at'
+    readonly_fields = ['invited_at', 'accepted_at']
+
+
+# 文章編輯歷史管理
+@admin.register(ArticleEditHistory)
+class ArticleEditHistoryAdmin(admin.ModelAdmin):
+    list_display = ['article', 'editor', 'edit_summary_preview', 'edited_at']
+    list_filter = ['edited_at']
+    search_fields = ['article__title', 'editor__username', 'edit_summary']
+    date_hierarchy = 'edited_at'
+    readonly_fields = ['edited_at']
+
+    def edit_summary_preview(self, obj):
+        if obj.edit_summary:
+            return obj.edit_summary[:50] + '...' if len(obj.edit_summary) > 50 else obj.edit_summary
+        return '-'
+    edit_summary_preview.short_description = '編輯摘要'
+
+
+# 使用者群組管理
+@admin.register(UserGroup)
+class UserGroupAdmin(admin.ModelAdmin):
+    list_display = ['name', 'group_type', 'creator', 'member_count', 'post_count', 'created_at']
+    list_filter = ['group_type', 'created_at']
+    search_fields = ['name', 'description', 'tags']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('基本資訊', {
+            'fields': ('name', 'description', 'group_type', 'creator')
+        }),
+        ('設定', {
+            'fields': ('cover_image', 'tags')
+        }),
+        ('統計資訊', {
+            'fields': ('member_count', 'post_count', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+# 群組成員管理
+@admin.register(GroupMembership)
+class GroupMembershipAdmin(admin.ModelAdmin):
+    list_display = ['user', 'group', 'role', 'join_method', 'posts_count', 'comments_count', 'joined_at']
+    list_filter = ['role', 'join_method', 'joined_at']
+    search_fields = ['user__username', 'group__name']
+    date_hierarchy = 'joined_at'
+    readonly_fields = ['joined_at']
+
+
+# 群組文章管理
+@admin.register(GroupPost)
+class GroupPostAdmin(admin.ModelAdmin):
+    list_display = ['title', 'group', 'author', 'post_type', 'is_pinned', 'views_count', 'created_at']
+    list_filter = ['post_type', 'is_pinned', 'created_at']
+    search_fields = ['title', 'content', 'group__name', 'author__username']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at', 'updated_at']
+
+
+# 活動管理
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ['title', 'event_type', 'organizer', 'status', 'start_time', 'end_time', 'participants_count']
+    list_filter = ['event_type', 'status', 'start_time']
+    search_fields = ['title', 'description', 'organizer__username']
+    date_hierarchy = 'start_time'
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('基本資訊', {
+            'fields': ('title', 'description', 'event_type', 'organizer', 'group')
+        }),
+        ('時間資訊', {
+            'fields': ('start_time', 'end_time', 'registration_deadline')
+        }),
+        ('地點資訊', {
+            'fields': ('location', 'online_link')
+        }),
+        ('參與設定', {
+            'fields': ('max_participants', 'status')
+        }),
+        ('統計資訊', {
+            'fields': ('views_count', 'participants_count', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+# 活動參與者管理
+@admin.register(EventParticipant)
+class EventParticipantAdmin(admin.ModelAdmin):
+    list_display = ['user', 'event', 'status', 'registered_at']
+    list_filter = ['status', 'registered_at']
+    search_fields = ['user__username', 'event__title', 'note']
+    date_hierarchy = 'registered_at'
+    readonly_fields = ['registered_at']
+
+
+# 系統公告管理
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ['title', 'priority', 'author', 'is_active', 'is_pinned', 'expires_at', 'created_at']
+    list_filter = ['priority', 'is_active', 'is_pinned', 'created_at']
+    search_fields = ['title', 'content', 'author__username']
+    date_hierarchy = 'created_at'
+    readonly_fields = ['created_at', 'updated_at', 'views_count']
+    fieldsets = (
+        ('基本資訊', {
+            'fields': ('title', 'content', 'author')
+        }),
+        ('設定', {
+            'fields': ('priority', 'is_active', 'is_pinned', 'expires_at')
+        }),
+        ('統計資訊', {
+            'fields': ('views_count', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

@@ -3,6 +3,12 @@
  * 處理文章分享到社群平台的功能
  */
 
+// 防止重複初始化
+if (window.shareModuleInitialized) {
+    // 已初始化，跳過
+} else {
+    window.shareModuleInitialized = true;
+
 document.addEventListener('DOMContentLoaded', function () {
     const shareBtn = document.getElementById('share-article-btn');
     const shareMenu = document.getElementById('share-article-menu');
@@ -123,21 +129,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 recordShare('copy');
                 showCopySuccess();
             }).catch(function (err) {
-                // 降級方案
+                // 降級方案（Clipboard API 失敗時）
                 fallbackCopyLink();
             });
         } else {
-            // 降級方案
+            // 降級方案（不支援 Clipboard API）
             fallbackCopyLink();
         }
     }
 
     /**
      * 記錄分享統計
+     * 使用防抖機制避免重複提交
      */
+    let lastShareTime = 0;
+    const shareDebounceDelay = 1000; // 1秒內不重複提交
+
     function recordShare(platform) {
         const articleWrapper = document.querySelector('[data-article-id]');
         if (!articleWrapper) return;
+
+        // 防抖檢查：避免短時間內重複提交相同平台的分享
+        const now = Date.now();
+        if (now - lastShareTime < shareDebounceDelay) {
+            return;
+        }
+        lastShareTime = now;
 
         const articleId = articleWrapper.dataset.articleId;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
@@ -156,8 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('分享統計記錄成功:', platform);
-                // 可選: 更新頁面上的分享數量
+                // 更新頁面上的分享數量
                 updateShareCount(data.share_count);
             }
         })
@@ -228,3 +244,5 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1500);
     }
 });
+
+} // 結束防止重複初始化的 else 區塊

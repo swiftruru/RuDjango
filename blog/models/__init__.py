@@ -22,6 +22,19 @@ from .member import (
 # 通知相關 models
 from .notification import Notification, NotificationPreference
 
+# 社群互動相關 models
+from .social import (
+    Mention,
+    ArticleCollaborator,
+    ArticleEditHistory,
+    UserGroup,
+    GroupMembership,
+    GroupPost,
+    Event,
+    EventParticipant,
+    Announcement,
+)
+
 __all__ = [
     # 文章相關
     'Tag',
@@ -44,4 +57,14 @@ __all__ = [
     # 通知相關
     'Notification',
     'NotificationPreference',
+    # 社群互動相關
+    'Mention',
+    'ArticleCollaborator',
+    'ArticleEditHistory',
+    'UserGroup',
+    'GroupMembership',
+    'GroupPost',
+    'Event',
+    'EventParticipant',
+    'Announcement',
 ]

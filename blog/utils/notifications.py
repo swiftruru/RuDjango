@@ -58,15 +58,15 @@ def notify_comment(article, comment):
         comment: 留言物件
     """
     # 通知文章作者（如果留言者不是作者自己）
-    if comment.user != article.author:
-        message = f"{comment.user.username} 在您的文章「{article.title}」中留言"
+    if comment.author != article.author:
+        message = f"{comment.author.username} 在您的文章「{article.title}」中留言"
         link = f"/blog/article/{article.id}/#comment-{comment.id}"
 
         create_notification(
             user=article.author,
             notification_type='comment',
             message=message,
-            sender=comment.user,
+            sender=comment.author,
             link=link,
             content_object=comment
         )
@@ -126,7 +126,7 @@ def notify_message(recipient, sender, message_obj):
     message = f"{sender.username} 發送了一則訊息給您"
     link = f"/blog/messages/{message_obj.id}/"
 
-    create_notification(
+    return create_notification(
         user=recipient,
         notification_type='message',
         message=message,
@@ -156,3 +156,38 @@ def notify_share(article, user):
             link=link,
             content_object=article
         )
+
+
+def notify_mention(mentioned_user, mentioning_user, content_type, content_object, article):
+    """
+    當有人提及使用者時發送通知
+
+    Args:
+        mentioned_user: 被提及的使用者
+        mentioning_user: 提及者
+        content_type: 提及的內容類型 ('article' 或 'comment')
+        content_object: 提及的內容物件（Article 或 Comment）
+        article: 相關的文章
+    """
+    # 不通知自己
+    if mentioned_user == mentioning_user:
+        return None
+
+    # 根據內容類型產生訊息和連結
+    if content_type == 'article':
+        message = f"{mentioning_user.username} 在文章「{article.title}」中提及了您"
+        link = f"/blog/article/{article.id}/"
+    elif content_type == 'comment':
+        message = f"{mentioning_user.username} 在文章「{article.title}」的留言中提及了您"
+        link = f"/blog/article/{article.id}/#comment-{content_object.id}"
+    else:
+        return None
+
+    return create_notification(
+        user=mentioned_user,
+        notification_type='mention',
+        message=message,
+        sender=mentioning_user,
+        link=link,
+        content_object=content_object
+    )

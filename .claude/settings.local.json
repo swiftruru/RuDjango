@@ -9,7 +9,8 @@
       "Bash(python manage.py runserver:*)",
       "Bash(curl:*)",
       "Bash(python:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(chmod:*)"
     ]
   }
 }

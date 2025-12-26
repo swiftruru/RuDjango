@@ -8,6 +8,9 @@
     <title>{% block title %}RuDjango{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <!-- <link rel="stylesheet" href="{% static 'blog/css/page-loader.css' %}"> -->
+    {% if user.is_authenticated %}
+    <link rel="stylesheet" href="{% static 'blog/css/real-time-notifications.css' %}">
+    {% endif %}
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -55,9 +58,7 @@
                     <li><a href="{% url 'inbox' %}" class="nav-link nav-messages">
                             <span class="message-icon">✉️</span>
                             訊息
-                            {% if unread_message_count > 0 %}
-                            <span class="message-badge">{{ unread_message_count }}</span>
-                            {% endif %}
+                            <span class="message-badge" id="message-count" style="{% if unread_message_count == 0 %}display: none;{% endif %}">{{ unread_message_count }}</span>
                         </a></li>
                     <li class="nav-dropdown">
                         <a href="{% url 'member_profile' username=user.username %}" class="nav-link">會員中心 ▼</a>
@@ -182,6 +183,11 @@
             }
         });
     </script>
+
+    {% if user.is_authenticated %}
+    <!-- 即時通知系統 -->
+    <script src="{% static 'blog/js/real-time-notifications.js' %}"></script>
+    {% endif %}
 
     {% block extra_js %}{% endblock %}
 </body>

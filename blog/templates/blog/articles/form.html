@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/articles/form.css' %}">
 <link rel="stylesheet" href="{% static 'blog/css/articles/features.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/mention-autocomplete.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -320,5 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script src="{% static 'blog/js/mention-autocomplete.js' %}"></script>
 {% endblock %}
 {% endblock %}

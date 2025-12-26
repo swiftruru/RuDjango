@@ -208,8 +208,11 @@
         <div class="article-content" id="article-content"></div>
     </div>
 
-    <!-- 將 Markdown 內容以 JSON 格式儲存 -->
-    <script id="article-markdown-data" type="application/json">{{ article.content|safe }}</script>
+    <!-- 將 Markdown 內容儲存（使用 textarea 保留所有特殊字符） -->
+    <textarea id="article-markdown-data" style="display: none;">{{ article.content }}</textarea>
+
+    <!-- 儲存處理過 @mention 的 HTML 內容（用於替換） -->
+    <div id="mention-processed-content" style="display: none;">{{ article.content|highlight_mentions }}</div>
 
     <!-- 點讚與收藏區 -->
     <div class="article-actions-section">
@@ -424,32 +427,102 @@
     // 使用客戶端渲染 Markdown（跟編輯預覽一樣的方式）
     document.addEventListener('DOMContentLoaded', async function() {
         const articleContent = document.getElementById('article-content');
-        const markdownDataScript = document.getElementById('article-markdown-data');
+        const markdownDataTextarea = document.getElementById('article-markdown-data');
+        const mentionProcessedContent = document.getElementById('mention-processed-content');
 
-        if (!articleContent || !markdownDataScript) {
+        if (!articleContent || !markdownDataTextarea) {
             console.error('Article content element or markdown data not found');
             return;
         }
 
-        // 從 script 標籤取得原始 Markdown 內容
-        const markdownContent = markdownDataScript.textContent;
+        // 從 textarea 取得原始 Markdown 內容（保留所有特殊字符）
+        const markdownContent = markdownDataTextarea.value;
 
         if (!markdownContent || !markdownContent.trim()) {
             console.error('No markdown content found');
             return;
         }
 
-        // 步驟 1: 使用 marked.js 解析 Markdown
+        // 使用 marked.js 解析 Markdown
+        marked.setOptions({
+            breaks: false,  // 關閉自動換行，避免破壞 $$...$$ 區塊公式
+            gfm: true
+        });
+
         const html = marked.parse(markdownContent);
         articleContent.innerHTML = html;
 
-        // 步驟 2: 處理 @mention 連結
-        const mentionRegex = /@([a-zA-Z0-9_]+)/g;
-        articleContent.innerHTML = articleContent.innerHTML.replace(mentionRegex, function(match, username) {
-            return `<a href="/blog/member/${username}/" class="mention" title="${match}">@${username}</a>`;
-        });
+        // 步驟 2: 處理 @mention 連結（在 DOM 渲染後）
+        if (mentionProcessedContent) {
+            const mentionHtml = mentionProcessedContent.innerHTML;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = mentionHtml;
 
-        // 步驟 3: 初始化 Mermaid
+            // 提取所有 @mention 連結的對應關係
+            const mentionMap = new Map();
+            const mentionLinks = tempDiv.querySelectorAll('a.mention');
+            mentionLinks.forEach(link => {
+                const username = link.getAttribute('href').match(/\/blog\/member\/([^\/]+)\//);
+                if (username && username[1]) {
+                    const displayText = link.textContent; // 例如 "@暱稱"
+                    mentionMap.set(username[1], {
+                        href: link.getAttribute('href'),
+                        display: displayText,
+                        title: link.getAttribute('title') || `@${username[1]}`
+                    });
+                }
+            });
+
+            // 在渲染後的 HTML 中替換 @username
+            const walker = document.createTreeWalker(
+                articleContent,
+                NodeFilter.SHOW_TEXT,
+                null
+            );
+
+            const textNodes = [];
+            while (walker.nextNode()) {
+                textNodes.push(walker.currentNode);
+            }
+
+            textNodes.forEach(node => {
+                const text = node.textContent;
+                // 跳過包含數學公式符號的節點
+                if (text.includes('$') || text.includes('\\')) {
+                    return;
+                }
+
+                const mentionRegex = /@([\w\u4e00-\u9fa5]+)/g;
+                if (mentionRegex.test(text)) {
+                    const span = document.createElement('span');
+                    span.innerHTML = text.replace(/@([\w\u4e00-\u9fa5]+)/g, function(match, username) {
+                        if (mentionMap.has(username)) {
+                            const info = mentionMap.get(username);
+                            return `<a href="${info.href}" class="mention" title="${info.title}">${info.display}</a>`;
+                        }
+                        return match;
+                    });
+                    node.parentNode.replaceChild(span, node);
+                }
+            });
+        }
+
+        // 步驟 3: 渲染數學公式（KaTeX）
+        if (window.renderMathInElement) {
+            renderMathInElement(articleContent, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false,
+                // 讓 KaTeX 自動判斷是否為 display mode（如果公式包含換行）
+                trust: true
+            });
+        }
+
+        // 步驟 4: 渲染 Mermaid 圖表
         if (window.mermaid) {
             mermaid.initialize({
                 startOnLoad: false,
@@ -476,32 +549,11 @@
             }
         }
 
-        // 步驟 4: 初始化語法高亮（排除 Mermaid 區塊）
+        // 步驟 5: 語法高亮（排除 Mermaid 區塊）
         if (window.hljs) {
             articleContent.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
                 hljs.highlightElement(block);
             });
-        }
-
-        // 步驟 5: 渲染數學公式
-        if (window.renderMathInElement) {
-            try {
-                renderMathInElement(articleContent, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\[', right: '\\]', display: true},
-                        {left: '\\(', right: '\\)', display: false}
-                    ],
-                    throwOnError: false,
-                    trust: true
-                });
-                console.log('KaTeX rendering completed');
-            } catch (err) {
-                console.error('KaTeX render error:', err);
-            }
-        } else {
-            console.warn('KaTeX renderMathInElement not found');
         }
     });
 </script>

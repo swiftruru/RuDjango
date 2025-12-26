@@ -89,6 +89,12 @@
             }
 
             try {
+                // 設定 marked.js 選項
+                marked.setOptions({
+                    breaks: false,  // 關閉自動換行，避免破壞 $$...$$ 區塊公式
+                    gfm: true       // 啟用 GitHub Flavored Markdown
+                });
+
                 // 使用 marked 解析 Markdown
                 const html = marked.parse(markdown);
                 previewContent.innerHTML = html;

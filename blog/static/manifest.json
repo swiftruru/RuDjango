@@ -2,12 +2,12 @@
   "name": "RuDjango - Python Django 技術部落格",
   "short_name": "RuDjango",
   "description": "分享 Python、Django、Web 開發技術與經驗的專業部落格平台",
-  "start_url": "/",
+  "start_url": "/blog/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "/blog/",
   "icons": [
     {
       "src": "/static/blog/images/icons/icon-72x72.png",

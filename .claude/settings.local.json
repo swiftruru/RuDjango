@@ -14,7 +14,9 @@
       "Bash(cat:*)",
       "Bash(ls:*)",
       "Bash(pip install:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

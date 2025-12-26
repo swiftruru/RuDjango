@@ -39,9 +39,14 @@
     <link rel="alternate" type="application/rss+xml" title="RuDjango RSS Feed" href="{% url 'article_feed_rss' %}">
     <link rel="alternate" type="application/atom+xml" title="RuDjango Atom Feed" href="{% url 'article_feed_atom' %}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="RuDjango">

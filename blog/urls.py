@@ -18,6 +18,7 @@ article_patterns = [
     path('article/<int:id>/share/', views.article_share, name='article_share'),
     path('article/autosave/', views.article_autosave, name='article_autosave_new'),
     path('article/<int:id>/autosave/', views.article_autosave, name='article_autosave'),
+    path('article/<int:id>/export/markdown/', views.export_article_markdown, name='export_article_markdown'),
     path('my-articles/', views.my_articles, name='my_articles'),
     path('my-bookmarks/', views.my_bookmarks, name='my_bookmarks'),
     path('my-drafts/', views.my_drafts, name='my_drafts'),

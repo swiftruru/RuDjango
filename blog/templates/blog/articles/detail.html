@@ -280,6 +280,16 @@
             <span class="share-count">🔗 {{ share_count }} 次分享</span>
         </div>
         {% endif %}
+
+        <!-- 文章匯出功能 -->
+        <div class="article-export-section">
+            <button class="export-button export-markdown"
+                    onclick="downloadFile('{% url 'export_article_markdown' article.id %}')"
+                    title="下載 Markdown 格式">
+                <span class="export-icon">📝</span>
+                <span class="export-text">下載 Markdown</span>
+            </button>
+        </div>
     </div>
 
     <!-- 文章底部 -->
@@ -627,6 +637,96 @@
         });
     });
 })();
+
+// 文章匯出下載函數
+async function downloadFile(url) {
+    try {
+        console.log('正在下載 Markdown 文件...');
+
+        // 使用 fetch API 獲取文件
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`下載失敗: ${response.status} ${response.statusText}`);
+        }
+
+        // 獲取文件名（從 Content-Disposition header）
+        let filename = 'article.md';
+        const contentDisposition = response.headers.get('Content-Disposition');
+
+        if (contentDisposition) {
+            console.log('Content-Disposition:', contentDisposition);
+
+            // Django 會自動處理 RFC 2047 編碼，導致 header 被 base64 編碼
+            // 需要解碼 =?utf-8?b?...?= 格式
+            if (contentDisposition.includes('=?utf-8?b?')) {
+                try {
+                    // 提取 base64 部分
+                    const base64Match = contentDisposition.match(/=\?utf-8\?b\?([^\?]+)\?=/);
+                    if (base64Match) {
+                        // 解碼 base64
+                        const decodedHeader = atob(base64Match[1]);
+                        console.log('解碼後的 header:', decodedHeader);
+
+                        // 從解碼後的 header 中提取檔名
+                        const filenameMatch = decodedHeader.match(/filename\*=UTF-8''([^;]+)/);
+                        if (filenameMatch) {
+                            filename = decodeURIComponent(filenameMatch[1]);
+                            console.log('解析檔名 (UTF-8):', filename);
+                        } else {
+                            const simpleMatch = decodedHeader.match(/filename="([^"]+)"/);
+                            if (simpleMatch) {
+                                filename = simpleMatch[1];
+                                console.log('解析檔名 (simple):', filename);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('解碼 header 失敗:', e);
+                }
+            } else {
+                // 未編碼的 header，直接解析
+                const encodedMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+                if (encodedMatch) {
+                    filename = decodeURIComponent(encodedMatch[1]);
+                    console.log('解析檔名 (UTF-8):', filename);
+                } else {
+                    const simpleMatch = contentDisposition.match(/filename="([^"]+)"/);
+                    if (simpleMatch) {
+                        filename = simpleMatch[1];
+                        console.log('解析檔名 (simple):', filename);
+                    }
+                }
+            }
+        }
+
+        // 將響應轉換為 Blob
+        const blob = await response.blob();
+
+        // 創建臨時 URL
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        // 創建隱藏的 <a> 標籤並觸發點擊
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+
+        // 清理
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
+        console.log('Markdown 文件下載成功！檔名:', filename);
+    } catch (error) {
+        console.error('下載 Markdown 文件失敗:', error);
+        alert(`下載失敗，請重試。錯誤: ${error.message}`);
+    }
+}
 </script>
 {% endblock %}
 {% endblock %}

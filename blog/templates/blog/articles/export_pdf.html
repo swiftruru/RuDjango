@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+</head>
+<body>
+    <h1>{{ article.title }}</h1>
+
+    <div class="article-meta">
+        <p><strong>作者：</strong>{{ article.author.first_name|default:article.author.username }}</p>
+        <p><strong>發布時間：</strong>{{ article.created_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>更新時間：</strong>{{ article.updated_at|date:"Y-m-d H:i" }}</p>
+        {% if article.tags.exists %}
+        <p><strong>標籤：</strong>{% for tag in article.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+        {% endif %}
+        <p><strong>閱讀時間：</strong>約 {{ article.reading_time }} 分鐘</p>
+    </div>
+
+    <div class="article-content">
+        {{ article_html_content|safe }}
+    </div>
+
+    <div class="footer">
+        <p>匯出時間：{{ export_date|date:"Y-m-d H:i:s" }}</p>
+        <p>來源：{{ base_url }}{% url 'article_detail' article.id %}</p>
+    </div>
+</body>
+</html>

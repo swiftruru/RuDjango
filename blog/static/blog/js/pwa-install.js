@@ -47,7 +47,7 @@ class PWAManager {
     async registerServiceWorker() {
         try {
             const registration = await navigator.serviceWorker.register('/static/sw.js', {
-                scope: '/'
+                scope: '/static/'
             });
 
             this.swRegistration = registration;

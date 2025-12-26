@@ -32,7 +32,8 @@ from .article_views import (
     personalized_feed,
     get_search_history,
     clear_search_history,
-    delete_search_item
+    delete_search_item,
+    export_article_markdown
 )
 
 # 會員相關 views
@@ -143,6 +144,7 @@ __all__ = [
     'get_search_history',
     'clear_search_history',
     'delete_search_item',
+    'export_article_markdown',
     # 會員相關
     'member',
     'member_edit',

@@ -1450,3 +1450,240 @@ def delete_search_item(request):
         'message': f'已刪除搜尋記錄',
         'deleted_count': deleted_count
     })
+
+
+def export_article_markdown(request, id):
+    """
+    匯出文章為 Markdown 格式
+    """
+    from django.http import HttpResponse
+    from datetime import datetime
+
+    article = get_object_or_404(Article, id=id)
+
+    # 檢查文章是否可以查看
+    if not article.can_be_viewed and article.author != request.user:
+        messages.error(request, '❌ 此文章尚未發布！')
+        return redirect('blog_home')
+
+    # 構建 Markdown 內容
+    markdown_content = f"""# {article.title}
+
+**作者**: {article.author.first_name or article.author.username}
+**發布時間**: {article.created_at.strftime('%Y-%m-%d %H:%M')}
+**更新時間**: {article.updated_at.strftime('%Y-%m-%d %H:%M')}
+"""
+
+    # 添加標籤
+    if article.tags.exists():
+        tags_str = ', '.join([tag.name for tag in article.tags.all()])
+        markdown_content += f"**標籤**: {tags_str}  \n"
+
+    markdown_content += f"\n---\n\n{article.content}\n"
+
+    # 設置響應
+    response = HttpResponse(markdown_content, content_type='text/markdown; charset=utf-8')
+
+    # 生成安全的檔名（保留中文、英文、數字、空格和連字符）
+    import re
+    from urllib.parse import quote
+
+    # 移除檔案系統不允許的字符: / \ : * ? " < > |
+    safe_title = re.sub(r'[/\\:*?"<>|]', '', article.title)
+    # 將多個空格替換為單個空格
+    safe_title = re.sub(r'\s+', ' ', safe_title).strip()[:50]
+    filename = f"{safe_title}.md"
+
+    # 使用 RFC 6266 編碼檔名（支援中文）
+    encoded_filename = quote(filename)
+    response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
+
+    return response
+
+
+def export_article_pdf(request, id):
+    """
+    匯出文章為 PDF 格式
+    使用 WeasyPrint 將 HTML 轉換為 PDF
+    """
+    from django.http import HttpResponse
+    from django.template.loader import render_to_string
+
+    article = get_object_or_404(Article, id=id)
+
+    # 檢查文章是否可以查看
+    if not article.can_be_viewed and article.author != request.user:
+        messages.error(request, '❌ 此文章尚未發布！')
+        return redirect('blog_home')
+
+    try:
+        from weasyprint import HTML, CSS
+        from weasyprint.text.fonts import FontConfiguration
+        import markdown
+        import tempfile
+        import os
+
+        # 使用 Python markdown 庫將 Markdown 轉換為 HTML
+        md = markdown.Markdown(extensions=[
+            'extra',  # 支援表格、代碼區塊等
+            'codehilite',  # 語法高亮
+            'fenced_code',  # 圍欄式代碼區塊
+            'tables',  # 表格支援
+        ])
+        article_html_content = md.convert(article.content)
+
+        # 準備文章數據
+        context = {
+            'article': article,
+            'article_html_content': article_html_content,
+            'export_date': timezone.now(),
+            'base_url': request.build_absolute_uri('/')[:-1],
+        }
+
+        # 渲染 HTML 模板
+        html_string = render_to_string('blog/articles/export_pdf.html', context)
+
+        # 創建 PDF
+        font_config = FontConfiguration()
+
+        # 自定義 CSS 樣式
+        css_string = '''
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+
+            body {
+                font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
+                line-height: 1.6;
+                color: #333;
+            }
+
+            h1 {
+                color: #2c3e50;
+                border-bottom: 3px solid #667eea;
+                padding-bottom: 0.5rem;
+                margin-top: 2rem;
+            }
+
+            h2 {
+                color: #34495e;
+                border-bottom: 2px solid #95a5a6;
+                padding-bottom: 0.3rem;
+                margin-top: 1.5rem;
+            }
+
+            h3 {
+                color: #555;
+                margin-top: 1.2rem;
+            }
+
+            .article-meta {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                margin: 1rem 0;
+                padding: 1rem;
+                background-color: #ecf0f1;
+                border-radius: 5px;
+            }
+
+            .article-content {
+                margin-top: 2rem;
+            }
+
+            code {
+                background-color: #f4f4f4;
+                padding: 0.2rem 0.4rem;
+                border-radius: 3px;
+                font-family: "Courier New", monospace;
+                font-size: 0.9em;
+            }
+
+            pre {
+                background-color: #2d2d2d;
+                color: #f8f8f2;
+                padding: 1rem;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin: 1rem 0;
+            }
+
+            pre code {
+                background-color: transparent;
+                padding: 0;
+                color: inherit;
+            }
+
+            blockquote {
+                border-left: 4px solid #667eea;
+                padding-left: 1rem;
+                margin-left: 0;
+                color: #555;
+                font-style: italic;
+            }
+
+            img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 1rem auto;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1rem 0;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 0.5rem;
+                text-align: left;
+            }
+
+            th {
+                background-color: #667eea;
+                color: white;
+            }
+
+            .footer {
+                margin-top: 3rem;
+                padding-top: 1rem;
+                border-top: 1px solid #ddd;
+                font-size: 0.8rem;
+                color: #7f8c8d;
+                text-align: center;
+            }
+        '''
+
+        css = CSS(string=css_string, font_config=font_config)
+
+        # 生成 PDF
+        html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+        pdf_file = html.write_pdf(stylesheets=[css], font_config=font_config)
+
+        # 創建響應
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+
+        # 生成安全的檔名（保留中文、英文、數字、空格和連字符）
+        import re
+        from urllib.parse import quote
+
+        # 移除檔案系統不允許的字符: / \ : * ? " < > |
+        safe_title = re.sub(r'[/\\:*?"<>|]', '', article.title)
+        # 將多個空格替換為單個空格
+        safe_title = re.sub(r'\s+', ' ', safe_title).strip()[:50]
+        filename = f"{safe_title}.pdf"
+
+        # 使用 RFC 6266 編碼檔名（支援中文）
+        encoded_filename = quote(filename)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
+
+        return response
+
+    except ImportError:
+        messages.error(request, '❌ PDF 匯出功能需要安裝 WeasyPrint 套件。請執行: pip install weasyprint')
+        return redirect('article_detail', id=id)
+    except Exception as e:
+        messages.error(request, f'❌ PDF 匯出失敗：{str(e)}')
+        return redirect('article_detail', id=id)

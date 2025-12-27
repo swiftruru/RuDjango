@@ -44,3 +44,6 @@ htmlcov/
 # Static 收集後的文件
 /static_root/
 /collected_static/
+
+# Scripts (保留在 git 歷史但避免未來誤改)
+scripts/generate_vapid_keys.py

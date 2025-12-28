@@ -1,0 +1,251 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}系統日誌 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    系統日誌
+</h2>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <!-- Total Logs -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                總日誌條目
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ log_stats.total_logs }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Error Count -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-red-500 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                錯誤數量
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ log_stats.error_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Warning Count -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                警告數量
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ log_stats.warning_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Info Count -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                訊息數量
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ log_stats.info_count }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Two Column Layout -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Log Files -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            日誌文件
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">文件名</th>
+                            <th class="px-4 py-3">大小</th>
+                            <th class="px-4 py-3">修改時間</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for log_file in log_files %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3">
+                                <p class="font-semibold text-sm">{{ log_file.name }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {{ log_file.size_mb }} MB
+                            </td>
+                            <td class="px-4 py-3 text-xs">
+                                {{ log_file.modified|date:"Y-m-d H:i" }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無日誌文件
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logger Configuration -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            日誌配置
+        </h4>
+        <div class="space-y-3">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">配置的處理器</p>
+                {% if logger_config.handlers %}
+                <ul class="space-y-1">
+                    {% for handler in logger_config.handlers %}
+                    <li class="text-xs font-mono text-gray-700 dark:text-gray-300">• {{ handler }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-xs text-gray-500 dark:text-gray-400">未配置處理器</p>
+                {% endif %}
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">配置的記錄器</p>
+                {% if logger_config.loggers %}
+                <ul class="space-y-1">
+                    {% for logger in logger_config.loggers %}
+                    <li class="text-xs font-mono text-gray-700 dark:text-gray-300">• {{ logger }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-xs text-gray-500 dark:text-gray-400">未配置記錄器</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Logs -->
+<div class="min-w-0 p-4 mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        最近的系統日誌（最多50條）
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full whitespace-no-wrap">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                        <th class="px-4 py-3">級別</th>
+                        <th class="px-4 py-3">日誌訊息</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                    {% for log in recent_logs %}
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-3 text-sm">
+                            {% if log.level == 'ERROR' %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
+                                ERROR
+                            </span>
+                            {% elif log.level == 'WARNING' %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                                WARNING
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                                INFO
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            <p class="text-xs font-mono text-gray-700 dark:text-gray-300">{{ log.message }}</p>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="px-4 py-3 text-sm text-center text-gray-500">
+                            暫無日誌記錄
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        系統活動日誌（最近20條）
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full whitespace-no-wrap">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                        <th class="px-4 py-3">時間</th>
+                        <th class="px-4 py-3">類型</th>
+                        <th class="px-4 py-3">描述</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                    {% for activity in recent_activities %}
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-3 text-xs">
+                            {{ activity.time|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                                {{ activity.type }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {{ activity.description }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-4 py-3 text-sm text-center text-gray-500">
+                            暫無活動記錄
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

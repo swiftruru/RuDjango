@@ -1,0 +1,270 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}搜尋分析 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    搜尋分析
+</h2>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <!-- Total Searches -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                總搜尋次數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ total_searches }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                今日: {{ searches_today }} | 本週: {{ searches_week }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Unique Users -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                搜尋用戶數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ unique_users_total }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                本週活躍: {{ unique_users_week }}
+            </p>
+        </div>
+    </div>
+
+    <!-- This Month -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                本月搜尋
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ searches_month }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                近30天統計
+            </p>
+        </div>
+    </div>
+
+    <!-- Average Results -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-purple-500 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                平均結果數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ avg_results }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                每次搜尋平均
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Charts and Tables Grid -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Popular Search Keywords -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            熱門搜尋關鍵字 Top 20
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">排名</th>
+                            <th class="px-4 py-3">關鍵字</th>
+                            <th class="px-4 py-3">搜尋次數</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for search in popular_searches %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3 text-sm">
+                                {{ forloop.counter }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center text-sm">
+                                    <div>
+                                        <p class="font-semibold">{{ search.query }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                                    {{ search.search_count }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無數據
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Type Distribution -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            搜尋類型分佈
+        </h4>
+        <div class="space-y-3">
+            {% for type_name, count in search_by_type.items %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ type_name }}</span>
+                <div class="flex items-center">
+                    <div class="mr-3 w-32 bg-gray-200 rounded-full h-2 dark:bg-gray-600">
+                        {% if total_searches > 0 %}
+                        {% widthratio count total_searches 100 as percentage %}
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: {{ percentage|default:0 }}%"></div>
+                        {% else %}
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 0%"></div>
+                        {% endif %}
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Second Row -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Zero Results Searches -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            零結果搜尋 Top 10
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">關鍵字</th>
+                            <th class="px-4 py-3">次數</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for search in zero_results_searches %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3">
+                                <p class="font-semibold text-sm">{{ search.query }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
+                                    {{ search.search_count }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無數據
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Searchers -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            最活躍搜尋用戶 Top 10
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">用戶名</th>
+                            <th class="px-4 py-3">搜尋次數</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for searcher in active_searchers %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center text-sm">
+                                    <div>
+                                        <a href="{% url 'admin_dashboard:user_detail' searcher.user__id %}"
+                                           class="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+                                            {{ searcher.user__username }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {{ searcher.search_count }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無數據
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Trend Chart -->
+<div class="min-w-0 p-4 mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        每日搜尋趨勢（最近7天）
+    </h4>
+    <div class="flex items-end space-x-2 h-64">
+        {% for day in daily_searches %}
+        <div class="flex flex-col items-center flex-1">
+            <div class="w-full bg-purple-500 rounded-t" style="height: {% if day.count > 0 %}{% widthratio day.count 100 100 %}%{% else %}2%{% endif %}; min-height: 2%;"></div>
+            <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">{{ day.date }}</p>
+            <p class="text-xs font-semibold text-gray-700 dark:text-gray-200">{{ day.count }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

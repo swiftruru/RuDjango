@@ -2,6 +2,7 @@
 自訂 Context Processor
 在所有模板中提供額外的 context 變數
 """
+from django.conf import settings
 from .version import get_version_info
 from .models import Message
 
@@ -45,4 +46,13 @@ def unread_messages(request):
 
     return {
         'unread_message_count': unread_count
+    }
+
+
+def vapid_public_key(request):
+    """
+    提供 VAPID 公鑰給前端 Web Push 使用
+    """
+    return {
+        'VAPID_PUBLIC_KEY': settings.VAPID_PUBLIC_KEY
     }

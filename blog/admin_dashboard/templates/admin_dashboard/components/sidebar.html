@@ -1,0 +1,205 @@
+<!-- Desktop sidebar -->
+<aside class="z-20 hidden w-64 overflow-y-auto bg-white dark:bg-gray-800 md:block flex-shrink-0">
+    <div class="py-4 text-gray-500 dark:text-gray-400">
+        <!-- Logo -->
+        <a class="ml-6 text-lg font-bold text-gray-800 dark:text-gray-200" href="{% url 'admin_dashboard:dashboard' %}">
+            🎯 RuDjango
+        </a>
+
+        <!-- Main Navigation -->
+        <ul class="mt-6">
+            <!-- Dashboard -->
+            <li class="relative px-6 py-3">
+                {% if request.resolver_match.url_name == 'dashboard' %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if request.resolver_match.url_name == 'dashboard' %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:dashboard' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span class="ml-4">儀表板</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Content Management -->
+        <div class="px-6 my-6">
+            <span class="text-xs font-semibold text-gray-400 uppercase dark:text-gray-500">內容管理</span>
+        </div>
+        <ul>
+            <!-- Users -->
+            <li class="relative px-6 py-3">
+                {% if 'user' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'user' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:user_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span class="ml-4">用戶管理</span>
+                </a>
+            </li>
+
+            <!-- Articles -->
+            <li class="relative px-6 py-3">
+                {% if 'article' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'article' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:article_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="ml-4">文章管理</span>
+                </a>
+            </li>
+
+            <!-- Comments -->
+            <li class="relative px-6 py-3">
+                {% if 'comment' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'comment' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:comment_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                    </svg>
+                    <span class="ml-4">留言管理</span>
+                </a>
+            </li>
+
+            <!-- Tags -->
+            <li class="relative px-6 py-3">
+                {% if 'tag' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'tag' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:tag_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <span class="ml-4">標籤管理</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Social Management -->
+        <div class="px-6 my-6">
+            <span class="text-xs font-semibold text-gray-400 uppercase dark:text-gray-500">社群管理</span>
+        </div>
+        <ul>
+            <!-- Chat -->
+            <li class="relative px-6 py-3">
+                {% if 'chat' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'chat' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:chat_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span class="ml-4">即時聊天</span>
+                </a>
+            </li>
+
+            <!-- Notifications -->
+            <li class="relative px-6 py-3">
+                {% if 'notification' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'notification' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:notification_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span class="ml-4">通知管理</span>
+                </a>
+            </li>
+
+            <!-- Groups -->
+            <li class="relative px-6 py-3">
+                {% if 'group' in request.resolver_match.url_name %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if 'group' in request.resolver_match.url_name %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:group_list' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span class="ml-4">群組管理</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Analytics -->
+        <div class="px-6 my-6">
+            <span class="text-xs font-semibold text-gray-400 uppercase dark:text-gray-500">數據分析</span>
+        </div>
+        <ul>
+            <!-- Analytics -->
+            <li class="relative px-6 py-3">
+                {% if request.resolver_match.url_name == 'dashboard' %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if request.resolver_match.url_name == 'dashboard' %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:dashboard' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span class="ml-4">數據統計</span>
+                </a>
+            </li>
+
+            <!-- Search Analytics -->
+            <li class="relative px-6 py-3">
+                {% if request.resolver_match.url_name == 'search_analytics' %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if request.resolver_match.url_name == 'search_analytics' %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:search_analytics' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span class="ml-4">搜尋分析</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- System -->
+        <div class="px-6 my-6">
+            <span class="text-xs font-semibold text-gray-400 uppercase dark:text-gray-500">系統設定</span>
+        </div>
+        <ul>
+            <!-- Settings -->
+            <li class="relative px-6 py-3">
+                {% if request.resolver_match.url_name == 'system_settings' %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if request.resolver_match.url_name == 'system_settings' %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:system_settings' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span class="ml-4">系統設定</span>
+                </a>
+            </li>
+
+            <!-- Logs -->
+            <li class="relative px-6 py-3">
+                {% if request.resolver_match.url_name == 'system_logs' %}
+                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                {% endif %}
+                <a class="inline-flex items-center w-full text-sm font-semibold {% if request.resolver_match.url_name == 'system_logs' %}text-gray-800 dark:text-gray-100{% else %}transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200{% endif %}"
+                   href="{% url 'admin_dashboard:system_logs' %}">
+                    <svg class="w-5 h-5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="ml-4">系統日誌</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>

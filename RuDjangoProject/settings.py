@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',  # Sitemap 支援
     'channels',  # Django Channels
-    'blog'
+    'blog',
+    'blog.admin_dashboard',  # 管理後台 (blog 的子 app)
 ]
 
 MIDDLEWARE = [
@@ -73,6 +74,8 @@ TEMPLATES = [
                 'blog.context_processors.user_display_name',
                 'blog.context_processors.version_context',
                 'blog.context_processors.unread_messages',
+                'blog.context_processors.vapid_public_key',
+                'blog.admin_dashboard.context_processors.admin_notifications',
             ],
         },
     },

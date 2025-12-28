@@ -1,0 +1,224 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}標籤管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    標籤管理
+</h2>
+
+<!-- 搜尋和篩選區 -->
+<div class="mb-6 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <form method="get" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <!-- 搜尋框 -->
+        <div class="md:col-span-2">
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">搜尋標籤</span>
+                <input type="text"
+                       name="search"
+                       value="{{ search_query }}"
+                       placeholder="標籤名稱、描述..."
+                       class="block w-full mt-1 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input rounded-md border-gray-300" />
+            </label>
+        </div>
+
+        <!-- 排序 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">排序</span>
+                <select name="sort"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="-published_article_count" {% if sort_by == '-published_article_count' %}selected{% endif %}>最多文章</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>名稱 A-Z</option>
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>最新建立</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>最舊建立</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- 搜尋按鈕 -->
+        <div class="md:col-span-3 flex mt-4">
+            <button type="submit" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                搜尋
+            </button>
+            <a href="{% url 'admin_dashboard:tag_list' %}" class="ml-3 px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+                重置
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- 標籤總數 -->
+<div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    共找到 <span class="font-semibold text-gray-700 dark:text-gray-300">{{ total_tags }}</span> 個標籤
+</div>
+
+<!-- 標籤列表 -->
+<div class="w-full overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">標籤名稱</th>
+                    <th class="px-4 py-3">描述</th>
+                    <th class="px-4 py-3">文章數量</th>
+                    <th class="px-4 py-3">建立時間</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for tag in page_obj %}
+                <tr class="text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            <div>
+                                <p class="font-semibold text-purple-600 dark:text-purple-400">#{{ tag.name }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Slug: {{ tag.slug }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ tag.description|truncatechars:60|default:"無描述" }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                            {{ tag.published_article_count }} 篇
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ tag.created_at|date:"Y-m-d" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            <a href="{% url 'admin_dashboard:tag_detail' tag.id %}"
+                               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                               title="查看詳情">
+                                詳情
+                            </a>
+                            <span class="mx-2 text-gray-400">|</span>
+                            <a href="{% url 'tag_articles' tag.slug %}"
+                               target="_blank"
+                               class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                               title="前台查看">
+                                查看
+                            </a>
+                            <span class="mx-2 text-gray-400">|</span>
+                            <button onclick="deleteTag({{ tag.id }})"
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                    title="刪除標籤">
+                                刪除
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-4 py-3 text-sm text-center text-gray-500">
+                        沒有找到符合條件的標籤
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 分頁 -->
+{% if page_obj.has_other_pages %}
+<div class="px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800">
+    <span class="flex items-center col-span-3">
+        顯示 {{ page_obj.start_index }}-{{ page_obj.end_index }} / 共 {{ page_obj.paginator.count }} 筆
+    </span>
+    <span class="col-span-2"></span>
+    <!-- 分頁導航 -->
+    <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+        <nav aria-label="Table navigation">
+            <ul class="inline-flex items-center">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Previous">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li>
+                        <span class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ num }}&search={{ search_query }}&sort={{ sort_by }}"
+                           class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Next">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </span>
+</div>
+{% endif %}
+
+<script>
+function deleteTag(tagId) {
+    if (confirm('確定要刪除此標籤嗎？刪除後該標籤將從所有文章中移除！')) {
+        fetch(`/dashboard/tags/${tagId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

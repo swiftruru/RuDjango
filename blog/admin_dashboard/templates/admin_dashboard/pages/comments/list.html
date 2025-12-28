@@ -1,0 +1,231 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}留言管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    留言管理
+</h2>
+
+<!-- 搜尋和篩選區 -->
+<div class="mb-6 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <form method="get" class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <!-- 搜尋框 -->
+        <div class="md:col-span-2">
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">搜尋留言</span>
+                <input type="text"
+                       name="search"
+                       value="{{ search_query }}"
+                       placeholder="留言內容、作者、文章標題..."
+                       class="block w-full mt-1 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input rounded-md border-gray-300" />
+            </label>
+        </div>
+
+        <!-- 文章篩選 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">文章篩選</span>
+                <select name="article"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="">全部文章</option>
+                    {% for article in all_articles %}
+                    <option value="{{ article.id }}" {% if filter_article == article.id|stringformat:"s" %}selected{% endif %}>
+                        {{ article.title|truncatechars:40 }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <!-- 排序 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">排序</span>
+                <select name="sort"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>最新留言</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>最舊留言</option>
+                    <option value="author" {% if sort_by == 'author' %}selected{% endif %}>作者 A-Z</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- 搜尋按鈕 -->
+        <div class="md:col-span-4 flex mt-4">
+            <button type="submit" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                搜尋
+            </button>
+            <a href="{% url 'admin_dashboard:comment_list' %}" class="ml-3 px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+                重置
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- 留言總數 -->
+<div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    共找到 <span class="font-semibold text-gray-700 dark:text-gray-300">{{ total_comments }}</span> 條留言
+</div>
+
+<!-- 留言列表 -->
+<div class="w-full overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">留言內容</th>
+                    <th class="px-4 py-3">作者</th>
+                    <th class="px-4 py-3">所屬文章</th>
+                    <th class="px-4 py-3">留言時間</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for comment in page_obj %}
+                <tr class="text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td class="px-4 py-3">
+                        <div class="text-sm">
+                            <p class="font-semibold">{{ comment.content|truncatechars:80 }}</p>
+                            {% if comment.parent %}
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                <span class="text-purple-600">↳ 回覆:</span> {{ comment.parent.content|truncatechars:30 }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'member_profile' comment.author.username %}"
+                           target="_blank"
+                           class="text-purple-600 hover:text-purple-800 hover:underline">
+                            {{ comment.author.username }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'article_detail' comment.article.id %}#comment-{{ comment.id }}"
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-800 hover:underline">
+                            {{ comment.article.title|truncatechars:40 }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ comment.created_at|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <button onclick="deleteComment({{ comment.id }})"
+                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                            刪除
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-4 py-3 text-sm text-center text-gray-500">
+                        沒有找到符合條件的留言
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 分頁 -->
+{% if page_obj.has_other_pages %}
+<div class="px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800">
+    <span class="flex items-center col-span-3">
+        顯示 {{ page_obj.start_index }}-{{ page_obj.end_index }} / 共 {{ page_obj.paginator.count }} 筆
+    </span>
+    <span class="col-span-2"></span>
+    <!-- 分頁導航 -->
+    <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+        <nav aria-label="Table navigation">
+            <ul class="inline-flex items-center">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&article={{ filter_article }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Previous">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li>
+                        <span class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ num }}&search={{ search_query }}&article={{ filter_article }}&sort={{ sort_by }}"
+                           class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&article={{ filter_article }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Next">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </span>
+</div>
+{% endif %}
+
+<script>
+function deleteComment(commentId) {
+    if (confirm('確定要刪除此留言嗎？')) {
+        fetch(`/dashboard/comments/${commentId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

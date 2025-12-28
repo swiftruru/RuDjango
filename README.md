@@ -133,19 +133,35 @@ Required packages:
 
 4. **Configure environment variables**
 
+Create `.env` file from the template:
+
 ```bash
 cp .env.example .env
-# Edit .env and set:
-# - SECRET_KEY (Django secret key)
-# - VAPID keys for push notifications (generate with py-vapid)
-# - VAPID_MAILTO (your email address)
 ```
 
-Generate VAPID keys:
+Generate VAPID keys for Web Push notifications using the provided script:
+
+```bash
+python scripts/generate_vapid_keys.py
+```
+
+This will output the VAPID keys in the correct format. Copy the output and paste into your `.env` file.
+
+Alternatively, you can generate VAPID keys manually using `py-vapid`:
 
 ```bash
 vapid --gen
 ```
+
+Edit `.env` and configure the following variables:
+
+- `SECRET_KEY` - Django secret key (you can generate one with `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)
+- `VAPID_PRIVATE_KEY` - VAPID private key (PEM format)
+- `VAPID_PUBLIC_KEY_PEM` - VAPID public key (PEM format)
+- `VAPID_PUBLIC_KEY` - VAPID public key (Base64URL format for frontend)
+- `VAPID_MAILTO` - Your email address (e.g., `mailto:your-email@example.com`)
+
+**⚠️ Important**: Never commit your `.env` file to version control! It's already listed in `.gitignore`.
 
 5. **Run migrations**
 
@@ -280,6 +296,9 @@ RuDjangoProject/
 │
 ├── 📂 templates/                # Project-level templates
 │   └── home.html               # Landing page
+│
+├── 📂 scripts/                  # Utility scripts
+│   └── generate_vapid_keys.py  # VAPID key generator for Web Push
 │
 ├── manage.py                   # Django management script
 ├── db.sqlite3                  # SQLite database

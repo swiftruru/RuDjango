@@ -1,0 +1,221 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}系統設定 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    系統設定
+</h2>
+
+<!-- Environment Info Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <!-- Django Version -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a 1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                Django 版本
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ django_version }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Python Version -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                Python 版本
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ python_version }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Database -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-purple-500 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"></path>
+                <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"></path>
+                <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                資料庫引擎
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ database_engine }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Debug Mode -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 {% if debug_mode %}text-orange-500 bg-orange-100 dark:text-orange-100 dark:bg-orange-500{% else %}text-gray-500 bg-gray-100 dark:text-gray-100 dark:bg-gray-500{% endif %} rounded-full">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                偵錯模式
+            </p>
+            <p class="text-lg font-semibold {% if debug_mode %}text-orange-700 dark:text-orange-200{% else %}text-green-700 dark:text-green-200{% endif %}">
+                {% if debug_mode %}開啟 (不安全){% else %}關閉{% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- System Info -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            系統資訊
+        </h4>
+        <div class="space-y-3">
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">作業系統</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ system_info.os }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">系統版本</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate ml-2">{{ system_info.os_version|truncatechars:40 }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">處理器架構</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ system_info.architecture }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Python 路徑</span>
+                <span class="text-xs font-mono text-gray-700 dark:text-gray-300 truncate ml-2" title="{{ python_path }}">{{ python_path|truncatechars:50 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Settings -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            Django 設定
+        </h4>
+        <div class="space-y-3">
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">安裝的應用程式</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ installed_apps_count }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">中介軟體數量</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ middleware_count }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">快取後端</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ cache_backend }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">SECRET_KEY 長度</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ secret_key_length }} 字元</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Settings -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Static Files -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            靜態檔案設定
+        </h4>
+        <div class="space-y-3">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">STATIC_URL</p>
+                <p class="text-sm font-mono text-gray-900 dark:text-gray-100">{{ static_url }}</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">STATIC_ROOT</p>
+                <p class="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{{ static_root }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Files -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            媒體檔案設定
+        </h4>
+        <div class="space-y-3">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MEDIA_URL</p>
+                <p class="text-sm font-mono text-gray-900 dark:text-gray-100">{{ media_url }}</p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">MEDIA_ROOT</p>
+                <p class="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">{{ media_root }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Locale & Security Settings -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Locale Settings -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            語言與時區設定
+        </h4>
+        <div class="space-y-3">
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">時區</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ timezone_setting }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">語言代碼</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ language_code }}</span>
+            </div>
+            <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">使用時區</span>
+                <span class="text-sm font-semibold {% if use_tz %}text-green-700 dark:text-green-300{% else %}text-red-700 dark:text-red-300{% endif %}">
+                    {% if use_tz %}是{% else %}否{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            安全設定
+        </h4>
+        <div class="space-y-3">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">允許的主機</p>
+                {% if allowed_hosts %}
+                <ul class="space-y-1">
+                    {% for host in allowed_hosts %}
+                    <li class="text-xs font-mono text-gray-700 dark:text-gray-300">• {{ host }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-xs text-gray-500 dark:text-gray-400">未設定 (全部允許)</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

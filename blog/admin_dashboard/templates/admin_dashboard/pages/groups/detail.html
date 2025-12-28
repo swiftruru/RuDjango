@@ -1,0 +1,426 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}{{ group.name }} - 群組詳情 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    群組詳情
+</h2>
+
+<!-- 返回按鈕 -->
+<div class="mb-4">
+    <a href="{% url 'admin_dashboard:group_list' %}" class="px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+        ← 返回列表
+    </a>
+</div>
+
+<!-- 群組基本資訊卡片 -->
+<div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-6 mb-6">
+    <div class="flex items-start justify-between mb-6">
+        <div class="flex items-center">
+            {% if group.cover_image %}
+            <img src="{{ group.cover_image.url }}"
+                 alt="{{ group.name }}"
+                 class="w-20 h-20 rounded-lg object-cover mr-4">
+            {% else %}
+            <div class="w-20 h-20 rounded-lg bg-purple-500 flex items-center justify-center text-white font-bold text-2xl mr-4">
+                {{ group.name|first|upper }}
+            </div>
+            {% endif %}
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ group.name }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ group.description }}</p>
+                <div class="flex items-center gap-2 mt-2">
+                    {% if group.group_type == 'public' %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                        {{ group.get_group_type_display }}
+                    </span>
+                    {% elif group.group_type == 'private' %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                        {{ group.get_group_type_display }}
+                    </span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-purple-700 bg-purple-100 rounded-full dark:bg-purple-700 dark:text-purple-100">
+                        {{ group.get_group_type_display }}
+                    </span>
+                    {% endif %}
+                    {% if group.tags %}
+                    <span class="text-xs text-gray-500">🏷️ {{ group.tags }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <button onclick="deleteGroup({{ group.id }}, '{{ group.name }}')" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-red-600 border border-transparent rounded-lg active:bg-red-600 hover:bg-red-700 focus:outline-none focus:shadow-outline-red">
+            刪除群組
+        </button>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2">
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                創建者
+            </p>
+            <div class="flex items-center">
+                <a href="{% url 'member_profile' group.creator.username %}"
+                   target="_blank"
+                   class="text-purple-600 hover:text-purple-800 hover:underline font-semibold">
+                    {% if group.creator.first_name %}{{ group.creator.first_name }}{% else %}{{ group.creator.username }}{% endif %}
+                    <span class="text-gray-500 text-xs">({{ group.creator.username }})</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                建立時間
+            </p>
+            <p class="text-gray-800 dark:text-gray-200">
+                {{ group.created_at|date:"Y年m月d日 H:i:s" }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 統計資訊 -->
+<div class="grid gap-6 mb-6 md:grid-cols-2 xl:grid-cols-4">
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">成員總數</p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ total_members }}</p>
+        </div>
+    </div>
+
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">文章總數</p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ total_posts }}</p>
+        </div>
+    </div>
+
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">管理員</p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ admin_count }}</p>
+        </div>
+    </div>
+
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-purple-500 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">版主</p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ moderator_count }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- 成員列表 -->
+<div class="mb-6 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-6">
+    <h3 class="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-200">群組成員</h3>
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">成員</th>
+                    <th class="px-4 py-3">角色</th>
+                    <th class="px-4 py-3">加入方式</th>
+                    <th class="px-4 py-3">發文數</th>
+                    <th class="px-4 py-3">留言數</th>
+                    <th class="px-4 py-3">加入時間</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for membership in memberships %}
+                <tr class="text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'member_profile' membership.user.username %}"
+                           target="_blank"
+                           class="text-purple-600 hover:text-purple-800 hover:underline">
+                            {% if membership.user.first_name %}{{ membership.user.first_name }}{% else %}{{ membership.user.username }}{% endif %}
+                            <span class="text-gray-500 text-xs">({{ membership.user.username }})</span>
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {% if membership.role == 'owner' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-purple-700 bg-purple-100 rounded-full dark:bg-purple-700 dark:text-purple-100">
+                            {{ membership.get_role_display }}
+                        </span>
+                        {% elif membership.role == 'admin' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                            {{ membership.get_role_display }}
+                        </span>
+                        {% elif membership.role == 'moderator' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                            {{ membership.get_role_display }}
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                            {{ membership.get_role_display }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ membership.get_join_method_display }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ membership.posts_count }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ membership.comments_count }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ membership.joined_at|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            {% if membership.user.id != group.creator.id %}
+                            <button onclick="showChangeRoleModal({{ membership.user.id }}, '{{ membership.user.username }}', '{{ membership.role }}')"
+                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    title="變更角色">
+                                變更角色
+                            </button>
+                            <span class="mx-2 text-gray-400">|</span>
+                            <button onclick="removeMember({{ membership.user.id }}, '{{ membership.user.username }}')"
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                    title="移除成員">
+                                移除
+                            </button>
+                            {% else %}
+                            <span class="text-gray-400">創建者</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-4 py-3 text-sm text-center text-gray-500">
+                        此群組尚無成員
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 最近文章 -->
+<div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-6">
+    <h3 class="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-200">最近文章</h3>
+    <div class="space-y-3">
+        {% for post in recent_posts %}
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-start justify-between">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    {% if post.post_type == 'announcement' %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-red-700 bg-red-100 rounded-full">公告</span>
+                    {% elif post.post_type == 'question' %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full">提問</span>
+                    {% elif post.post_type == 'share' %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full">分享</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full">討論</span>
+                    {% endif %}
+                    {% if post.is_pinned %}
+                    <span class="text-yellow-500">📌</span>
+                    {% endif %}
+                </div>
+                <h4 class="font-semibold text-gray-800 dark:text-gray-200">{{ post.title }}</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ post.content|truncatechars:100 }}</p>
+                <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                    <span>👤 {{ post.author.username }}</span>
+                    <span>👁️ {{ post.views_count }}</span>
+                    <span>❤️ {{ post.likes_count }}</span>
+                    <span>💬 {{ post.comments_count }}</span>
+                    <span>🕐 {{ post.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+            </div>
+            <button onclick="deletePost({{ post.id }}, '{{ post.title }}')"
+                    class="ml-4 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    title="刪除文章">
+                🗑️
+            </button>
+        </div>
+        {% empty %}
+        <p class="text-sm text-center text-gray-500">此群組尚無文章</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 變更角色 Modal -->
+<div id="changeRoleModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-96">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">變更成員角色</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            成員：<span id="modalUsername" class="font-semibold"></span>
+        </p>
+        <select id="roleSelect" class="block w-full px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select rounded-md border-gray-300 mb-4">
+            <option value="member">成員</option>
+            <option value="moderator">版主</option>
+            <option value="admin">管理員</option>
+        </select>
+        <div class="flex gap-2">
+            <button onclick="confirmChangeRole()" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
+                確認
+            </button>
+            <button onclick="hideChangeRoleModal()" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+                取消
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedUserId = null;
+
+// 顯示變更角色 Modal
+function showChangeRoleModal(userId, username, currentRole) {
+    selectedUserId = userId;
+    document.getElementById('modalUsername').textContent = username;
+    document.getElementById('roleSelect').value = currentRole;
+    document.getElementById('changeRoleModal').classList.remove('hidden');
+}
+
+// 隱藏變更角色 Modal
+function hideChangeRoleModal() {
+    document.getElementById('changeRoleModal').classList.add('hidden');
+    selectedUserId = null;
+}
+
+// 確認變更角色
+function confirmChangeRole() {
+    const newRole = document.getElementById('roleSelect').value;
+
+    fetch(`/dashboard/groups/{{ group.id }}/members/${selectedUserId}/change-role/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: newRole })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('錯誤：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('操作失敗：' + error);
+    });
+}
+
+// 移除成員
+function removeMember(userId, username) {
+    if (confirm(`確定要將 ${username} 從群組中移除嗎？`)) {
+        fetch(`/dashboard/groups/{{ group.id }}/members/${userId}/remove/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+// 刪除群組
+function deleteGroup(groupId, groupName) {
+    if (confirm(`確定要刪除群組「${groupName}」嗎？此操作將同時刪除所有群組成員和文章，且無法復原！`)) {
+        fetch(`/dashboard/groups/${groupId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{% url "admin_dashboard:group_list" %}';
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+// 刪除文章
+function deletePost(postId, postTitle) {
+    if (confirm(`確定要刪除文章「${postTitle}」嗎？此操作無法復原！`)) {
+        fetch(`/dashboard/groups/posts/${postId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+// 獲取 CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

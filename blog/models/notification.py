@@ -15,12 +15,19 @@ class Notification(models.Model):
     """
 
     NOTIFICATION_TYPES = [
+        # 前台用戶通知
         ('comment', '留言'),
         ('like', '按讚'),
         ('follower', '新追蹤者'),
         ('message', '私訊'),
         ('share', '分享'),
         ('mention', '提及'),
+        # 後台管理通知
+        ('user_report', '用戶舉報'),
+        ('system_warning', '系統警告'),
+        ('data_change', '數據異動'),
+        ('security_alert', '安全警報'),
+        ('system_error', '系統錯誤'),
     ]
 
     # 接收通知的用戶
@@ -114,12 +121,19 @@ class Notification(models.Model):
     def get_icon(self):
         """取得通知圖示"""
         icons = {
+            # 前台用戶通知
             'comment': '💬',
             'like': '❤️',
             'follower': '👥',
             'message': '✉️',
             'share': '🔗',
             'mention': '@',
+            # 後台管理通知
+            'user_report': '🚨',
+            'system_warning': '⚠️',
+            'data_change': '📊',
+            'security_alert': '🔒',
+            'system_error': '❌',
         }
         return icons.get(self.notification_type, '🔔')
 

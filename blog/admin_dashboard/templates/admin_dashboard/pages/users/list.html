@@ -1,0 +1,225 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}用戶管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    用戶管理
+</h2>
+
+<!-- 搜尋和篩選區 -->
+<div class="mb-6 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <form method="get" class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <!-- 搜尋框 -->
+        <div class="md:col-span-2">
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">搜尋用戶</span>
+                <input type="text"
+                       name="search"
+                       value="{{ search_query }}"
+                       placeholder="用戶名、Email、姓名..."
+                       class="block w-full mt-1 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input rounded-md border-gray-300" />
+            </label>
+        </div>
+
+        <!-- 狀態篩選 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">狀態篩選</span>
+                <select name="status"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="all" {% if filter_status == 'all' %}selected{% endif %}>全部用戶</option>
+                    <option value="active" {% if filter_status == 'active' %}selected{% endif %}>啟用中</option>
+                    <option value="staff" {% if filter_status == 'staff' %}selected{% endif %}>管理員</option>
+                    <option value="superuser" {% if filter_status == 'superuser' %}selected{% endif %}>超級管理員</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- 排序 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">排序</span>
+                <select name="sort"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="-date_joined" {% if sort_by == '-date_joined' %}selected{% endif %}>最新註冊</option>
+                    <option value="date_joined" {% if sort_by == 'date_joined' %}selected{% endif %}>最舊註冊</option>
+                    <option value="username" {% if sort_by == 'username' %}selected{% endif %}>用戶名 A-Z</option>
+                    <option value="-username" {% if sort_by == '-username' %}selected{% endif %}>用戶名 Z-A</option>
+                    <option value="articles" {% if sort_by == 'articles' %}selected{% endif %}>發文數量</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- 搜尋按鈕 -->
+        <div class="md:col-span-4 flex gap-4 mt-4">
+            <button type="submit" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                搜尋
+            </button>
+            <a href="{% url 'admin_dashboard:user_list' %}" class="ml-3 px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+                重置
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- 用戶總數 -->
+<div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    共找到 <span class="font-semibold text-gray-700 dark:text-gray-300">{{ total_users }}</span> 位用戶
+</div>
+
+<!-- 用戶列表 -->
+<div class="w-full overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">用戶</th>
+                    <th class="px-4 py-3">Email</th>
+                    <th class="px-4 py-3">發文</th>
+                    <th class="px-4 py-3">留言</th>
+                    <th class="px-4 py-3">註冊時間</th>
+                    <th class="px-4 py-3">狀態</th>
+                    <th class="px-4 py-3">權限</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for user_item in page_obj %}
+                <tr class="text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            <div class="relative w-8 h-8 mr-3 rounded-full">
+                                <img class="object-cover w-full h-full rounded-full"
+                                     src="{% if user_item.profile.avatar %}{{ user_item.profile.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user_item.username }}&background=random{% endif %}"
+                                     alt="{{ user_item.username }}" loading="lazy" />
+                                <div class="absolute inset-0 rounded-full shadow-inner" aria-hidden="true"></div>
+                            </div>
+                            <div>
+                                <p class="font-semibold">{{ user_item.username }}</p>
+                                {% if user_item.first_name or user_item.last_name %}
+                                <p class="text-xs text-gray-600 dark:text-gray-400">
+                                    {{ user_item.first_name }} {{ user_item.last_name }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ user_item.email|truncatechars:30 }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ user_item.article_count }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ user_item.comment_count }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ user_item.date_joined|date:"Y-m-d" }}
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                        {% if user_item.is_active %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                            啟用
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
+                            停用
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                        {% if user_item.is_superuser %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-purple-700 bg-purple-100 rounded-full dark:bg-purple-700 dark:text-purple-100">
+                            超級管理員
+                        </span>
+                        {% elif user_item.is_staff %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                            管理員
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                            一般用戶
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center space-x-2 text-sm">
+                            <a href="{% url 'admin_dashboard:user_detail' user_item.id %}"
+                               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                               title="查看詳情">
+                                詳情
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-4 py-3 text-sm text-center text-gray-500">
+                        沒有找到符合條件的用戶
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 分頁 -->
+{% if page_obj.has_other_pages %}
+<div class="px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800">
+    <span class="flex items-center col-span-3">
+        顯示 {{ page_obj.start_index }}-{{ page_obj.end_index }} / 共 {{ page_obj.paginator.count }} 筆
+    </span>
+    <span class="col-span-2"></span>
+    <!-- 分頁導航 -->
+    <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+        <nav aria-label="Table navigation">
+            <ul class="inline-flex items-center">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&status={{ filter_status }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Previous">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li>
+                        <span class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ num }}&search={{ search_query }}&status={{ filter_status }}&sort={{ sort_by }}"
+                           class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&status={{ filter_status }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Next">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </span>
+</div>
+{% endif %}
+
+{% endblock %}

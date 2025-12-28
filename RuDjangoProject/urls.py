@@ -34,6 +34,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls')),
+    path('dashboard/', include('blog.admin_dashboard.urls')),  # 管理後台
     # Sitemap
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]

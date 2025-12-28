@@ -1,0 +1,406 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}聊天室詳情 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center my-6">
+    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+        聊天室詳情
+    </h2>
+    <a href="{% url 'admin_dashboard:chat_list' %}"
+       class="px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+        返回列表
+    </a>
+</div>
+
+<!-- 聊天室資訊 -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- 左側：參與者資訊 -->\
+    <div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            對話參與者
+        </h4>
+
+        <div class="space-y-4">
+            <div class="flex items-center p-3 bg-purple-50 rounded-lg dark:bg-purple-900">
+                <div class="p-2 mr-3 text-purple-600 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-600">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">用戶 1</p>
+                    <a href="{% url 'member_profile' room.user1.username %}"
+                       target="_blank"
+                       class="font-semibold text-purple-600 hover:text-purple-800 hover:underline">
+                        {{ room.user1.username }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex items-center p-3 bg-blue-50 rounded-lg dark:bg-blue-900">
+                <div class="p-2 mr-3 text-blue-600 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-600">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">用戶 2</p>
+                    <a href="{% url 'member_profile' room.user2.username %}"
+                       target="_blank"
+                       class="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                        {{ room.user2.username }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="mt-6 flex">
+            <button onclick="deleteChatRoom({{ room.id }})"
+                    class="flex-1 inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-red-700 bg-red-50 border-2 border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 dark:bg-red-900 dark:text-red-100 dark:border-red-700 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                刪除聊天室及所有訊息
+            </button>
+        </div>
+    </div>
+
+    <!-- 右側：統計資訊 -->
+    <div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            對話統計
+        </h4>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-green-100 rounded-lg dark:bg-green-900">
+                <p class="mb-2 text-sm font-medium text-green-600 dark:text-green-100">
+                    總訊息數
+                </p>
+                <p class="text-2xl font-semibold text-green-800 dark:text-green-200">
+                    {{ total_messages }}
+                </p>
+            </div>
+            <div class="p-4 bg-orange-100 rounded-lg dark:bg-orange-900">
+                <p class="mb-2 text-sm font-medium text-orange-600 dark:text-orange-100">
+                    未讀訊息
+                </p>
+                <p class="text-2xl font-semibold text-orange-800 dark:text-orange-200">
+                    {{ unread_count }}
+                </p>
+            </div>
+            <div class="p-4 bg-blue-100 rounded-lg dark:bg-blue-900 col-span-2">
+                <p class="mb-2 text-sm font-medium text-blue-600 dark:text-blue-100">
+                    最後活躍時間
+                </p>
+                <p class="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                    {{ room.last_message_at|date:"Y-m-d H:i:s" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 對話內容 - Messenger 風格 -->
+<div class="chat-window-static">
+    <!-- 標題列 -->
+    <div class="chat-window-header-static">
+        <div class="chat-header-left">
+            <div class="chat-avatar">💬</div>
+            <div class="chat-user-info">
+                <div class="chat-user-name">
+                    {% if room.user1.first_name %}{{ room.user1.first_name }}{% else %}{{ room.user1.username }}{% endif %} <span style="opacity: 0.8; font-size: 13px;">({{ room.user1.username }})</span>
+                    ↔
+                    {% if room.user2.first_name %}{{ room.user2.first_name }}{% else %}{{ room.user2.username }}{% endif %} <span style="opacity: 0.8; font-size: 13px;">({{ room.user2.username }})</span>
+                </div>
+                <div class="chat-status">{{ total_messages }} 則訊息</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 聊天訊息區域 -->
+    <div class="chat-messages">
+        {% for message in page_obj %}
+            {% if message.sender.id == room.user1.id %}
+            <!-- 接收的訊息 (左側) -->
+            <div class="chat-message received">
+                <div class="message-bubble">{{ message.content }}</div>
+                <div class="message-time">{% if message.sender.first_name %}{{ message.sender.first_name }}{% else %}{{ message.sender.username }}{% endif %} ({{ message.sender.username }}) · {{ message.created_at|date:"H:i" }}{% if message.is_read %} · 已讀{% endif %}</div>
+            </div>
+            {% else %}
+            <!-- 發送的訊息 (右側) -->
+            <div class="chat-message sent">
+                <div class="message-bubble">{{ message.content }}</div>
+                <div class="message-time">{% if message.sender.first_name %}{{ message.sender.first_name }}{% else %}{{ message.sender.username }}{% endif %} ({{ message.sender.username }}) · {{ message.created_at|date:"H:i" }}{% if message.is_read %} · 已讀{% endif %}</div>
+            </div>
+            {% endif %}
+        {% empty %}
+        <div class="chat-empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-text">目前還沒有對話訊息</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* 靜態聊天視窗樣式 (參考前台 instant-chat.css) */
+.chat-window-static {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 600px;
+}
+
+.chat-window-header-static {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.chat-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-user-name {
+    font-weight: 600;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-status {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    animation: messageSlideIn 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-message.sent {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.chat-message.received {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.message-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.chat-message.sent .message-bubble {
+    background: #667eea;
+    color: white;
+}
+
+.chat-message.received .message-bubble {
+    background: #e4e6eb;
+    color: #050505;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #65676b;
+    margin-top: 4px;
+    padding: 0 6px;
+}
+
+.chat-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #65676b;
+    padding: 32px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.empty-text {
+    font-size: 14px;
+}
+</style>
+
+<!-- 分頁 -->
+{% if page_obj.has_other_pages %}
+<div class="mt-4 px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800">
+    <span class="flex items-center col-span-3">
+        顯示 {{ page_obj.start_index }}-{{ page_obj.end_index }} / 共 {{ page_obj.paginator.count }} 筆
+    </span>
+    <span class="col-span-2"></span>
+    <!-- 分頁導航 -->
+    <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+        <nav aria-label="Table navigation">
+            <ul class="inline-flex items-center">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}"
+                       class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Previous">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li>
+                        <span class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ num }}"
+                           class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}"
+                       class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Next">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </span>
+</div>
+{% endif %}
+
+<script>
+function deleteChatRoom(roomId) {
+    if (confirm('確定要刪除此聊天室及所有訊息嗎？此操作無法復原！')) {
+        fetch(`/dashboard/chats/${roomId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{% url "admin_dashboard:chat_list" %}';
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

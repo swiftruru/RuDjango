@@ -1,0 +1,329 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}群組管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    群組管理
+</h2>
+
+<!-- 搜尋和篩選區 -->
+<div class="mb-6 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <form method="get" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <!-- 搜尋框 -->
+        <div class="md:col-span-1">
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">搜尋群組</span>
+                <input type="text"
+                       name="search"
+                       value="{{ search_query }}"
+                       placeholder="群組名稱、描述、創建者..."
+                       class="block w-full mt-1 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input rounded-md border-gray-300" />
+            </label>
+        </div>
+
+        <!-- 類型篩選 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">群組類型</span>
+                <select name="type"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="all" {% if filter_type == 'all' %}selected{% endif %}>全部類型</option>
+                    {% for type_code, type_name in group_types %}
+                    <option value="{{ type_code }}" {% if filter_type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <!-- 排序 -->
+        <div>
+            <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">排序</span>
+                <select name="sort"
+                        class="block w-full mt-1 px-3 py-2 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray rounded-md border-gray-300">
+                    <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>最新建立</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>最舊建立</option>
+                    <option value="-member_count" {% if sort_by == '-member_count' %}selected{% endif %}>成員最多</option>
+                    <option value="-post_count" {% if sort_by == '-post_count' %}selected{% endif %}>文章最多</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>名稱 A-Z</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- 搜尋按鈕 -->
+        <div class="md:col-span-3 flex mt-4">
+            <button type="submit" class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                搜尋
+            </button>
+            <a href="{% url 'admin_dashboard:group_list' %}" class="ml-3 px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+                重置
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- 統計資訊 -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                群組總數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ total_groups }}
+            </p>
+        </div>
+    </div>
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                公開群組
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ public_groups }}
+            </p>
+        </div>
+    </div>
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                私密群組
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ private_groups }}
+            </p>
+        </div>
+    </div>
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-purple-500 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                邀請制群組
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ invite_only_groups }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 群組列表 -->
+<div class="w-full overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">群組名稱</th>
+                    <th class="px-4 py-3">類型</th>
+                    <th class="px-4 py-3">創建者</th>
+                    <th class="px-4 py-3">成員數</th>
+                    <th class="px-4 py-3">文章數</th>
+                    <th class="px-4 py-3">建立時間</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for group in page_obj %}
+                <tr class="text-gray-700 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            <div class="relative mr-3">
+                                {% if group.cover_image %}
+                                <img src="{{ group.cover_image.url }}"
+                                     alt="{{ group.name }}"
+                                     class="w-10 h-10 rounded-lg object-cover">
+                                {% else %}
+                                <div class="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center text-white font-semibold">
+                                    {{ group.name|first|upper }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">{{ group.name }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">{{ group.description|truncatechars:40 }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {% if group.group_type == 'public' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                            {{ group.get_group_type_display }}
+                        </span>
+                        {% elif group.group_type == 'private' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                            {{ group.get_group_type_display }}
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-purple-700 bg-purple-100 rounded-full dark:bg-purple-700 dark:text-purple-100">
+                            {{ group.get_group_type_display }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'member_profile' group.creator.username %}"
+                           target="_blank"
+                           class="text-purple-600 hover:text-purple-800 hover:underline">
+                            {% if group.creator.first_name %}{{ group.creator.first_name }}{% else %}{{ group.creator.username }}{% endif %}
+                            <span class="text-gray-500 text-xs">({{ group.creator.username }})</span>
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                            {{ group.total_members }} 人
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ group.total_posts }} 篇
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ group.created_at|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                            <a href="{% url 'admin_dashboard:group_detail' group.id %}"
+                               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                               title="查看詳情">
+                                查看
+                            </a>
+                            <span class="mx-2 text-gray-400">|</span>
+                            <button onclick="deleteGroup({{ group.id }}, '{{ group.name }}')"
+                                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                                    title="刪除群組">
+                                刪除
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-4 py-3 text-sm text-center text-gray-500">
+                        沒有找到符合條件的群組
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 分頁 -->
+{% if page_obj.has_other_pages %}
+<div class="px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800">
+    <span class="flex items-center col-span-3">
+        顯示 {{ page_obj.start_index }}-{{ page_obj.end_index }} / 共 {{ page_obj.paginator.count }} 筆
+    </span>
+    <span class="col-span-2"></span>
+    <!-- 分頁導航 -->
+    <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
+        <nav aria-label="Table navigation">
+            <ul class="inline-flex items-center">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&type={{ filter_type }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Previous">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li>
+                        <span class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a href="?page={{ num }}&search={{ search_query }}&type={{ filter_type }}&sort={{ sort_by }}"
+                           class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&type={{ filter_type }}&sort={{ sort_by }}"
+                       class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
+                       aria-label="Next">
+                        <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </span>
+</div>
+{% endif %}
+
+<script>
+// 刪除群組
+function deleteGroup(groupId, groupName) {
+    if (confirm(`確定要刪除群組「${groupName}」嗎？此操作將同時刪除所有群組成員和文章，且無法復原！`)) {
+        fetch(`/dashboard/groups/${groupId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+// 獲取 CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

@@ -325,5 +325,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user=self.other_user,
             notification_type='message',
             message=f'{display_name} 向您發送了即時訊息',
-            link=f'/blog/chat/{self.user.username}/'  # 使用 /chat/ 而非 /messages/conversation/
+            link=f'/blog/member/{self.user.username}/'  # 連結到發送者的個人頁面
         )

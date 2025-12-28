@@ -136,6 +136,9 @@
                             <li><a href="{% url 'member_profile' username=user.username %}" class="dropdown-link">個人資料</a></li>
                         </ul>
                     </li>
+                    {% if user.is_staff or user.is_superuser %}
+                    <li><a href="{% url 'admin_dashboard:dashboard' %}" class="nav-link" title="管理後台">管理後台</a></li>
+                    {% endif %}
                     <li><a href="{% url 'user_logout' %}" class="nav-link">登出 <span class="user-badge">{{ user_display_name }}</span></a></li>
                     {% else %}
                     <li><a href="{% url 'user_login' %}" class="nav-link">登入</a></li>
@@ -256,7 +259,7 @@
 
     <!-- VAPID Public Key for Web Push -->
     <script>
-        window.VAPID_PUBLIC_KEY = os.getenv('VAPID_PUBLIC_KEY', '');
+        window.VAPID_PUBLIC_KEY = '{{ VAPID_PUBLIC_KEY|default:"" }}';
     </script>
 
     <!-- PWA 安裝和 Service Worker -->

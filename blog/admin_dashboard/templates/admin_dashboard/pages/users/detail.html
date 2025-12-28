@@ -1,0 +1,347 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}{{ user_obj.username }} - 用戶詳情 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center my-6">
+    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+        用戶詳情
+    </h2>
+    <a href="{% url 'admin_dashboard:user_list' %}"
+       class="px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+        返回列表
+    </a>
+</div>
+
+<!-- 用戶基本資訊 -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- 左側：基本資訊 -->
+    <div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            基本資訊
+        </h4>
+
+        <div class="flex items-center mb-4">
+            <div class="relative w-20 h-20 mr-4 rounded-full">
+                <img class="object-cover w-full h-full rounded-full"
+                     src="{% if user_obj.profile.avatar %}{{ user_obj.profile.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user_obj.username }}&background=random&size=80{% endif %}"
+                     alt="{{ user_obj.username }}" loading="lazy" />
+                <div class="absolute inset-0 rounded-full shadow-inner" aria-hidden="true"></div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    {{ user_obj.username }}
+                </h3>
+                {% if user_obj.first_name or user_obj.last_name %}
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ user_obj.first_name }} {{ user_obj.last_name }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Email:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">{{ user_obj.email }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">用戶 ID:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">{{ user_obj.id }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">註冊時間:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">{{ user_obj.date_joined|date:"Y-m-d H:i" }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">最後登入:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">
+                    {% if user_obj.last_login %}
+                    {{ user_obj.last_login|date:"Y-m-d H:i" }}
+                    {% else %}
+                    從未登入
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400">狀態:</span>
+                {% if user_obj.is_active %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                    啟用
+                </span>
+                {% else %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
+                    停用
+                </span>
+                {% endif %}
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400">權限:</span>
+                {% if user_obj.is_superuser %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-purple-700 bg-purple-100 rounded-full dark:bg-purple-700 dark:text-purple-100">
+                    超級管理員
+                </span>
+                {% elif user_obj.is_staff %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full dark:bg-blue-700 dark:text-blue-100">
+                    管理員
+                </span>
+                {% else %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                    一般用戶
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="mt-6 flex gap-2">
+            {% if not user_obj.is_superuser %}
+            <button onclick="toggleUserStatus({{ user_obj.id }}, {{ user_obj.is_active|yesno:'true,false' }})"
+                    class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 {% if user_obj.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} border border-transparent rounded-lg active:bg-red-600 focus:outline-none focus:shadow-outline-red">
+                {% if user_obj.is_active %}停用用戶{% else %}啟用用戶{% endif %}
+            </button>
+            {% else %}
+            <div class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
+                超級管理員無法停用
+            </div>
+            {% endif %}
+            {% if user.is_superuser %}
+            <button onclick="toggleUserStaff({{ user_obj.id }}, {{ user_obj.is_staff|yesno:'true,false' }})"
+                    class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 {% if user_obj.is_staff %}bg-orange-600 hover:bg-orange-700{% else %}bg-blue-600 hover:bg-blue-700{% endif %} border border-transparent rounded-lg focus:outline-none">
+                {% if user_obj.is_staff %}移除管理員{% else %}設為管理員{% endif %}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 右側：統計資訊 -->
+    <div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            活動統計
+        </h4>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-purple-100 rounded-lg dark:bg-purple-900">
+                <p class="mb-2 text-sm font-medium text-purple-600 dark:text-purple-100">
+                    已發布文章
+                </p>
+                <p class="text-2xl font-semibold text-purple-800 dark:text-purple-200">
+                    {{ total_articles }}
+                </p>
+            </div>
+            <div class="p-4 bg-blue-100 rounded-lg dark:bg-blue-900">
+                <p class="mb-2 text-sm font-medium text-blue-600 dark:text-blue-100">
+                    草稿文章
+                </p>
+                <p class="text-2xl font-semibold text-blue-800 dark:text-blue-200">
+                    {{ draft_articles }}
+                </p>
+            </div>
+            <div class="p-4 bg-green-100 rounded-lg dark:bg-green-900">
+                <p class="mb-2 text-sm font-medium text-green-600 dark:text-green-100">
+                    留言數
+                </p>
+                <p class="text-2xl font-semibold text-green-800 dark:text-green-200">
+                    {{ total_comments }}
+                </p>
+            </div>
+            <div class="p-4 bg-orange-100 rounded-lg dark:bg-orange-900">
+                <p class="mb-2 text-sm font-medium text-orange-600 dark:text-orange-100">
+                    按讚數
+                </p>
+                <p class="text-2xl font-semibold text-orange-800 dark:text-orange-200">
+                    {{ total_likes }}
+                </p>
+            </div>
+            <div class="p-4 bg-pink-100 rounded-lg dark:bg-pink-900">
+                <p class="mb-2 text-sm font-medium text-pink-600 dark:text-pink-100">
+                    收藏數
+                </p>
+                <p class="text-2xl font-semibold text-pink-800 dark:text-pink-200">
+                    {{ total_bookmarks }}
+                </p>
+            </div>
+            <div class="p-4 bg-indigo-100 rounded-lg dark:bg-indigo-900">
+                <p class="mb-2 text-sm font-medium text-indigo-600 dark:text-indigo-100">
+                    追蹤者
+                </p>
+                <p class="text-2xl font-semibold text-indigo-800 dark:text-indigo-200">
+                    {{ followers_count }}
+                </p>
+            </div>
+        </div>
+
+        <!-- 個人簡介 -->
+        {% if user_obj.profile.bio %}
+        <div class="mt-6">
+            <h5 class="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-300">個人簡介</h5>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ user_obj.profile.bio }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 最近文章 -->
+<div class="mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        最近文章
+    </h4>
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">標題</th>
+                    <th class="px-4 py-3">狀態</th>
+                    <th class="px-4 py-3">發布時間</th>
+                    <th class="px-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for article in recent_articles %}
+                <tr class="text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3">
+                        <p class="font-semibold">{{ article.title|truncatechars:50 }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                        {% if article.status == 'published' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                            已發布
+                        </span>
+                        {% elif article.status == 'draft' %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                            草稿
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ article.created_at|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'article_detail' article.id %}"
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            查看
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-4 py-3 text-sm text-center text-gray-500">
+                        暫無文章
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 最近留言 -->
+<div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-4">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        最近留言
+    </h4>
+    <div class="w-full overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">內容</th>
+                    <th class="px-4 py-3">文章</th>
+                    <th class="px-4 py-3">時間</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                {% for comment in recent_comments %}
+                <tr class="text-gray-700 dark:text-gray-400">
+                    <td class="px-4 py-3 text-sm">
+                        {{ comment.content|truncatechars:80 }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'article_detail' comment.article.id %}"
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            {{ comment.article.title|truncatechars:30 }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        {{ comment.created_at|date:"Y-m-d H:i" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-4 py-3 text-sm text-center text-gray-500">
+                        暫無留言
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function toggleUserStatus(userId, isActive) {
+    if (confirm(isActive ? '確定要停用此用戶嗎？' : '確定要啟用此用戶嗎？')) {
+        fetch(`/dashboard/users/${userId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+function toggleUserStaff(userId, isStaff) {
+    if (confirm(isStaff ? '確定要移除此用戶的管理員權限嗎？' : '確定要授予此用戶管理員權限嗎？')) {
+        fetch(`/dashboard/users/${userId}/toggle-staff/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('錯誤：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('操作失敗：' + error);
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

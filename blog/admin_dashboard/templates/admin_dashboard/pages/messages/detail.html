@@ -1,0 +1,193 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}訊息詳情 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center my-6">
+    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+        訊息詳情
+    </h2>
+    <a href="{% url 'admin_dashboard:message_list' %}"
+       class="px-4 py-2 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 bg-white border border-gray-300 rounded-lg dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 hover:border-gray-500 focus:outline-none focus:shadow-outline-gray">
+        返回列表
+    </a>
+</div>
+
+<!-- Message Info Card -->
+<div class="mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800 p-6">
+    <div class="grid gap-4 md:grid-cols-2 mb-6">
+        <!-- Sender -->
+        <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">寄件者</p>
+            <p class="text-base font-semibold text-gray-800 dark:text-gray-200">
+                {{ message.sender.username }}
+                <span class="text-xs text-gray-500">({{ message.sender.email }})</span>
+            </p>
+        </div>
+
+        <!-- Recipient -->
+        <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">收件者</p>
+            <p class="text-base font-semibold text-gray-800 dark:text-gray-200">
+                {{ message.recipient.username }}
+                <span class="text-xs text-gray-500">({{ message.recipient.email }})</span>
+            </p>
+        </div>
+
+        <!-- Created At -->
+        <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">發送時間</p>
+            <p class="text-base text-gray-800 dark:text-gray-200">
+                {{ message.created_at|date:"Y-m-d H:i:s" }}
+            </p>
+        </div>
+
+        <!-- Status -->
+        <div>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">狀態</p>
+            <div class="flex items-center space-x-2">
+                {% if message.is_recalled %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                    已收回
+                </span>
+                <span class="text-xs text-gray-500">{{ message.recalled_at|date:"Y-m-d H:i" }}</span>
+                {% elif message.is_read %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                    已讀
+                </span>
+                <span class="text-xs text-gray-500">{{ message.read_at|date:"Y-m-d H:i" }}</span>
+                {% else %}
+                <span class="px-2 py-1 text-xs font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                    未讀
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="mb-4">
+        <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">主旨</p>
+        <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 {% if message.is_recalled %}line-through text-gray-400{% endif %}">
+            {{ message.subject }}
+        </p>
+    </div>
+
+    <!-- Delete Button -->
+    <div class="mt-6">
+        <button onclick="deleteMessage({{ message.id }}, '{{ message.subject|escapejs }}')"
+                class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 active:bg-red-600 border border-transparent focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-150">
+            刪除此訊息
+        </button>
+    </div>
+</div>
+
+<!-- Conversation Thread -->
+<div class="bg-white rounded-lg shadow-xs dark:bg-gray-800 p-6">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        對話記錄
+    </h4>
+
+    <div class="space-y-4">
+        {% for msg in conversation %}
+        <div class="p-4 border rounded-lg {% if msg.id == message.id %}border-purple-500 bg-purple-50 dark:bg-purple-900{% else %}border-gray-200 dark:border-gray-700{% endif %}">
+            <!-- Message Header -->
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                        {% if msg.sender.first_name %}{{ msg.sender.first_name }}{% else %}{{ msg.sender.username }}{% endif %}
+                        <span class="text-xs text-gray-500 font-normal">({{ msg.sender.username }})</span>
+                    </span>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                        {% if msg.recipient.first_name %}{{ msg.recipient.first_name }}{% else %}{{ msg.recipient.username }}{% endif %}
+                        <span class="text-xs text-gray-500 font-normal">({{ msg.recipient.username }})</span>
+                    </span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ msg.created_at|date:"Y-m-d H:i" }}
+                    </span>
+                    {% if msg.is_recalled %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                        已收回
+                    </span>
+                    {% elif msg.is_read %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                        已讀
+                    </span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                        未讀
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Message Subject (if different from parent) -->
+            {% if msg.parent_message and msg.subject != msg.parent_message.subject %}
+            <div class="mb-2">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Re: </span>
+                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ msg.subject }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Message Content -->
+            <div class="mt-3 text-sm text-gray-700 dark:text-gray-300 {% if msg.is_recalled %}text-gray-400 italic{% endif %}">
+                {% if msg.is_recalled %}
+                <p class="text-gray-500">此訊息已被收回</p>
+                {% else %}
+                <p class="whitespace-pre-wrap">{{ msg.content }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function deleteMessage(messageId, subject) {
+    if (!confirm(`確定要刪除訊息「${subject}」嗎？\n\n刪除後將無法復原。`)) {
+        return;
+    }
+
+    fetch(`/admin/dashboard/messages/${messageId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '/admin/dashboard/messages/';
+        } else {
+            alert('刪除失敗：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('發生錯誤：' + error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from blog.models import Article, Comment, Tag, Like, Bookmark, ChatMessage, Notification, UserGroup, GroupMembership, GroupPost, SearchHistory
+from blog.models import Article, Comment, Tag, Like, Bookmark, ChatMessage, Notification, UserGroup, GroupMembership, GroupPost, SearchHistory, Message
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
@@ -228,6 +228,14 @@ def user_detail(request, user_id):
     followers_count = user.followers.count()
     following_count = user.following.count()
 
+    # 獲取最後登入IP（從LoginAttempt記錄中取得最近一次成功登入的IP）
+    from blog.models.security import LoginAttempt
+    last_login_attempt = LoginAttempt.objects.filter(
+        user=user,
+        attempt_type='success'
+    ).order_by('-attempted_at').first()
+    last_login_ip = last_login_attempt.ip_address if last_login_attempt else None
+
     context = {
         'user_obj': user,
         'total_articles': total_articles,
@@ -239,6 +247,7 @@ def user_detail(request, user_id):
         'recent_comments': recent_comments,
         'followers_count': followers_count,
         'following_count': following_count,
+        'last_login_ip': last_login_ip,
     }
 
     return render(request, 'admin_dashboard/pages/users/detail.html', context)
@@ -1488,3 +1497,316 @@ def system_logs(request):
     }
 
     return render(request, 'admin_dashboard/pages/system/logs.html', context)
+
+
+# ==================== 安全管理 ====================
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def security_login_attempts(request):
+    """登入嘗試記錄頁面"""
+    from blog.models.security import LoginAttempt
+
+    # 取得篩選參數
+    filter_type = request.GET.get('type', 'all')  # all, success, failed
+    filter_ip = request.GET.get('ip', '')
+    filter_username = request.GET.get('username', '')
+    sort_by = request.GET.get('sort', '-attempted_at')
+
+    # 基本查詢
+    attempts = LoginAttempt.objects.select_related('user').all()
+
+    # 類型篩選
+    if filter_type == 'success':
+        attempts = attempts.filter(attempt_type='success')
+    elif filter_type == 'failed':
+        attempts = attempts.filter(attempt_type='failed')
+
+    # IP 篩選
+    if filter_ip:
+        attempts = attempts.filter(ip_address__icontains=filter_ip)
+
+    # 用戶名篩選
+    if filter_username:
+        attempts = attempts.filter(username__icontains=filter_username)
+
+    # 排序
+    attempts = attempts.order_by(sort_by)
+
+    # 分頁
+    paginator = Paginator(attempts, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # 統計資訊
+    total_attempts = LoginAttempt.objects.count()
+    success_count = LoginAttempt.objects.filter(attempt_type='success').count()
+    failed_count = LoginAttempt.objects.filter(attempt_type='failed').count()
+
+    # 最近24小時統計
+    from datetime import timedelta
+    twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+    attempts_24h = LoginAttempt.objects.filter(attempted_at__gte=twenty_four_hours_ago).count()
+    failed_24h = LoginAttempt.objects.filter(
+        attempted_at__gte=twenty_four_hours_ago,
+        attempt_type='failed'
+    ).count()
+
+    # 可疑 IP（過去5分鐘內失敗5次以上）
+    five_minutes_ago = timezone.now() - timedelta(minutes=5)
+    suspicious_ips = LoginAttempt.objects.filter(
+        attempted_at__gte=five_minutes_ago,
+        attempt_type='failed'
+    ).values('ip_address').annotate(
+        fail_count=Count('id')
+    ).filter(fail_count__gte=5).order_by('-fail_count')[:10]
+
+    # 最常失敗的用戶名（可能是被攻擊的目標）
+    top_failed_usernames = LoginAttempt.objects.filter(
+        attempt_type='failed'
+    ).values('username').annotate(
+        fail_count=Count('id')
+    ).order_by('-fail_count')[:10]
+
+    context = {
+        'page_obj': page_obj,
+        'filter_type': filter_type,
+        'filter_ip': filter_ip,
+        'filter_username': filter_username,
+        'sort_by': sort_by,
+        'total_attempts': total_attempts,
+        'success_count': success_count,
+        'failed_count': failed_count,
+        'attempts_24h': attempts_24h,
+        'failed_24h': failed_24h,
+        'suspicious_ips': suspicious_ips,
+        'top_failed_usernames': top_failed_usernames,
+    }
+
+    return render(request, 'admin_dashboard/pages/security/login_attempts.html', context)
+
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def security_ip_blacklist(request):
+    """IP 黑名單管理"""
+    from blog.models.security import IPBlacklist
+
+    # 取得篩選參數
+    filter_status = request.GET.get('status', 'active')  # active, inactive, all
+    sort_by = request.GET.get('sort', '-blocked_at')
+
+    # 基本查詢
+    blacklist = IPBlacklist.objects.select_related('blocked_by').all()
+
+    # 狀態篩選
+    if filter_status == 'active':
+        blacklist = blacklist.filter(is_active=True)
+    elif filter_status == 'inactive':
+        blacklist = blacklist.filter(is_active=False)
+
+    # 排序
+    blacklist = blacklist.order_by(sort_by)
+
+    # 分頁
+    paginator = Paginator(blacklist, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # 統計
+    total_blocked = IPBlacklist.objects.filter(is_active=True).count()
+
+    context = {
+        'page_obj': page_obj,
+        'filter_status': filter_status,
+        'sort_by': sort_by,
+        'total_blocked': total_blocked,
+    }
+
+    return render(request, 'admin_dashboard/pages/security/ip_blacklist.html', context)
+
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def security_ip_block(request, ip_address):
+    """封鎖 IP"""
+    if request.method == 'POST':
+        import json
+        from blog.models.security import IPBlacklist
+
+        data = json.loads(request.body)
+        reason = data.get('reason', '頻繁登入失敗')
+        duration_hours = data.get('duration_hours', None)  # None 表示永久
+
+        # 計算解除封鎖時間
+        unblock_at = None
+        if duration_hours:
+            unblock_at = timezone.now() + timedelta(hours=int(duration_hours))
+
+        # 創建或更新黑名單記錄
+        blacklist, created = IPBlacklist.objects.get_or_create(
+            ip_address=ip_address,
+            defaults={
+                'reason': reason,
+                'blocked_by': request.user,
+                'unblock_at': unblock_at,
+                'is_active': True
+            }
+        )
+
+        if not created:
+            blacklist.reason = reason
+            blacklist.blocked_by = request.user
+            blacklist.unblock_at = unblock_at
+            blacklist.is_active = True
+            blacklist.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'IP {ip_address} 已封鎖'
+        })
+
+    return JsonResponse({'success': False, 'message': '無效的請求'})
+
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def security_ip_unblock(request, blacklist_id):
+    """解除 IP 封鎖"""
+    if request.method == 'POST':
+        from blog.models.security import IPBlacklist
+
+        blacklist = get_object_or_404(IPBlacklist, id=blacklist_id)
+        blacklist.is_active = False
+        blacklist.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'IP {blacklist.ip_address} 已解除封鎖'
+        })
+
+    return JsonResponse({'success': False, 'message': '無效的請求'})
+
+
+# ==================== 訊息管理 ====================
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def message_list(request):
+    """私人訊息管理列表"""
+
+    # 取得篩選參數
+    filter_status = request.GET.get('status', 'all')  # all, read, unread, recalled
+    search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', '-created_at')
+
+    # 基本查詢（排除已被雙方刪除的訊息）
+    messages = Message.objects.select_related('sender', 'recipient').filter(
+        Q(sender_deleted=False) | Q(recipient_deleted=False)
+    )
+
+    # 狀態篩選
+    if filter_status == 'read':
+        messages = messages.filter(is_read=True, is_recalled=False)
+    elif filter_status == 'unread':
+        messages = messages.filter(is_read=False, is_recalled=False)
+    elif filter_status == 'recalled':
+        messages = messages.filter(is_recalled=True)
+
+    # 搜尋功能
+    if search_query:
+        messages = messages.filter(
+            Q(subject__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(sender__username__icontains=search_query) |
+            Q(recipient__username__icontains=search_query)
+        )
+
+    # 排序
+    messages = messages.order_by(sort_by)
+
+    # 分頁
+    paginator = Paginator(messages, 30)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # 統計資訊
+    total_messages = Message.objects.filter(
+        Q(sender_deleted=False) | Q(recipient_deleted=False)
+    ).count()
+    read_count = Message.objects.filter(is_read=True, is_recalled=False).count()
+    unread_count = Message.objects.filter(is_read=False, is_recalled=False).count()
+    recalled_count = Message.objects.filter(is_recalled=True).count()
+
+    # 最近24小時統計
+    from datetime import timedelta
+    twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+    messages_24h = Message.objects.filter(created_at__gte=twenty_four_hours_ago).count()
+
+    context = {
+        'page_obj': page_obj,
+        'filter_status': filter_status,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'total_messages': total_messages,
+        'read_count': read_count,
+        'unread_count': unread_count,
+        'recalled_count': recalled_count,
+        'messages_24h': messages_24h,
+    }
+
+    return render(request, 'admin_dashboard/pages/messages/list.html', context)
+
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def message_detail(request, message_id):
+    """訊息詳情"""
+
+    message = get_object_or_404(
+        Message.objects.select_related('sender', 'sender__profile', 'recipient', 'recipient__profile', 'parent_message'),
+        id=message_id
+    )
+
+    # 獲取對話串（如果有的話）
+    if message.parent_message:
+        # 這是回覆訊息，獲取整個對話
+        root_message = message.parent_message
+        conversation = Message.objects.filter(
+            Q(id=root_message.id) | Q(parent_message=root_message)
+        ).select_related('sender', 'sender__profile', 'recipient', 'recipient__profile').order_by('created_at')
+    else:
+        # 這是原始訊息，獲取所有回覆
+        conversation = Message.objects.filter(
+            Q(id=message.id) | Q(parent_message=message)
+        ).select_related('sender', 'sender__profile', 'recipient', 'recipient__profile').order_by('created_at')
+
+    context = {
+        'message': message,
+        'conversation': conversation,
+    }
+
+    return render(request, 'admin_dashboard/pages/messages/detail.html', context)
+
+
+@login_required
+@user_passes_test(is_staff, login_url='/blog/')
+def message_delete(request, message_id):
+    """刪除訊息（硬刪除，僅管理員可用）"""
+
+    if request.method == 'POST':
+        message = get_object_or_404(Message, id=message_id)
+
+        # 記錄訊息資訊用於回應
+        sender = message.sender.username
+        recipient = message.recipient.username
+
+        # 硬刪除
+        message.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'已刪除 {sender} 發送給 {recipient} 的訊息'
+        })
+
+    return JsonResponse({'success': False, 'message': '無效的請求'})

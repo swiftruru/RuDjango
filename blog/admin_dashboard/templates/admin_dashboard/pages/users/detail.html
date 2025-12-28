@@ -22,9 +22,9 @@
         </h4>
 
         <div class="flex items-center mb-4">
-            <div class="relative w-20 h-20 mr-4 rounded-full">
+            <div class="relative w-12 h-12 mr-3 rounded-full">
                 <img class="object-cover w-full h-full rounded-full"
-                     src="{% if user_obj.profile.avatar %}{{ user_obj.profile.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user_obj.username }}&background=random&size=80{% endif %}"
+                     src="{% if user_obj.profile.avatar %}{{ user_obj.profile.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user_obj.username }}&background=random&size=48{% endif %}"
                      alt="{{ user_obj.username }}" loading="lazy" />
                 <div class="absolute inset-0 rounded-full shadow-inner" aria-hidden="true"></div>
             </div>
@@ -63,6 +63,16 @@
                     {% endif %}
                 </span>
             </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">最後登入 IP:</span>
+                <span class="font-mono font-semibold text-gray-800 dark:text-gray-200">
+                    {% if last_login_ip %}
+                    {{ last_login_ip }}
+                    {% else %}
+                    <span class="text-gray-400">無記錄</span>
+                    {% endif %}
+                </span>
+            </div>
             <div class="flex justify-between items-center">
                 <span class="text-gray-600 dark:text-gray-400">狀態:</span>
                 {% if user_obj.is_active %}
@@ -94,20 +104,20 @@
         </div>
 
         <!-- 操作按鈕 -->
-        <div class="mt-6 flex gap-2">
+        <div class="mt-6 flex gap-3">
             {% if not user_obj.is_superuser %}
             <button onclick="toggleUserStatus({{ user_obj.id }}, {{ user_obj.is_active|yesno:'true,false' }})"
-                    class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 {% if user_obj.is_active %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} border border-transparent rounded-lg active:bg-red-600 focus:outline-none focus:shadow-outline-red">
+                    class="flex-1 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 {% if user_obj.is_active %}bg-red-600 hover:bg-red-700 active:bg-red-600{% else %}bg-green-600 hover:bg-green-700 active:bg-green-600{% endif %} border border-transparent rounded-lg focus:outline-none focus:ring-2 {% if user_obj.is_active %}focus:ring-red-500{% else %}focus:ring-green-500{% endif %}">
                 {% if user_obj.is_active %}停用用戶{% else %}啟用用戶{% endif %}
             </button>
             {% else %}
-            <div class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
+            <div class="flex-1 px-4 py-2 text-sm font-medium text-center text-gray-500 bg-gray-100 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 超級管理員無法停用
             </div>
             {% endif %}
             {% if user.is_superuser %}
             <button onclick="toggleUserStaff({{ user_obj.id }}, {{ user_obj.is_staff|yesno:'true,false' }})"
-                    class="flex-1 px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 {% if user_obj.is_staff %}bg-orange-600 hover:bg-orange-700{% else %}bg-blue-600 hover:bg-blue-700{% endif %} border border-transparent rounded-lg focus:outline-none">
+                    class="flex-1 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 {% if user_obj.is_staff %}bg-orange-600 hover:bg-orange-700 active:bg-orange-600{% else %}bg-purple-600 hover:bg-purple-700 active:bg-purple-600{% endif %} border border-transparent rounded-lg focus:outline-none focus:ring-2 {% if user_obj.is_staff %}focus:ring-orange-500{% else %}focus:ring-purple-500{% endif %}">
                 {% if user_obj.is_staff %}移除管理員{% else %}設為管理員{% endif %}
             </button>
             {% endif %}

@@ -44,6 +44,9 @@ from .push_subscription import PushSubscription
 # 搜尋相關 models
 from .search import SearchHistory
 
+# 安全相關 models
+from .security import LoginAttempt, IPBlacklist, IPWhitelist
+
 __all__ = [
     # 文章相關
     'Tag',
@@ -83,4 +86,8 @@ __all__ = [
     'PushSubscription',
     # 搜尋相關
     'SearchHistory',
+    # 安全相關
+    'LoginAttempt',
+    'IPBlacklist',
+    'IPWhitelist',
 ]

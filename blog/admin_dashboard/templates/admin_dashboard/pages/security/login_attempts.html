@@ -1,0 +1,339 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}登入嘗試記錄 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    登入嘗試記錄
+</h2>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <!-- Total Attempts -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                總嘗試次數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ total_attempts }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Success Count -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                成功次數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ success_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Failed Count -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-red-500 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                失敗次數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ failed_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- 24h Failed -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v.878A2.002 2.002 0 0110 16a2 2 0 01-2-2v-1a2 2 0 00-2-2H4.332z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                24小時失敗
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ failed_24h }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+                總計: {{ attempts_24h }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="mb-6 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <form method="GET" class="grid gap-4 md:grid-cols-4">
+        <!-- Type Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                類型
+            </label>
+            <select name="type" class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                <option value="all" {% if filter_type == 'all' %}selected{% endif %}>全部</option>
+                <option value="success" {% if filter_type == 'success' %}selected{% endif %}>成功</option>
+                <option value="failed" {% if filter_type == 'failed' %}selected{% endif %}>失敗</option>
+            </select>
+        </div>
+
+        <!-- IP Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                IP 地址
+            </label>
+            <input type="text" name="ip" value="{{ filter_ip }}" placeholder="搜尋 IP..."
+                   class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+        </div>
+
+        <!-- Username Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                用戶名
+            </label>
+            <input type="text" name="username" value="{{ filter_username }}" placeholder="搜尋用戶名..."
+                   class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex items-end">
+            <button type="submit"
+                    class="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                篩選
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Two Column Layout -->
+<div class="grid gap-6 mb-8 md:grid-cols-2">
+    <!-- Suspicious IPs -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            可疑 IP（5分鐘內失敗5次以上）
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">IP 地址</th>
+                            <th class="px-4 py-3">失敗次數</th>
+                            <th class="px-4 py-3">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for ip in suspicious_ips %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3 text-sm font-mono">
+                                {{ ip.ip_address }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
+                                    {{ ip.fail_count }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <button onclick="blockIP('{{ ip.ip_address }}')"
+                                        class="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700">
+                                    封鎖
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無可疑 IP
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Failed Usernames -->
+    <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+            最常失敗的用戶名 Top 10
+        </h4>
+        <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div class="w-full overflow-x-auto">
+                <table class="w-full whitespace-no-wrap">
+                    <thead>
+                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                            <th class="px-4 py-3">用戶名</th>
+                            <th class="px-4 py-3">失敗次數</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                        {% for item in top_failed_usernames %}
+                        <tr class="text-gray-700 dark:text-gray-400">
+                            <td class="px-4 py-3 text-sm font-mono">
+                                {{ item.username }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {{ item.fail_count }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="px-4 py-3 text-sm text-center text-gray-500">
+                                暫無數據
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Attempts Table -->
+<div class="min-w-0 p-4 mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        登入嘗試記錄
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full whitespace-no-wrap">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                        <th class="px-4 py-3">時間</th>
+                        <th class="px-4 py-3">用戶名</th>
+                        <th class="px-4 py-3">IP 地址</th>
+                        <th class="px-4 py-3">狀態</th>
+                        <th class="px-4 py-3">失敗原因</th>
+                        <th class="px-4 py-3">User Agent</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                    {% for attempt in page_obj %}
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-3 text-xs">
+                            {{ attempt.attempted_at|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td class="px-4 py-3 text-sm font-mono">
+                            {{ attempt.username }}
+                        </td>
+                        <td class="px-4 py-3 text-sm font-mono">
+                            {{ attempt.ip_address }}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {% if attempt.attempt_type == 'success' %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                                成功
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
+                                失敗
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {{ attempt.failure_reason|default:"-" }}
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            <div class="max-w-xs truncate" title="{{ attempt.user_agent }}">
+                                {{ attempt.user_agent|default:"-" }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-3 text-sm text-center text-gray-500">
+                            暫無記錄
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center mt-4 px-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            顯示第 {{ page_obj.start_index }} 到 {{ page_obj.end_index }} 條，共 {{ page_obj.paginator.count }} 條記錄
+        </div>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&type={{ filter_type }}&ip={{ filter_ip }}&username={{ filter_username }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                上一頁
+            </a>
+            {% endif %}
+            <span class="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 頁
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&type={{ filter_type }}&ip={{ filter_ip }}&username={{ filter_username }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                下一頁
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function blockIP(ipAddress) {
+    if (!confirm(`確定要封鎖 IP ${ipAddress} 嗎？`)) {
+        return;
+    }
+
+    const reason = prompt('請輸入封鎖原因：', '頻繁登入失敗');
+    if (!reason) return;
+
+    const duration = prompt('封鎖時間（小時，留空表示永久）：', '24');
+
+    fetch(`/admin/dashboard/security/ip-block/${ipAddress}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            reason: reason,
+            duration_hours: duration || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('封鎖失敗：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('發生錯誤：' + error);
+    });
+}
+</script>
+
+{% endblock %}

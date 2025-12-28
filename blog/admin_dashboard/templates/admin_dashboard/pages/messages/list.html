@@ -1,0 +1,280 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}訊息管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    訊息管理
+</h2>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+    <!-- Total Messages -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                總訊息數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ total_messages }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Unread Messages -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-orange-500 bg-orange-100 rounded-full dark:text-orange-100 dark:bg-orange-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                未讀訊息
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ unread_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Read Messages -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-green-500 bg-green-100 rounded-full dark:text-green-100 dark:bg-green-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                已讀訊息
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ read_count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- 24h Messages -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-purple-500 bg-purple-100 rounded-full dark:text-purple-100 dark:bg-purple-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                24小時內
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ messages_24h }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="mb-6 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <form method="GET" class="grid gap-4 md:grid-cols-4">
+        <!-- Status Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                狀態
+            </label>
+            <select name="status" class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                <option value="all" {% if filter_status == 'all' %}selected{% endif %}>全部</option>
+                <option value="unread" {% if filter_status == 'unread' %}selected{% endif %}>未讀</option>
+                <option value="read" {% if filter_status == 'read' %}selected{% endif %}>已讀</option>
+                <option value="recalled" {% if filter_status == 'recalled' %}selected{% endif %}>已收回</option>
+            </select>
+        </div>
+
+        <!-- Search -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                搜尋
+            </label>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="主旨、內容或用戶名..."
+                   class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+        </div>
+
+        <!-- Sort -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                排序
+            </label>
+            <select name="sort" class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>最新</option>
+                <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>最舊</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex items-end">
+            <button type="submit"
+                    class="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                篩選
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Messages Table -->
+<div class="min-w-0 p-4 mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        私人訊息列表
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full whitespace-no-wrap">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                        <th class="px-4 py-3">主旨</th>
+                        <th class="px-4 py-3">寄件者</th>
+                        <th class="px-4 py-3">收件者</th>
+                        <th class="px-4 py-3">狀態</th>
+                        <th class="px-4 py-3">時間</th>
+                        <th class="px-4 py-3">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                    {% for msg in page_obj %}
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-3">
+                            <div class="max-w-xs">
+                                <p class="font-semibold text-sm {% if msg.is_recalled %}text-gray-400 line-through{% endif %}">
+                                    {{ msg.subject|truncatechars:50 }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    {{ msg.content|truncatechars:60 }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {{ msg.sender.username }}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {{ msg.recipient.username }}
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            {% if msg.is_recalled %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                                已收回
+                            </span>
+                            {% elif msg.is_read %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                                已讀
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                                未讀
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            {{ msg.created_at|date:"Y-m-d H:i" }}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <div class="flex items-center space-x-2">
+                                <a href="{% url 'admin_dashboard:message_detail' msg.id %}"
+                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                    查看
+                                </a>
+                                <span class="text-gray-400">|</span>
+                                <button onclick="deleteMessage({{ msg.id }}, '{{ msg.subject|escapejs }}')"
+                                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                    刪除
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-3 text-sm text-center text-gray-500">
+                            暫無訊息記錄
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center mt-4 px-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            顯示第 {{ page_obj.start_index }} 到 {{ page_obj.end_index }} 條，共 {{ page_obj.paginator.count }} 條記錄
+        </div>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&status={{ filter_status }}&search={{ search_query }}&sort={{ sort_by }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                上一頁
+            </a>
+            {% endif %}
+            <span class="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 頁
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&status={{ filter_status }}&search={{ search_query }}&sort={{ sort_by }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                下一頁
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteMessage(messageId, subject) {
+    if (!confirm(`確定要刪除訊息「${subject}」嗎？`)) {
+        return;
+    }
+
+    fetch(`/admin/dashboard/messages/${messageId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('刪除失敗：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('發生錯誤：' + error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

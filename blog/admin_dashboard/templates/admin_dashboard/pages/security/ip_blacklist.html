@@ -1,0 +1,337 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}IP 黑名單管理 - RuDjango 管理後台{% endblock %}
+
+{% block content %}
+<h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    IP 黑名單管理
+</h2>
+
+<!-- Stats Cards -->
+<div class="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-3">
+    <!-- Total Blocked -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-red-500 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                啟用中的黑名單
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ total_blocked }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Total Records -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="p-3 mr-4 text-blue-500 bg-blue-100 rounded-full dark:text-blue-100 dark:bg-blue-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                總記錄數
+            </p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                {{ page_obj.paginator.count }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Add New IP -->
+    <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <div class="flex-1">
+            <button onclick="showAddIPDialog()"
+                    class="w-full px-4 py-3 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                ➕ 新增封鎖 IP
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="mb-6 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <form method="GET" class="grid gap-4 md:grid-cols-3">
+        <!-- Status Filter -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                狀態
+            </label>
+            <select name="status" class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                <option value="active" {% if filter_status == 'active' %}selected{% endif %}>啟用中</option>
+                <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>已停用</option>
+                <option value="all" {% if filter_status == 'all' %}selected{% endif %}>全部</option>
+            </select>
+        </div>
+
+        <!-- Sort -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                排序
+            </label>
+            <select name="sort" class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                <option value="-blocked_at" {% if sort_by == '-blocked_at' %}selected{% endif %}>最新封鎖</option>
+                <option value="blocked_at" {% if sort_by == 'blocked_at' %}selected{% endif %}>最舊封鎖</option>
+                <option value="-unblock_at" {% if sort_by == '-unblock_at' %}selected{% endif %}>解鎖時間</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex items-end">
+            <button type="submit"
+                    class="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                篩選
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- IP Blacklist Table -->
+<div class="min-w-0 p-4 mb-8 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+    <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
+        IP 黑名單列表
+    </h4>
+    <div class="w-full overflow-hidden rounded-lg shadow-xs">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full whitespace-no-wrap">
+                <thead>
+                    <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                        <th class="px-4 py-3">IP 地址</th>
+                        <th class="px-4 py-3">封鎖原因</th>
+                        <th class="px-4 py-3">封鎖時間</th>
+                        <th class="px-4 py-3">解除時間</th>
+                        <th class="px-4 py-3">封鎖者</th>
+                        <th class="px-4 py-3">狀態</th>
+                        <th class="px-4 py-3">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+                    {% for item in page_obj %}
+                    <tr class="text-gray-700 dark:text-gray-400">
+                        <td class="px-4 py-3 text-sm font-mono">
+                            {{ item.ip_address }}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <div class="max-w-xs truncate" title="{{ item.reason }}">
+                                {{ item.reason }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            {{ item.blocked_at|date:"Y-m-d H:i" }}
+                        </td>
+                        <td class="px-4 py-3 text-xs">
+                            {% if item.unblock_at %}
+                                {{ item.unblock_at|date:"Y-m-d H:i" }}
+                                {% if item.is_expired %}
+                                <span class="block text-orange-600 dark:text-orange-400">(已過期)</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-red-600 dark:text-red-400">永久</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {% if item.blocked_by %}
+                                {{ item.blocked_by.username }}
+                            {% else %}
+                                <span class="text-gray-400">系統</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {% if item.is_active %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:bg-red-700 dark:text-red-100">
+                                啟用
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-100">
+                                停用
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            {% if item.is_active %}
+                            <button onclick="unblockIP({{ item.id }}, '{{ item.ip_address }}')"
+                                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700">
+                                解除封鎖
+                            </button>
+                            {% else %}
+                            <span class="text-gray-400 text-xs">已解除</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-3 text-sm text-center text-gray-500">
+                            暫無黑名單記錄
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center mt-4 px-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+            顯示第 {{ page_obj.start_index }} 到 {{ page_obj.end_index }} 條，共 {{ page_obj.paginator.count }} 條記錄
+        </div>
+        <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&status={{ filter_status }}&sort={{ sort_by }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                上一頁
+            </a>
+            {% endif %}
+            <span class="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 頁
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&status={{ filter_status }}&sort={{ sort_by }}"
+               class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                下一頁
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add IP Dialog (Modal) -->
+<div id="addIPDialog" class="fixed inset-0 z-30 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center hidden">
+    <div class="w-full px-6 py-4 overflow-hidden bg-white rounded-t-lg dark:bg-gray-800 sm:rounded-lg sm:m-4 sm:max-w-xl"
+         role="dialog">
+        <header class="flex justify-between">
+            <p class="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
+                新增封鎖 IP
+            </p>
+            <button class="inline-flex items-center justify-center w-6 h-6 text-gray-400 transition-colors duration-150 rounded hover:text-gray-700"
+                    onclick="closeAddIPDialog()">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" role="img" aria-hidden="true">
+                    <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clip-rule="evenodd" fill-rule="evenodd"></path>
+                </svg>
+            </button>
+        </header>
+        <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+                IP 地址 <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="newIPAddress" placeholder="例如：192.168.1.100"
+                   class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2 mt-4">
+                封鎖原因 <span class="text-red-500">*</span>
+            </label>
+            <textarea id="newIPReason" rows="3" placeholder="請輸入封鎖原因..."
+                      class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600"></textarea>
+
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2 mt-4">
+                封鎖時間（小時）
+            </label>
+            <input type="number" id="newIPDuration" placeholder="留空表示永久封鎖" min="1"
+                   class="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-600">
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                留空或輸入 0 表示永久封鎖
+            </p>
+        </div>
+        <footer class="flex flex-col items-center justify-end px-6 py-3 -mx-6 -mb-4 space-y-4 sm:space-y-0 sm:space-x-6 sm:flex-row bg-gray-50 dark:bg-gray-800">
+            <button onclick="closeAddIPDialog()"
+                    class="w-full px-5 py-3 text-sm font-medium leading-5 text-gray-700 transition-colors duration-150 border border-gray-300 rounded-lg dark:text-gray-400 sm:px-4 sm:py-2 sm:w-auto active:bg-transparent hover:border-gray-500 focus:border-gray-500 active:text-gray-500 focus:outline-none focus:ring">
+                取消
+            </button>
+            <button onclick="addNewIP()"
+                    class="w-full px-5 py-3 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg sm:w-auto sm:px-4 sm:py-2 active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring">
+                確認封鎖
+            </button>
+        </footer>
+    </div>
+</div>
+
+<script>
+function showAddIPDialog() {
+    document.getElementById('addIPDialog').classList.remove('hidden');
+}
+
+function closeAddIPDialog() {
+    document.getElementById('addIPDialog').classList.add('hidden');
+    document.getElementById('newIPAddress').value = '';
+    document.getElementById('newIPReason').value = '';
+    document.getElementById('newIPDuration').value = '';
+}
+
+function addNewIP() {
+    const ipAddress = document.getElementById('newIPAddress').value.trim();
+    const reason = document.getElementById('newIPReason').value.trim();
+    const duration = document.getElementById('newIPDuration').value.trim();
+
+    if (!ipAddress) {
+        alert('請輸入 IP 地址');
+        return;
+    }
+
+    if (!reason) {
+        alert('請輸入封鎖原因');
+        return;
+    }
+
+    fetch(`/admin/dashboard/security/ip-block/${ipAddress}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            reason: reason,
+            duration_hours: duration || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            closeAddIPDialog();
+            location.reload();
+        } else {
+            alert('封鎖失敗：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('發生錯誤：' + error);
+    });
+}
+
+function unblockIP(blacklistId, ipAddress) {
+    if (!confirm(`確定要解除封鎖 IP ${ipAddress} 嗎？`)) {
+        return;
+    }
+
+    fetch(`/admin/dashboard/security/ip-unblock/${blacklistId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('解除封鎖失敗：' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('發生錯誤：' + error);
+    });
+}
+</script>
+
+{% endblock %}

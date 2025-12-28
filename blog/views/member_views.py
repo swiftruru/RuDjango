@@ -171,13 +171,46 @@ def user_login(request):
     """
     使用者登入
     """
+    # 獲取 IP 地址
+    def get_client_ip(request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
+        ip_address = get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+        # 檢查 IP 是否被封鎖
+        from blog.models.security import IPBlacklist, IPWhitelist, LoginAttempt
+
+        # 如果不在白名單且在黑名單中，拒絕登入
+        if not IPWhitelist.is_whitelisted(ip_address) and IPBlacklist.is_blocked(ip_address):
+            messages.error(request, '❌ 您的 IP 地址已被封鎖，請聯繫管理員。')
+            return render(request, 'blog/members/login.html', {
+                'form': form,
+                'action': '登入',
+            })
+
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
+
             if user is not None:
+                # 記錄成功的登入嘗試
+                LoginAttempt.record_attempt(
+                    username=username,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    success=True,
+                    user=user
+                )
+
                 login(request, user)
                 # 使用暱稱（first_name）顯示，如果沒有則顯示帳號名
                 display_name = user.first_name if user.first_name else username
@@ -185,9 +218,38 @@ def user_login(request):
                 # 重定向到 next 參數指定的頁面，或預設到部落格首頁
                 next_url = request.GET.get('next', '/blog/')
                 return redirect(next_url)
+            else:
+                # 記錄失敗的登入嘗試
+                from django.contrib.auth.models import User
+                try:
+                    existing_user = User.objects.get(username=username)
+                    failure_reason = '密碼錯誤'
+                except User.DoesNotExist:
+                    existing_user = None
+                    failure_reason = '用戶不存在'
+
+                LoginAttempt.record_attempt(
+                    username=username,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    success=False,
+                    user=existing_user,
+                    failure_reason=failure_reason
+                )
+        else:
+            # 表單驗證失敗（例如必填欄位未填）
+            username = request.POST.get('username', '')
+            if username:
+                LoginAttempt.record_attempt(
+                    username=username,
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                    success=False,
+                    failure_reason='表單驗證失敗'
+                )
     else:
         form = CustomAuthenticationForm()
-    
+
     context = {
         'form': form,
         'action': '登入',

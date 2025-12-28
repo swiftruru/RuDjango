@@ -53,4 +53,15 @@ urlpatterns = [
     # 系統設定
     path('system/settings/', views.system_settings, name='system_settings'),
     path('system/logs/', views.system_logs, name='system_logs'),
+
+    # 安全管理
+    path('security/login-attempts/', views.security_login_attempts, name='security_login_attempts'),
+    path('security/ip-blacklist/', views.security_ip_blacklist, name='security_ip_blacklist'),
+    path('security/ip-block/<str:ip_address>/', views.security_ip_block, name='security_ip_block'),
+    path('security/ip-unblock/<int:blacklist_id>/', views.security_ip_unblock, name='security_ip_unblock'),
+
+    # 訊息管理
+    path('messages/', views.message_list, name='message_list'),
+    path('messages/<int:message_id>/', views.message_detail, name='message_detail'),
+    path('messages/<int:message_id>/delete/', views.message_delete, name='message_delete'),
 ]

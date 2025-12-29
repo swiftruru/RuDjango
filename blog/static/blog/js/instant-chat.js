@@ -352,6 +352,11 @@ class ChatWindow {
 
         // 滾動到底部
         this.scrollToBottom();
+
+        // 刷新聊天中心的未讀數（因為剛才標記為已讀）
+        if (window.chatCenterManager) {
+            window.chatCenterManager.refresh();
+        }
     }
 
     addMessage(message, shouldScroll = true) {

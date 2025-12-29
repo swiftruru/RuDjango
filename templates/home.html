@@ -5,35 +5,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ project_name }} - Django Learning Project</title>
+    <title>{{ project_name }} - {{ tagline }}</title>
+    <meta name="description" content="{{ description }}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 
 <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="brand-icon">🎯</span>
+                <span class="brand-name">{{ project_name }}</span>
+                <span class="brand-version">v{{ version }}</span>
+            </div>
+            <div class="nav-links">
+                {% for link in quick_links %}
+                <a href="{{ link.url }}" class="nav-link">
+                    <span>{{ link.icon }}</span>
+                    <span>{{ link.name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <div class="hero-badge">Version {{ version }}</div>
                 <h1 class="hero-title">
                     <span class="gradient-text">{{ project_name }}</span>
                 </h1>
-                <p class="hero-subtitle">Django Learning Project</p>
-                <p class="hero-description">
-                    A comprehensive hands-on project for mastering Django framework,<br>
-                    from MVT architecture to full-stack development
-                </p>
+                <p class="hero-tagline">{{ tagline }}</p>
+                <p class="hero-description">{{ description }}</p>
                 <div class="hero-buttons">
-                    <a href="/blog/" class="btn btn-primary">Explore Blog</a>
-                    <a href="/admin/" class="btn btn-secondary">Admin Panel</a>
-                    <a href="https://github.com/swiftruru/RuDjango" target="_blank" class="btn btn-outline">
-                        <span>GitHub</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                    <a href="/blog/" class="btn btn-primary">
+                        <span>Explore Platform</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
+                    </a>
+                    <a href="/blog/about/" class="btn btn-outline">
+                        <span>Learn More</span>
                     </a>
                 </div>
             </div>
@@ -52,99 +66,89 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.apps }}</div>
-                    <div class="stat-label">Application</div>
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-number">{{ stats.models }}</div>
+                    <div class="stat-label">Data Models</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number">{{ stats.views }}</div>
+                    <div class="stat-label">View Functions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔌</div>
+                    <div class="stat-number">{{ stats.apis }}</div>
+                    <div class="stat-label">API Endpoints</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎨</div>
                     <div class="stat-number">{{ stats.templates }}</div>
                     <div class="stat-label">Templates</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ stats.views }}</div>
-                    <div class="stat-label">Views</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ stats.urls }}</div>
-                    <div class="stat-label">URL Configs</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Apps Section -->
-    <section class="apps">
+    <!-- Features Section -->
+    <section class="features">
         <div class="container">
-            <h2 class="section-title">Available Applications</h2>
-            <div class="apps-grid">
-                {% for app in apps %}
-                <div class="app-card">
-                    <div class="app-icon">{{ app.icon }}</div>
-                    <h3 class="app-name">{{ app.name }}</h3>
-                    <p class="app-description">{{ app.description }}</p>
-                    <ul class="app-features">
-                        {% for feature in app.features %}
-                        <li>✓ {{ feature }}</li>
+            <h2 class="section-title">Platform Features</h2>
+            <p class="section-subtitle">Everything you need for a modern community platform</p>
+            <div class="features-grid">
+                {% for feature in features %}
+                <div class="feature-card">
+                    <div class="feature-icon">{{ feature.icon }}</div>
+                    <h3 class="feature-title">{{ feature.title }}</h3>
+                    <p class="feature-description">{{ feature.description }}</p>
+                    <ul class="feature-items">
+                        {% for item in feature.items %}
+                        <li>{{ item }}</li>
                         {% endfor %}
                     </ul>
-                    <a href="{{ app.url }}" class="app-link">
-                        Launch App →
-                    </a>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- Tech Stack Section -->
+    <!-- Technology Stack Section -->
     <section class="tech-stack">
         <div class="container">
             <h2 class="section-title">Technology Stack</h2>
+            <p class="section-subtitle">Built with modern, reliable technologies</p>
             <div class="tech-grid">
                 {% for tech in tech_stack %}
                 <div class="tech-card">
-                    <div class="tech-icon">{{ tech.icon }}</div>
                     <div class="tech-info">
                         <h3 class="tech-name">{{ tech.name }}</h3>
                         <span class="tech-version">{{ tech.version }}</span>
                     </div>
+                    <div class="tech-category">{{ tech.category }}</div>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- Learning Journey Section -->
-    <section class="journey">
+    <!-- CTA Section -->
+    <section class="cta">
         <div class="container">
-            <h2 class="section-title">Learning Journey</h2>
-            <div class="journey-timeline">
-                <div class="timeline-item">
-                    <div class="timeline-marker">1</div>
-                    <div class="timeline-content">
-                        <h3>Project Setup</h3>
-                        <p>Initialize Django project structure and configuration</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">2</div>
-                    <div class="timeline-content">
-                        <h3>App Development</h3>
-                        <p>Build modular applications with MVT architecture</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">3</div>
-                    <div class="timeline-content">
-                        <h3>Template System</h3>
-                        <p>Master template inheritance and dynamic rendering</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker">4</div>
-                    <div class="timeline-content">
-                        <h3>Static Management</h3>
-                        <p>Organize and serve static files efficiently</p>
-                    </div>
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Explore?</h2>
+                <p class="cta-description">
+                    Experience a fully-featured community platform with real-time capabilities,
+                    comprehensive content management, and modern administration tools.
+                </p>
+                <div class="cta-buttons">
+                    <a href="/blog/" class="btn btn-primary btn-lg">
+                        <span>Launch Platform</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <a href="/dashboard/" class="btn btn-outline btn-lg">
+                        <span>Admin Dashboard</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -154,19 +158,33 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-info">
+                <div class="footer-brand">
                     <h3>{{ project_name }}</h3>
-                    <p>Django Learning Project</p>
+                    <p>{{ tagline }}</p>
+                    <p class="footer-description">{{ description }}</p>
                 </div>
-                <div class="footer-links">
-                    <a href="https://github.com/swiftruru/RuDjango" target="_blank">GitHub</a>
-                    <a href="https://docs.djangoproject.com/" target="_blank">Django Docs</a>
-                    <a href="/blog/">Blog</a>
-                    <a href="/admin/">Admin</a>
+                <div class="footer-links-section">
+                    <div class="footer-column">
+                        <h4>Platform</h4>
+                        <a href="/blog/">Blog</a>
+                        <a href="/blog/about/">About</a>
+                        <a href="/dashboard/">Dashboard</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="https://docs.djangoproject.com/" target="_blank">Django Docs</a>
+                        <a href="https://github.com/swiftruru/RuDjango" target="_blank">GitHub</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Technologies</h4>
+                        <a href="https://www.djangoproject.com/" target="_blank">Django</a>
+                        <a href="https://channels.readthedocs.io/" target="_blank">Channels</a>
+                        <a href="https://www.python.org/" target="_blank">Python</a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 {{ project_name }}. Made with ❤️ and Django</p>
+                <p>&copy; 2025 {{ project_name }}. Built with Django & WebSocket</p>
             </div>
         </div>
     </footer>

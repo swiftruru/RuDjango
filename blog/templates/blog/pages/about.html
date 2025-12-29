@@ -1,41 +1,361 @@
 {% extends 'blog/base.html' %}
 {% load static %}
 
-{% block title %}RuDjango - 關於我們{% endblock %}
+{% block title %}關於 RuDjango - 功能完整的 Django 社群平台{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'blog/css/pages/about.css' %}">
 {% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <div class="hero-header">
-            <h1 class="hero-title">關於 RuDjango</h1>
-            <p class="hero-subtitle">一個現代化的 Django 專案</p>
+        <div class="hero-content">
+            <h1 class="hero-title">🎯 RuDjango</h1>
+            <p class="hero-subtitle">功能完整的現代化技術社群平台</p>
+            <p class="hero-description">基於 Django 4.2 構建，整合即時通訊、內容管理、會員系統等完整功能</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">核心功能模組</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">WebSocket</div>
+                    <div class="stat-label">即時通訊</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">SEO</div>
+                    <div class="stat-label">搜尋引擎最佳化</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
+<!-- Core Features -->
 <section class="features">
     <div class="container">
-        <h2 class="section-title">專案資訊</h2>
+        <h2 class="section-title">✨ 核心功能</h2>
         <div class="feature-grid">
             <div class="feature-card">
-                <div class="feature-icon">📚</div>
-                <h3>學習導向</h3>
-                <p>這是一個用於學習 Django 框架的示範專案</p>
+                <div class="feature-icon">✍️</div>
+                <h3>文章管理系統</h3>
+                <ul class="feature-list">
+                    <li>Markdown 編輯器與即時預覽</li>
+                    <li>語法高亮 (highlight.js)</li>
+                    <li>LaTeX 數學公式 (KaTeX)</li>
+                    <li>Mermaid 圖表支援</li>
+                    <li>@mention 提及功能</li>
+                    <li>草稿系統與自動儲存</li>
+                </ul>
             </div>
+
             <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3>最佳實踐</h3>
-                <p>採用 Django 推薦的最佳實踐與架構模式</p>
+                <div class="feature-icon">💬</div>
+                <h3>即時通訊系統</h3>
+                <ul class="feature-list">
+                    <li>WebSocket 即時聊天</li>
+                    <li>私人訊息系統</li>
+                    <li>訊息收回功能</li>
+                    <li>打字指示器</li>
+                    <li>已讀回條</li>
+                    <li>聊天記錄搜尋</li>
+                </ul>
             </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>通知系統</h3>
+                <ul class="feature-list">
+                    <li>即時 WebSocket 通知</li>
+                    <li>Web Push 推播</li>
+                    <li>個人化通知偏好</li>
+                    <li>通知中心管理</li>
+                    <li>未讀數徽章</li>
+                    <li>7 種通知類型</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>會員系統</h3>
+                <ul class="feature-list">
+                    <li>個人資料與頭像上傳</li>
+                    <li>等級與積分系統</li>
+                    <li>成就系統</li>
+                    <li>追蹤與粉絲</li>
+                    <li>活動記錄</li>
+                    <li>技能標籤</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>搜尋系統</h3>
+                <ul class="feature-list">
+                    <li>進階搜尋功能</li>
+                    <li>搜尋歷史記錄</li>
+                    <li>熱門搜尋統計</li>
+                    <li>即時搜尋建議</li>
+                    <li>多條件篩選</li>
+                    <li>搜尋結果分析</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>安全管理</h3>
+                <ul class="feature-list">
+                    <li>登入記錄追蹤</li>
+                    <li>IP 黑名單/白名單</li>
+                    <li>失敗登入偵測</li>
+                    <li>自動封鎖機制</li>
+                    <li>CSRF 保護</li>
+                    <li>密碼加密儲存</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>管理後台</h3>
+                <ul class="feature-list">
+                    <li>現代化儀表板</li>
+                    <li>用戶管理</li>
+                    <li>內容審核</li>
+                    <li>訊息管理</li>
+                    <li>安全監控</li>
+                    <li>數據統計</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>使用者體驗</h3>
+                <ul class="feature-list">
+                    <li>響應式設計</li>
+                    <li>深色模式支援</li>
+                    <li>無限滾動載入</li>
+                    <li>圖片懶載入</li>
+                    <li>平滑動畫效果</li>
+                    <li>行動裝置最佳化</li>
+                </ul>
+            </div>
+
             <div class="feature-card">
                 <div class="feature-icon">🚀</div>
-                <h3>持續進化</h3>
-                <p>不斷優化與更新，追求更好的代碼品質</p>
+                <h3>SEO 優化</h3>
+                <ul class="feature-list">
+                    <li>自動生成 meta 描述</li>
+                    <li>XML Sitemap</li>
+                    <li>RSS/Atom Feeds</li>
+                    <li>Open Graph 標籤</li>
+                    <li>Twitter Card</li>
+                    <li>Canonical URLs</li>
+                </ul>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- Technology Stack -->
+<section class="tech-stack">
+    <div class="container">
+        <h2 class="section-title">🔧 技術棧</h2>
+        <div class="tech-grid">
+            <div class="tech-category">
+                <h3>後端技術</h3>
+                <div class="tech-tags">
+                    <span class="tech-tag">Django 4.2</span>
+                    <span class="tech-tag">Python 3.9+</span>
+                    <span class="tech-tag">Django Channels</span>
+                    <span class="tech-tag">WebSocket</span>
+                    <span class="tech-tag">ASGI</span>
+                    <span class="tech-tag">SQLite/PostgreSQL</span>
+                </div>
+            </div>
+
+            <div class="tech-category">
+                <h3>前端技術</h3>
+                <div class="tech-tags">
+                    <span class="tech-tag">HTML5</span>
+                    <span class="tech-tag">CSS3</span>
+                    <span class="tech-tag">JavaScript ES6+</span>
+                    <span class="tech-tag">Tailwind CSS</span>
+                    <span class="tech-tag">Alpine.js</span>
+                    <span class="tech-tag">Fetch API</span>
+                </div>
+            </div>
+
+            <div class="tech-category">
+                <h3>內容編輯</h3>
+                <div class="tech-tags">
+                    <span class="tech-tag">Marked.js</span>
+                    <span class="tech-tag">Highlight.js</span>
+                    <span class="tech-tag">KaTeX</span>
+                    <span class="tech-tag">Mermaid</span>
+                    <span class="tech-tag">Markdown</span>
+                </div>
+            </div>
+
+            <div class="tech-category">
+                <h3>其他工具</h3>
+                <div class="tech-tags">
+                    <span class="tech-tag">Web Push API</span>
+                    <span class="tech-tag">VAPID</span>
+                    <span class="tech-tag">Service Worker</span>
+                    <span class="tech-tag">PWA</span>
+                    <span class="tech-tag">Git</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture -->
+<section class="architecture">
+    <div class="container">
+        <h2 class="section-title">🏗️ 系統架構</h2>
+        <div class="architecture-grid">
+            <div class="architecture-card">
+                <h3>📁 模組化設計</h3>
+                <p>採用 Django App 架構，將功能分為獨立模組：</p>
+                <ul>
+                    <li><strong>blog/</strong> - 核心應用（文章、評論、標籤）</li>
+                    <li><strong>models/</strong> - 資料模型分層（article, member, chat, security）</li>
+                    <li><strong>views/</strong> - 視圖邏輯分離（article_views, member_views）</li>
+                    <li><strong>admin_dashboard/</strong> - 後台管理系統</li>
+                </ul>
+            </div>
+
+            <div class="architecture-card">
+                <h3>🔄 即時通訊架構</h3>
+                <p>基於 Django Channels 的 WebSocket 架構：</p>
+                <ul>
+                    <li><strong>ASGI</strong> - 異步伺服器閘道介面</li>
+                    <li><strong>Channel Layers</strong> - 訊息廣播機制</li>
+                    <li><strong>Consumers</strong> - WebSocket 處理器</li>
+                    <li><strong>Routing</strong> - WebSocket 路由配置</li>
+                </ul>
+            </div>
+
+            <div class="architecture-card">
+                <h3>💾 資料庫設計</h3>
+                <p>高效的資料庫架構與查詢優化：</p>
+                <ul>
+                    <li><strong>索引優化</strong> - 關鍵欄位建立索引</li>
+                    <li><strong>select_related</strong> - 減少資料庫查詢次數</li>
+                    <li><strong>prefetch_related</strong> - 批次載入關聯資料</li>
+                    <li><strong>軟刪除</strong> - 保留歷史資料</li>
+                </ul>
+            </div>
+
+            <div class="architecture-card">
+                <h3>🔐 安全機制</h3>
+                <p>多層次的安全防護措施：</p>
+                <ul>
+                    <li><strong>CSRF Protection</strong> - 跨站請求偽造防護</li>
+                    <li><strong>XSS Prevention</strong> - 跨站腳本攻擊防護</li>
+                    <li><strong>SQL Injection</strong> - ORM 自動防護</li>
+                    <li><strong>登入追蹤</strong> - IP 位址與失敗記錄</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Timeline -->
+<section class="timeline">
+    <div class="container">
+        <h2 class="section-title">📅 開發歷程</h2>
+        <div class="timeline-container">
+            <div class="timeline-item">
+                <div class="timeline-marker">1</div>
+                <div class="timeline-content">
+                    <h3>基礎架構</h3>
+                    <p>Django 專案初始化、用戶認證、文章 CRUD</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">2</div>
+                <div class="timeline-content">
+                    <h3>內容系統</h3>
+                    <p>Markdown 編輯器、語法高亮、LaTeX 公式、Mermaid 圖表</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">3</div>
+                <div class="timeline-content">
+                    <h3>社交功能</h3>
+                    <p>評論系統、按讚收藏、追蹤粉絲、@mention 功能</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">4</div>
+                <div class="timeline-content">
+                    <h3>即時通訊</h3>
+                    <p>WebSocket 整合、即時聊天、私人訊息、通知系統</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">5</div>
+                <div class="timeline-content">
+                    <h3>進階功能</h3>
+                    <p>搜尋系統、SEO 優化、PWA 推播、管理後台</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">6</div>
+                <div class="timeline-content">
+                    <h3>安全強化</h3>
+                    <p>登入記錄、IP 管理、安全監控、數據分析</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics -->
+<section class="statistics">
+    <div class="container">
+        <h2 class="section-title">📈 專案統計</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📄</div>
+                <div class="stat-value">20+</div>
+                <div class="stat-name">資料模型</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">50+</div>
+                <div class="stat-name">視圖函數</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔌</div>
+                <div class="stat-value">30+</div>
+                <div class="stat-name">API 端點</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎨</div>
+                <div class="stat-value">40+</div>
+                <div class="stat-name">模板頁面</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact -->
+<section class="contact">
+    <div class="container">
+        <div class="contact-card">
+            <h2>💡 持續改進中</h2>
+            <p>RuDjango 是一個不斷進化的專案，我們持續優化功能、提升效能，追求更好的使用者體驗。</p>
+            <p>如果您有任何建議或發現問題，歡迎與我們聯繫！</p>
         </div>
     </div>
 </section>

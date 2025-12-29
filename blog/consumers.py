@@ -168,6 +168,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        # Mark all unread messages from other user as read
+        await self.mark_messages_as_read()
+
         # Send chat history
         history = await self.get_chat_history()
         await self.send(text_data=json.dumps({
@@ -265,6 +268,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return User.objects.get(username=username)
         except User.DoesNotExist:
             return None
+
+    @database_sync_to_async
+    def mark_messages_as_read(self):
+        """
+        Mark all unread messages from other user as read
+        """
+        from .models import ChatMessage
+        from django.utils import timezone
+
+        ChatMessage.objects.filter(
+            sender=self.other_user,
+            recipient=self.user,
+            is_read=False
+        ).update(is_read=True, read_at=timezone.now())
 
     @database_sync_to_async
     def get_chat_history(self):

@@ -88,7 +88,7 @@ notification_patterns = [
 
 # 靜態頁面路由
 page_patterns = [
-    path('about', views.about),
+    path('about/', views.about, name='about'),
 ]
 
 # 社群互動路由

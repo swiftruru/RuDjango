@@ -1,68 +1,473 @@
-/* ===== 關於頁面專屬樣式 ===== */
+/**
+ * About Page Styles
+ * 關於頁面樣式
+ */
 
-/* 特色功能區域 */
+/* ===== Hero Section ===== */
+.hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+    border-radius: 0 0 24px 24px;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    opacity: 0.95;
+    animation: fadeInUp 0.6s ease-out 0.1s backwards;
+}
+
+.hero-description {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    animation: fadeInUp 0.6s ease-out 0.3s backwards;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* ===== Section Titles ===== */
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0.75rem auto 0;
+    border-radius: 2px;
+}
+
+/* ===== Features Section ===== */
 .features {
-    padding: 100px 0;
-    background-color: #fff;
+    padding: 3rem 0;
 }
 
 .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2.5rem;
-    margin-top: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
 }
 
 .feature-card {
-    background: #fff;
-    padding: 2.5rem;
-    border-radius: 12px;
-    text-align: center;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #e0e7ff;
     transition: all 0.3s ease;
-    border: 1px solid #e2e8f0;
 }
 
 .feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
-    border-color: #667eea;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.12);
+    border-color: #c7d2fe;
 }
 
 .feature-icon {
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-    filter: grayscale(0.3);
+    font-size: 3rem;
+    margin-bottom: 1rem;
 }
 
 .feature-card h3 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
     margin-bottom: 1rem;
-    color: #2d3748;
+    color: #667eea;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.feature-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* ===== Technology Stack Section ===== */
+.tech-stack {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3f4f6 100%);
+    margin: 3rem 0;
+    border-radius: 24px;
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.tech-category {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e9d5ff;
+    transition: all 0.3s ease;
+}
+
+.tech-category:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(139, 92, 246, 0.1);
+}
+
+.tech-category h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #8b5cf6;
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tech-tag {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.tech-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== Architecture Section ===== */
+.architecture {
+    padding: 3rem 0;
+}
+
+.architecture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.architecture-card {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid #f59e0b;
+    transition: all 0.3s ease;
+}
+
+.architecture-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(245, 158, 11, 0.1);
+    border-left-width: 6px;
+}
+
+.architecture-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #f59e0b;
+}
+
+.architecture-card p {
+    color: #4a5568;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.architecture-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.architecture-card li {
+    padding: 0.5rem 0;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.architecture-card strong {
+    color: #667eea;
     font-weight: 600;
 }
 
-.feature-card p {
-    color: #718096;
-    line-height: 1.8;
+/* ===== Timeline Section ===== */
+.timeline {
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%);
+    margin: 3rem 0;
+    border-radius: 24px;
 }
 
-/* 關於頁面響應式設計 */
+.timeline-container {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 80px;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 13px;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 0 0 5px #ecfdf5;
+}
+
+.timeline-content {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #d1fae5;
+    transition: all 0.3s ease;
+}
+
+.timeline-content:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.1);
+}
+
+.timeline-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #059669;
+}
+
+.timeline-content p {
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ===== Statistics Section ===== */
+.statistics {
+    padding: 3rem 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid #fde68a;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(251, 191, 36, 0.15);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.stat-name {
+    font-size: 1rem;
+    color: #92400e;
+    font-weight: 600;
+}
+
+/* ===== Contact Section ===== */
+.contact {
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.contact-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.contact-card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.contact-card p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0 auto 0.75rem;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Responsive Design ===== */
 @media (max-width: 768px) {
-    .feature-grid {
+    .hero {
+        padding: 3rem 0;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .feature-grid,
+    .tech-grid,
+    .architecture-grid,
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 
-    .features {
-        padding: 60px 0;
+    .timeline-container::before {
+        left: 20px;
     }
-}
 
-@media (max-width: 480px) {
-    .feature-card {
+    .timeline-marker {
+        left: 4px;
+    }
+
+    .timeline-item {
+        padding-left: 60px;
+    }
+
+    .contact-card {
         padding: 2rem;
     }
 
-    .feature-icon {
-        font-size: 3rem;
+    .contact-card h2 {
+        font-size: 1.5rem;
+    }
+
+    .contact-card p {
+        font-size: 1rem;
     }
 }
+
+/* ===== Dark Mode Support (移除深色模式支援，保持亮色調設計) ===== */
+/* 為了保持整體設計的清新感，移除深色模式支援 */

@@ -391,7 +391,9 @@ def article_edit(request, id):
                         article.publish_at = None
 
             article.save()
-            form.save_m2m()  # 儲存 many-to-many 關係 (標籤)
+            # 手動處理標籤（因為使用了 commit=False）
+            form._save_tags(article)
+            form.save_m2m()  # 儲存其他 many-to-many 關係
 
             # 處理 @mention 通知（僅已發布文章）
             if article.status == 'published':

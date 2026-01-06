@@ -28,9 +28,16 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = 'django-insecure-9afw52-i$r!82rnw52^jtyvu5hb+)j7imt285pl3*ml)2m0b3y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS configuration
+if DEBUG:
+    ALLOWED_HOSTS = []
+else:
+    ALLOWED_HOSTS = [
+        'rudjango.onrender.com',
+        'django.swift.moe',
+    ]
 
 
 # Application definition

@@ -1,7 +1,7 @@
 {
   "phases": {
     "setup": {
-      "nixPkgs": ["python313", "mariadb-connector-c", "pkg-config"]
+      "nixPkgs": ["python313"]
     },
     "install": {
       "cmds": [

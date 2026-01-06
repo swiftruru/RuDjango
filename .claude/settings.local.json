@@ -20,7 +20,8 @@
       "Bash(git push:*)",
       "Bash(git mv:*)",
       "Bash(tree:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

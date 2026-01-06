@@ -193,6 +193,15 @@
                 <a href="{% url 'member' %}" class="btn btn-secondary">取消</a>
             </div>
         </form>
+
+        <!-- 安全性設定 -->
+        <div class="form-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e5e7eb;">
+            <h2>安全性設定</h2>
+            <p style="color: #6b7280; margin-bottom: 1rem;">管理您的帳號安全</p>
+            <a href="{% url 'change_password' %}" class="btn btn-secondary" style="display: inline-block;">
+                🔒 更改密碼
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

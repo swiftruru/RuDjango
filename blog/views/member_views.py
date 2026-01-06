@@ -3,9 +3,10 @@
 處理會員中心、個人資料、會員列表等功能
 """
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from django.db.models import Count, Sum
 from django.utils import timezone
@@ -946,3 +947,23 @@ def test_push_notification_view(request):
             'message': '沒有可用的訂閱或發送失敗',
             'result': result
         })
+
+
+@login_required
+def change_password(request):
+    """更改密碼"""
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # 更新 session，避免使用者被登出
+            update_session_auth_hash(request, user)
+            messages.success(request, '✅ 密碼已成功更新！')
+            return redirect('member')
+    else:
+        form = PasswordChangeForm(request.user)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'blog/members/change_password.html', context)

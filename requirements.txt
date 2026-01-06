@@ -14,3 +14,5 @@ daphne==4.1.2
 channels-redis==4.2.1
 # mysqlclient==2.2.6  # Only needed if using MySQL/MariaDB database
 whitenoise==6.8.2
+psycopg2-binary==2.9.10  # PostgreSQL adapter
+dj-database-url==2.2.0  # Database URL parser

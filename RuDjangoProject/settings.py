@@ -152,21 +152,14 @@ LOGOUT_REDIRECT_URL = '/blog/'
 # Channels settings
 ASGI_APPLICATION = 'RuDjangoProject.asgi.application'
 
+# Channel Layers - use InMemoryChannelLayer for both dev and production
+# Note: InMemoryChannelLayer works fine for single-server deployments
+# For multi-server deployments, consider using Redis
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer'
     }
 }
-
-# For production, use Redis instead:
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('127.0.0.1', 6379)],
-#         },
-#     },
-# }
 
 # Web Push (PWA) 推播通知設定
 # 從環境變數讀取 VAPID keys（不要將私鑰提交到版本控制）

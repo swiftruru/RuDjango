@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python313", "default-libmysqlclient-dev"]
+nixPkgs = ["python313", "libmysqlclient"]
 
 [phases.install]
 cmds = ["python -m venv /app/.venv", "pip install -r requirements.txt"]

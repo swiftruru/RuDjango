@@ -8,10 +8,10 @@ import os
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# Update this with your Cloudways domain
+# Update this with your domain
 ALLOWED_HOSTS = [
-    os.getenv('DJANGO_ALLOWED_HOST', 'your-domain.com'),
-    'www.your-domain.com',
+    os.getenv('DJANGO_ALLOWED_HOST', 'rudjango.onrender.com'),
+    'rudjango.onrender.com',
 ]
 
 # Security settings
@@ -95,5 +95,6 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+  
     },
 }

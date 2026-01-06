@@ -7,9 +7,19 @@ class Command(BaseCommand):
     help = 'Creates a superuser if one does not exist'
 
     def handle(self, *args, **options):
-        username = os.getenv('DJANGO_SUPERUSER_USERNAME', 'ru')
-        email = os.getenv('DJANGO_SUPERUSER_EMAIL', 'admin@rudjango.com')
-        password = os.getenv('DJANGO_SUPERUSER_PASSWORD', '6JIIcUfc6qlc5ZCu')
+        username = os.getenv('DJANGO_SUPERUSER_USERNAME')
+        email = os.getenv('DJANGO_SUPERUSER_EMAIL')
+        password = os.getenv('DJANGO_SUPERUSER_PASSWORD')
+
+        # Check if required environment variables are set
+        if not all([username, email, password]):
+            self.stdout.write(
+                self.style.WARNING(
+                    'Skipping superuser creation: Missing required environment variables '
+                    '(DJANGO_SUPERUSER_USERNAME, DJANGO_SUPERUSER_EMAIL, DJANGO_SUPERUSER_PASSWORD)'
+                )
+            )
+            return
 
         if not User.objects.filter(username=username).exists():
             User.objects.create_superuser(

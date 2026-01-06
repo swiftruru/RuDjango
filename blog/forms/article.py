@@ -130,13 +130,18 @@ class ArticleForm(forms.ModelForm):
         article.tags.clear()  # 清除現有標籤
 
         if tags_input:
-            # 分割標籤（支援逗號和空格）
-            tag_names = [name.strip() for name in tags_input.replace(',', ' ').split() if name.strip()]
+            # 分割標籤（支援逗號、空格和分號）
+            tag_names = [name.strip() for name in tags_input.replace(',', ' ').replace(';', ' ').split() if name.strip()]
 
             for tag_name in tag_names:
-                # 標籤名稱不能太長
-                if len(tag_name) > 50:
+                # 移除開頭的 # 符號（支援 hashtag 格式）
+                if tag_name.startswith('#'):
+                    tag_name = tag_name[1:]
+
+                # 跳過空標籤或太長的標籤
+                if not tag_name or len(tag_name) > 50:
                     continue
+
                 # 取得或建立標籤
                 tag, created = Tag.objects.get_or_create(name=tag_name)
                 article.tags.add(tag)

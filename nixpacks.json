@@ -10,10 +10,13 @@
       ]
     },
     "build": {
-      "cmds": [". /app/.venv/bin/activate && python manage.py collectstatic --no-input"]
+      "cmds": [
+        ". /app/.venv/bin/activate && python manage.py collectstatic --no-input",
+        "chmod +x start.sh"
+      ]
     }
   },
   "start": {
-    "cmd": ". /app/.venv/bin/activate && daphne -b 0.0.0.0 -p ${PORT:-8000} RuDjangoProject.asgi:application"
+    "cmd": "bash start.sh"
   }
 }

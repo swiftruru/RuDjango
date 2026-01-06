@@ -180,5 +180,6 @@ VAPID_CLAIMS = {
 }
 
 # WhiteNoise configuration for serving static files in production
-# Simplified configuration that works reliably
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Use basic storage without compression to avoid potential issues
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'

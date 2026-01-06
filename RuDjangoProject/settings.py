@@ -180,12 +180,5 @@ VAPID_CLAIMS = {
 }
 
 # WhiteNoise configuration for serving static files in production
-if not DEBUG:
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-        },
-    }
+# Simplified configuration that works reliably
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'

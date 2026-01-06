@@ -21,7 +21,12 @@
       "Bash(git mv:*)",
       "Bash(tree:*)",
       "Bash(xargs cat:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(createdb:*)",
+      "Bash(/opt/homebrew/opt/postgresql@17/bin/createdb rudjango_dev)",
+      "Bash(/opt/homebrew/opt/postgresql@17/bin/psql:*)"
     ]
   }
 }

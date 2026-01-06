@@ -1,7 +1,7 @@
 {
   "phases": {
     "setup": {
-      "nixPkgs": ["python313", "libmysqlclient"]
+      "nixPkgs": ["python313", "libmysqlclient", "pkg-config", "mariadb"]
     },
     "install": {
       "cmds": [

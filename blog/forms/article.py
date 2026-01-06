@@ -126,6 +126,8 @@ class ArticleForm(forms.ModelForm):
 
     def _save_tags(self, article):
         """處理標籤的儲存"""
+        from django.utils.text import slugify
+
         tags_input = self.cleaned_data.get('tags_input', '')
         article.tags.clear()  # 清除現有標籤
 
@@ -142,8 +144,16 @@ class ArticleForm(forms.ModelForm):
                 if not tag_name or len(tag_name) > 50:
                     continue
 
-                # 取得或建立標籤
-                tag, created = Tag.objects.get_or_create(name=tag_name)
+                # 生成 slug（與 Tag.save() 使用相同邏輯）
+                tag_slug = slugify(tag_name, allow_unicode=True)
+
+                # 先嘗試用 slug 查找，避免重複
+                try:
+                    tag = Tag.objects.get(slug=tag_slug)
+                except Tag.DoesNotExist:
+                    # 如果不存在，才創建新標籤
+                    tag, created = Tag.objects.get_or_create(name=tag_name)
+
                 article.tags.add(tag)
 
 

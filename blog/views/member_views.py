@@ -172,6 +172,13 @@ def user_login(request):
     """
     使用者登入
     """
+    # 如果使用者已經登入，顯示已登入頁面並自動跳轉
+    if request.user.is_authenticated:
+        display_name = request.user.first_name if request.user.first_name else request.user.username
+        return render(request, 'blog/members/already_logged_in.html', {
+            'display_name': display_name,
+        })
+
     # 獲取 IP 地址
     def get_client_ip(request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

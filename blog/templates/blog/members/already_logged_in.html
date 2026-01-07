@@ -1,0 +1,149 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}已登入 - RuDjango{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'blog/css/members/login.css' %}">
+<style>
+    .already-logged-in-container {
+        max-width: 600px;
+        margin: 5rem auto;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .already-logged-in-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .already-logged-in-title {
+        font-size: 2rem;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .already-logged-in-message {
+        font-size: 1.125rem;
+        color: #4a5568;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .already-logged-in-user {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        margin: 0.5rem 0 1.5rem 0;
+    }
+
+    .redirect-info {
+        font-size: 0.9375rem;
+        color: #718096;
+        margin-bottom: 2rem;
+    }
+
+    .redirect-countdown {
+        font-weight: 600;
+        color: #667eea;
+        font-size: 1.125rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f7fafc;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+        background: #edf2f7;
+        border-color: #cbd5e0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="already-logged-in-container">
+        <div class="already-logged-in-icon">✅</div>
+        <h1 class="already-logged-in-title">您已登入</h1>
+        <p class="already-logged-in-message">
+            歡迎回來！<br>
+            您目前已經以
+            <span class="already-logged-in-user">{{ display_name }}</span>
+            的身份登入
+        </p>
+        <p class="redirect-info">
+            將在 <span class="redirect-countdown" id="countdown">3</span> 秒後自動跳轉至首頁...
+        </p>
+        <div class="action-buttons">
+            <a href="{% url 'home' %}" class="btn-primary">立即前往首頁</a>
+            <a href="{% url 'member' %}" class="btn-secondary">查看個人資料</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+
+    const timer = setInterval(function() {
+        countdown--;
+        countdownElement.textContent = countdown;
+
+        if (countdown <= 0) {
+            clearInterval(timer);
+            window.location.href = "{% url 'home' %}";
+        }
+    }, 1000);
+});
+</script>
+{% endblock %}

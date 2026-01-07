@@ -122,7 +122,7 @@
             將在 <span class="redirect-countdown" id="countdown">3</span> 秒後自動跳轉至首頁...
         </p>
         <div class="action-buttons">
-            <a href="{% url 'home' %}" class="btn-primary">立即前往首頁</a>
+            <a href="{% url 'blog_home' %}" class="btn-primary">立即前往首頁</a>
             <a href="{% url 'member' %}" class="btn-secondary">查看個人資料</a>
         </div>
     </div>
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (countdown <= 0) {
             clearInterval(timer);
-            window.location.href = "{% url 'home' %}";
+            window.location.href = "{% url 'blog_home' %}";
         }
     }, 1000);
 });

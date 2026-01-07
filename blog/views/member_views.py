@@ -213,6 +213,16 @@ def user_login(request):
                 )
 
                 login(request, user)
+
+                # 處理「記住我」功能
+                remember_me = form.cleaned_data.get('remember_me')
+                if not remember_me:
+                    # 如果未勾選「記住我」，session 在瀏覽器關閉時過期
+                    request.session.set_expiry(0)
+                else:
+                    # 如果勾選「記住我」，session 保持 30 天
+                    request.session.set_expiry(2592000)  # 30 天（秒）
+
                 # 使用暱稱（first_name）顯示，如果沒有則顯示帳號名
                 display_name = user.first_name if user.first_name else username
                 messages.success(request, f'✅ 歡迎回來，{display_name}！')

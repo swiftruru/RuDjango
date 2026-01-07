@@ -10,6 +10,16 @@ from ..models import UserProfile, Skill
 
 class CustomAuthenticationForm(AuthenticationForm):
     """自訂登入表單，添加樣式"""
+    remember_me = forms.BooleanField(
+        required=False,
+        initial=False,
+        label='記住此次登入',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'id': 'remember_me'
+        })
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({
